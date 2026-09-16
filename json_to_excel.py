@@ -10,9 +10,11 @@ from typing import Any
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, Side
 
-BASE_DIR = Path(__file__).resolve().parent
-JSON_DIR = BASE_DIR / 'output'
-EXCEL_DIR = BASE_DIR / 'excel_exports'
+BASE_DIR = Path(r"D:\workspace\OCR_Project")
+JSON_DIR = BASE_DIR / "output"
+
+# Excel xuất từ website
+EXCEL_DIR = BASE_DIR / "excel_exports"
 
 
 def txt(v: Any) -> str:
@@ -80,7 +82,7 @@ def create_excel(json_path: Path) -> Path:
     ws.merge_cells('A1:C1'); ws['A1']='THÔNG TIN GỖ TRÒN'; ws['A1'].font=head; ws['A1'].alignment=cen
     for r in range(1,9):
         for c in range(1,4): ws.cell(r,c).border=bd
-    meta=[('Ngày xe:',d['ngay_xe']),('No:',d['so_xe']),('Kích thước gỗ tròn:',d['kich_thuoc_go_tron']),('Khối lượng:',d['khoi_luong_go_tron']),('Kích thước xe:',d['kich_thuoc_xe'])]
+    meta=[('Ngày xẻ:',d['ngay_xe']),('No:',d['so_xe']),('Kích thước gỗ tròn:',d['kich_thuoc_go_tron']),('Khối lượng:',d['khoi_luong_go_tron']),('Kích thước xẻ:',d['kich_thuoc_xe'])]
     for r,(lab,val) in enumerate(meta,2):
         ws.merge_cells(start_row=r,start_column=1,end_row=r,end_column=2)
         ws.cell(r,1,lab).font=bold; ws.cell(r,1).alignment=lef

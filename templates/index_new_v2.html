@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Vật tư gỗ</title>
+    <style>
+        #imageContainer {
+            cursor: grab;
+            overflow: hidden;
+        }
+
+        #previewImage {
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        :root {
+            --primary: #0b72d9;
+            --primary-dark: #0759aa;
+            --primary-light: #eaf4ff;
+            --border: #d8e5f2;
+            --text: #18324a;
+            --muted: #6b7d90;
+            --success: #16834b;
+            --success-bg: #eaf8f0;
+            --warning: #b36b00;
+            --warning-bg: #fff7e6;
+            --danger: #c43d3d;
+            --bg: #f4f8fc;
+            --white: #ffffff;
+            --shadow: 0 8px 28px rgba(22, 72, 115, .09);
+            --radius: 14px;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        button, input, textarea { font: inherit; }
+        button { cursor: pointer; }
+
+        .container { max-width: 1500px; margin: 0 auto; padding: 22px; }
+
+        header {
+            background: linear-gradient(135deg, #0875dc, #0759aa);
+            color: white;
+            border-radius: 18px;
+            padding: 22px 26px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 18px;
+        }
+        .brand { display: flex; align-items: center; gap: 16px; }
+        .brand-icon {
+            width: 58px; height: 58px; border-radius: 15px;
+            background: rgba(255,255,255,.17);
+            display: grid; place-items: center; font-size: 30px;
+            border: 1px solid rgba(255,255,255,.25);
+        }
+        header h1 { margin: 0; font-size: 24px; letter-spacing: .2px; }
+        header p { margin: 5px 0 0; opacity: .88; font-size: 14px; }
+        .header-badge {
+            background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25);
+            padding: 10px 14px; border-radius: 12px; white-space: nowrap; font-size: 13px;
+        }
+
+        .toolbar {
+            background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
+            box-shadow: var(--shadow); padding: 14px; display: flex; align-items: center;
+            gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+        }
+        .file-wrap { flex: 1 1 320px; min-width: 260px; }
+        .file-wrap input[type=file] {
+            width: 100%; padding: 9px; border: 1px dashed #9fc1df; border-radius: 10px;
+            background: #f8fbff; color: var(--muted);
+        }
+        .btn {
+            border: 0; border-radius: 10px; padding: 11px 16px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 8px; transition: .18s ease;
+        }
+        .btn:hover { transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-secondary { background: var(--primary-light); color: var(--primary-dark); border: 1px solid #c9e1fa; }
+        .btn-success { background: #eaf8f0; color: var(--success); border: 1px solid #bfe7d0; }
+        .status {
+            margin-left: auto; padding: 9px 13px; border-radius: 999px; background: #f1f5f8;
+            color: var(--muted); font-size: 13px; font-weight: 700;
+        }
+
+        .workspace { display: grid; grid-template-columns: minmax(360px, .85fr) minmax(600px, 1.5fr); gap: 18px; align-items: start; }
+        .panel {
+            background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
+            box-shadow: var(--shadow); overflow: hidden;
+        }
+        .panel-head {
+            padding: 15px 18px; border-bottom: 1px solid var(--border); background: #fbfdff;
+            display: flex; align-items: center; justify-content: space-between; gap: 10px;
+        }
+        .panel-title { display: flex; align-items: center; gap: 9px; font-weight: 800; }
+        .panel-icon { color: var(--primary); font-size: 20px; }
+        .panel-sub { font-size: 12px; color: var(--muted); }
+        .panel-body { padding: 16px; }
+
+        .image-container {
+            min-height: 590px; background: #eef5fb; border: 1px dashed #a9c5df; border-radius: 12px;
+            display: grid; place-items: center; overflow: hidden; position: relative;
+        }
+        .image-empty { color: var(--muted); text-align: center; padding: 30px; }
+        .image-empty .big-icon { font-size: 52px; margin-bottom: 10px; }
+        .preview-image { max-width: 100%; max-height: 590px; object-fit: contain; display: block; }
+        .image-tools { display: flex; gap: 8px; margin-top: 10px; }
+        .mini-btn { border: 1px solid var(--border); background: white; color: var(--text); border-radius: 9px; padding: 8px 11px; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field.full { grid-column: 1 / -1; }
+        .field label { font-size: 12px; color: var(--muted); font-weight: 700; display: flex; align-items: center; gap: 5px; }
+        .field input {
+            width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px;
+            outline: none; color: var(--text); background: white;
+        }
+        .field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(11,114,217,.10); }
+
+        .table-wrapper { overflow: auto; border: 1px solid var(--border); border-radius: 10px; }
+        table { width: 100%; min-width: 900px; border-collapse: collapse; }
+        thead th {
+            background: #eaf4ff; color: #0759aa; padding: 11px 9px; font-size: 12px;
+            text-align: left; border-bottom: 2px solid #c9e1fa; white-space: nowrap;
+        }
+        tbody td { border-bottom: 1px solid #e8eef4; padding: 7px; vertical-align: middle; font-size: 13px; }
+        tbody tr:nth-child(even) { background: #fbfdff; }
+        tbody tr:hover { background: #f0f7ff; }
+        tbody td:first-child { text-align: center; font-weight: 800; color: var(--primary); width: 55px; }
+        tbody input {
+            width: 100%; min-width: 90px; padding: 8px; border: 1px solid transparent; background: transparent;
+            border-radius: 7px; color: var(--text); outline: none;
+        }
+        tbody input:focus { background: white; border-color: #9fc7eb; box-shadow: 0 0 0 2px rgba(11,114,217,.08); }
+
+        .validation { margin-top: 14px; padding: 13px 15px; border-radius: 10px; font-weight: 700; font-size: 13px; }
+        .success-box { background: var(--success-bg); color: var(--success); border: 1px solid #c6e9d5; }
+        .warning-box { background: var(--warning-bg); color: var(--warning); border: 1px solid #f0d7a5; }
+
+        .json-panel { margin-top: 18px; }
+        #jsonViewer {
+            width: 100%; min-height: 240px; resize: vertical; border: 0; outline: none; padding: 16px;
+            font-family: Consolas, "Courier New", monospace; font-size: 12px; line-height: 1.55;
+            background: #0f2133; color: #d8ecff;
+        }
+
+        .footer-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+        .hint { color: var(--muted); font-size: 12px; }
+
+        @media (max-width: 1050px) {
+            .workspace { grid-template-columns: 1fr; }
+            .image-container { min-height: 420px; }
+        }
+        @media (max-width: 650px) {
+            .container { padding: 10px; }
+            header { padding: 17px; }
+            header h1 { font-size: 18px; }
+            .header-badge { display: none; }
+            .form-grid { grid-template-columns: 1fr; }
+            .field.full { grid-column: auto; }
+            .toolbar .btn { flex: 1 1 140px; justify-content: center; }
+            .status { margin-left: 0; width: 100%; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div class="brand">
+            <div class="brand-icon" aria-label="Lưỡi cưa">🪚</div>
+            <div>
+                <h1>HỆ THỐNG NHẬP DỮ LIỆU VẬT TƯ GỖ</h1>
+                <p>OCR → JSON → Kiểm tra → Chỉnh sửa → Excel</p>
+            </div>
+        </div>
+        <div class="header-badge">● Hệ thống OCR</div>
+    </header>
+
+    <section class="toolbar">
+        <div class="file-wrap">
+            <input id="imageInput" type="file" accept="image/*">
+        </div>
+        <button id="ocrButton" class="btn btn-primary" onclick="runOCR()">🔍 Chạy OCR</button>
+        <button class="btn btn-secondary" onclick="saveJSON()">💾 Lưu JSON</button>
+        <button class="btn btn-success" onclick="downloadExcel()">📊 Xuất Excel</button>
+        <span id="status" class="status">● Chưa xử lý</span>
+    </section>
+
+    <main class="workspace">
+        <section class="panel image-panel">
+            <div class="panel-head">
+                <div class="panel-title"><span class="panel-icon">🖼️</span> ẢNH PHIẾU</div>
+                <span class="panel-sub">Ảnh gốc dùng để đối chiếu</span>
+            </div>
+            <div class="panel-body">
+                <div id="imageContainer" class="image-container">
+                    <div class="image-empty">
+                        <div class="big-icon">📷</div>
+                        <strong>Chưa chọn ảnh</strong>
+                        <div class="hint">Chọn ảnh phiếu để bắt đầu OCR</div>
+                    </div>
+                </div>
+                <div class="image-tools">
+                    <button class="mini-btn" type="button" onclick="zoomImage(1.1)">🔍 +</button>
+                    <button class="mini-btn" type="button" onclick="zoomImage(.9)">🔎 −</button>
+                    <button class="mini-btn" type="button" onclick="rotateImage()">↻ Xoay</button>
+                    <button class="mini-btn" type="button" onclick="resetImageView()">⛶ Đặt lại</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel data-panel">
+            <div class="panel-head">
+                <div class="panel-title"><span class="panel-icon">📝</span> THÔNG TIN OCR</div>
+                <span class="panel-sub">Có thể chỉnh sửa trước khi lưu</span>
+            </div>
+            <div class="panel-body">
+                <div class="form-grid">
+                    <div class="field">
+                        <label>🪚 Số xẻ</label>
+                        <input id="so_xe" type="text" placeholder="Nhập số xẻ">
+                    </div>
+                    <div class="field">
+                        <label>📅 Ngày xẻ</label>
+                        <input id="ngay_xe" type="text" placeholder="Ngày / tháng / năm">
+                    </div>
+                    <div class="field">
+                        <label>🪵 Kích thước gỗ tròn</label>
+                        <input id="kich_thuoc_go_tron" type="text">
+                    </div>
+                    <div class="field">
+                        <label>⚖️ Khối lượng gỗ tròn</label>
+                        <input id="khoi_luong_go_tron" type="text">
+                    </div>
+                    <div class="field full">
+                        <label>📐 Kích thước xẻ</label>
+                        <input id="kich_thuoc_xe" type="text">
+                    </div>
+                </div>
+
+                <div class="panel-title" style="margin: 4px 0 10px;"><span class="panel-icon">📋</span> CHI TIẾT CẤU KIỆN</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dòng</th>
+                                <th>Ngày</th>
+                                <th>Kích thước & SL</th>
+                                <th>Khối lượng</th>
+                                <th>Công trình</th>
+                                <th>STT</th>
+                                <th>Tên cấu kiện</th>
+                                <th>Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsTable"></tbody>
+                    </table>
+                </div>
+
+                <div id="validation" class="validation"></div>
+                <div class="footer-actions">
+                    <button class="btn btn-secondary" onclick="saveJSON()">💾 Lưu dữ liệu</button>
+                    <button class="btn btn-success" onclick="downloadExcel()">📊 Xuất Excel</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <section class="panel json-panel">
+        <div class="panel-head">
+            <div class="panel-title"><span class="panel-icon">{ }</span> DỮ LIỆU JSON</div>
+            <span class="panel-sub">Dữ liệu trung gian của hệ thống</span>
+        </div>
+        <textarea id="jsonViewer" spellcheck="false" placeholder="JSON sẽ hiển thị tại đây sau khi OCR..."></textarea>
+    </section>
+</div>
+
+<script>
+let currentJsonFile = null;
+let currentData = null;
+let imageScale = 1;
+let imageRotation = 0;
+// ===== PAN IMAGE =====
+let isPanning = false;
+let panStartX = 0;
+let panStartY = 0;
+let panStartLeft = 0;
+let panStartTop = 0;
+
+function setStatus(text) {
+    document.getElementById("status").textContent = text;
+}
+
+function showImage(file) {
+    const url = URL.createObjectURL(file);
+    imageScale = 1;
+    imageRotation = 0;
+    document.getElementById("imageContainer").innerHTML = `<img src="${url}" class="preview-image" id="previewImage" alt="Ảnh phiếu">`;
+}
+
+function zoomImage(factor) {
+    const img = document.getElementById("previewImage");
+    if (!img) return;
+    imageScale = Math.min(3, Math.max(.4, imageScale * factor));
+    applyImageTransform();
+}
+
+function rotateImage() {
+    const img = document.getElementById("previewImage");
+    if (!img) return;
+    imageRotation = (imageRotation + 90) % 360;
+    applyImageTransform();
+}
+
+function resetImageView() {
+    const img = document.getElementById("previewImage");
+    if (!img) return;
+    imageScale = 1;
+    imageRotation = 0;
+    applyImageTransform();
+}
+
+function applyImageTransform() {
+    const img = document.getElementById("previewImage");
+    if (img) img.style.transform = `scale(${imageScale}) rotate(${imageRotation}deg)`;
+}
+
+async function runOCR() {
+    const input = document.getElementById("imageInput");
+    const button = document.getElementById("ocrButton");
+    if (!input.files.length) {
+        alert("Hãy chọn ảnh trước.");
+        return;
+    }
+    const file = input.files[0];
+    showImage(file);
+    const formData = new FormData();
+    formData.append("file", file);
+    setStatus("⏳ Đang OCR...");
+    button.disabled = true;
+    button.style.opacity = ".65";
+    try {
+        const response = await fetch("/api/ocr", { method: "POST", body: formData });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "OCR thất bại");
+        currentJsonFile = result.json_file;
+        await loadJSON(currentJsonFile);
+        setStatus("✓ OCR hoàn thành");
+    } catch (error) {
+        setStatus("⚠ Lỗi OCR");
+        alert(error.message);
+    } finally {
+        button.disabled = false;
+        button.style.opacity = "1";
+    }
+}
+
+async function loadJSON(filename) {
+    const response = await fetch("/api/json/" + encodeURIComponent(filename));
+    if (!response.ok) throw new Error("Không đọc được JSON");
+    currentData = await response.json();
+    renderData();
+}
+
+function renderData() {
+    if (!currentData) return;
+    const header = currentData.header || {};
+    document.getElementById("so_xe").value = header.so_xe || "";
+    document.getElementById("ngay_xe").value = header.ngay_xe || "";
+    document.getElementById("kich_thuoc_go_tron").value = header.kich_thuoc_go_tron || "";
+    document.getElementById("khoi_luong_go_tron").value = header.khoi_luong_go_tron || "";
+    document.getElementById("kich_thuoc_xe").value = header.kich_thuoc_xe || "";
+
+    const tbody = document.getElementById("itemsTable");
+    tbody.innerHTML = "";
+    const items = currentData.items || [];
+    items.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${item.dong ?? index + 1}</td>
+            <td><input data-field="ngay" value="${escapeHtml(item.ngay || "")}"></td>
+            <td><input data-field="kich_thuoc_so_luong" value="${escapeHtml(item.kich_thuoc_so_luong || "")}"></td>
+            <td><input data-field="khoi_luong" value="${escapeHtml(item.khoi_luong || "")}"></td>
+            <td><input data-field="cong_trinh" value="${escapeHtml(item.cong_trinh || "")}"></td>
+            <td><input data-field="stt_cau_kien" value="${escapeHtml(item.stt_cau_kien || "")}"></td>
+            <td><input data-field="ten_cau_kien" value="${escapeHtml(item.ten_cau_kien || "")}"></td>
+            <td><input data-field="ghi_chu" value="${escapeHtml(item.ghi_chu || "")}"></td>
+        `;
+        tr.querySelectorAll("input").forEach(input => {
+            input.addEventListener("input", () => {
+                item[input.dataset.field] = input.value;
+                updateJSONFromForm();
+            });
+        });
+        tbody.appendChild(tr);
+    });
+    updateJSONFromForm();
+    renderValidation();
+}
+
+function renderValidation() {
+    const validation = currentData.validation || {};
+    const lineVolume = validation.line_volume || [];
+    const warnings = lineVolume.filter(x => x.trang_thai && x.trang_thai !== "OK");
+    const box = document.getElementById("validation");
+    if (warnings.length) {
+        box.className = "validation warning-box";
+        box.innerHTML = `⚠ Có <strong>${warnings.length}</strong> dòng cần kiểm tra khối lượng.`;
+    } else {
+        box.className = "validation success-box";
+        box.innerHTML = `✓ Khối lượng các dòng đang khớp.`;
+    }
+}
+
+function updateJSONFromForm() {
+    if (!currentData) return;
+    if (!currentData.header) currentData.header = {};
+    currentData.header.so_xe = document.getElementById("so_xe").value;
+    currentData.header.ngay_xe = document.getElementById("ngay_xe").value;
+    currentData.header.kich_thuoc_go_tron = document.getElementById("kich_thuoc_go_tron").value;
+    currentData.header.khoi_luong_go_tron = document.getElementById("khoi_luong_go_tron").value;
+    currentData.header.kich_thuoc_xe = document.getElementById("kich_thuoc_xe").value;
+    document.getElementById("jsonViewer").value = JSON.stringify(currentData, null, 2);
+}
+
+async function saveJSON() {
+    if (!currentData || !currentJsonFile) {
+        alert("Chưa có JSON.");
+        return;
+    }
+    updateJSONFromForm();
+    try {
+        const response = await fetch("/api/json/" + encodeURIComponent(currentJsonFile), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(currentData)
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "Không lưu được JSON");
+        setStatus("✓ Đã lưu JSON");
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+function downloadExcel() {
+    if (!currentJsonFile) {
+        alert("Hãy chạy OCR và chọn một JSON trước.");
+        return;
+    }
+    window.location.href = "/api/excel?json_file=" + encodeURIComponent(currentJsonFile);
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+document.getElementById("imageInput").addEventListener("change", function() {
+    if (this.files.length) {
+        showImage(this.files[0]);
+        setStatus("● Đã chọn ảnh");
+    }
+});
+
+["so_xe", "ngay_xe", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe"].forEach(id => {
+    document.getElementById(id).addEventListener("input", updateJSONFromForm);
+});
+
+const jsonViewer = document.getElementById("jsonViewer");
+jsonViewer.addEventListener("input", () => {
+    try {
+        currentData = JSON.parse(jsonViewer.value);
+        renderData();
+    } catch (_) {
+        // Cho phép người dùng đang nhập JSON chưa hoàn chỉnh.
+    }
+    
+});
+// ===== PAN IMAGE =====
+const imageContainer = document.getElementById("imageContainer");
+
+imageContainer.addEventListener("mousedown", function(e) {
+    if (e.button !== 0) return;
+
+    const img = document.getElementById("previewImage");
+    if (!img) return;
+
+    isPanning = true;
+
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+
+    panStartLeft = imageContainer.scrollLeft;
+    panStartTop = imageContainer.scrollTop;
+
+    imageContainer.style.cursor = "grabbing";
+
+    e.preventDefault();
+});
+
+window.addEventListener("mousemove", function(e) {
+    if (!isPanning) return;
+
+    const dx = e.clientX - panStartX;
+    const dy = e.clientY - panStartY;
+
+    imageContainer.scrollLeft = panStartLeft - dx;
+    imageContainer.scrollTop = panStartTop - dy;
+});
+
+window.addEventListener("mouseup", function() {
+    if (!isPanning) return;
+
+    isPanning = false;
+    imageContainer.style.cursor = "grab";
+});
+
+document.addEventListener("dragstart", function(e) {
+    if (e.target.id === "previewImage") {
+        e.preventDefault();
+    }
+});
+</script>
+</body>
+</html>

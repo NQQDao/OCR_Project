@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+
+output/
+web_uploads/
+excel_exports/
+excel_export/
+
+~$*.xlsx
+~$*.xls
+
+.env
+.env.*
+!.env.example
