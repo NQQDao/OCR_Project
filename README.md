@@ -1,34 +1,24 @@
-# OCR Project
-
-Hệ thống nhận diện ký tự quang học (OCR) xử lý và trích xuất văn bản từ hình ảnh/tài liệu tự động.
-
----
-
-## 📌 Tính năng chính
-* Nhận diện văn bản từ hình ảnh (JPG, PNG, PDF...).
-* Tiền xử lý ảnh (khử nhiễu, cân bằng sáng, xoay góc nghiêng).
-* Xuất dữ liệu sang định dạng văn bản (TXT, JSON hoặc Excel).
-
----
-
 ## 🛠 Công nghệ sử dụng
 * **Ngôn ngữ:** Python 3.x
-* **Thư viện OCR:** Tesseract / EasyOCR / PaddleOCR *(chọn thư viện bạn dùng)*
-* **Xử lý ảnh:** OpenCV, Pillow
-* **Framework giao diện / API (nếu có):** FastAPI / Flask / Streamlit
+* **OCR Engine:** [Tesseract OCR](https://github.com/tesseract-ocr/tesseract)
+* **Thư viện chính:** `pytesseract`, `opencv-python`, `Pillow`
 
 ---
 
 ## 🚀 Hướng dẫn cài đặt
 
-### 1. Yêu cầu hệ thống
-* Python >= 3.9
-* Tesseract-OCR (nếu dùng thư viện `pytesseract`):
-  * **Windows:** Tải bộ cài đặt từ [UB-Mannheim](https://github.com/UB-Mannheim/tesseract/wiki) và thêm vào biến môi trường PATH.
-  * **Ubuntu/Debian:** `sudo apt-get install tesseract-ocr`
+### 1. Cài đặt Tesseract OCR Engine (Bắt buộc)
+Do `pytesseract` chỉ là wrapper của Python, bạn cần cài đặt trực tiếp bộ công cụ Tesseract lên hệ điều hành:
 
-### 2. Cài đặt môi trường
-Clone repo về máy (nếu chưa có):
-```bash
-git clone [https://github.com/NQQDao/OCR_Project.git](https://github.com/NQQDao/OCR_Project.git)
-cd OCR_Project
+* **Windows:**
+  1. Tải bộ cài installer từ [UB-Mannheim Tesseract](https://github.com/UB-Mannheim/tesseract/wiki).
+  2. Trong quá trình cài đặt, tích chọn **Additional language data** nếu cần nhận diện tiếng Việt (`vie.traineddata`).
+  3. Đường dẫn mặc định: `C:\Program Files\Tesseract-OCR\tesseract.exe`.
+  4. Thêm thư mục trên vào biến môi trường **PATH** của hệ thống.
+
+* **Linux (Ubuntu/Debian):**
+  ```bash
+  sudo apt-get update
+  sudo apt-get install tesseract-ocr
+  # Cài gói ngôn ngữ tiếng Việt (nếu cần):
+  sudo apt-get install tesseract-ocr-vie
