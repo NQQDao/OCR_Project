@@ -1,0 +1,364 @@
+{
+  "schema_version": "1.0",
+  "source": {
+    "file": "1788952774165_270563556228284836_8172438782371895311_0bc41a728d29a2aa1cbd0d3a220b0de8.jpg",
+    "model": "gemini-3.6-flash",
+    "rotation_degrees": 90
+  },
+  "document_type": "NHẬT KÝ XẺ GỖ TẠI / THÔNG TIN GỖ THÀNH KHÍ",
+  "header": {
+    "ngay_xe": "",
+    "so_xe": "1507 - 110594/1B",
+    "kich_thuoc_go_tron": "87 - V 341",
+    "khoi_luong_go_tron": "8,093",
+    "kich_thuoc_xe": "420"
+  },
+  "items": [
+    {
+      "dong": 1,
+      "ngay": "14/4/2025",
+      "kich_thuoc_so_luong": "25 x 25 x 420 = 6",
+      "khoi_luong": "1,575",
+      "cong_trinh": "uc lý",
+      "stt_cau_kien": "1",
+      "ten_cau_kien": "Xà dọc",
+      "ghi_chu": "1,818 m3"
+    },
+    {
+      "dong": 2,
+      "ngay": "14/4/2025",
+      "kich_thuoc_so_luong": "6 x 30 x 420 = 1",
+      "khoi_luong": "0,075",
+      "cong_trinh": "",
+      "stt_cau_kien": "2",
+      "ten_cau_kien": "Lá mái",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 3,
+      "ngay": "14/4/2025",
+      "kich_thuoc_so_luong": "10 x 10 x 420 = 9",
+      "khoi_luong": "0,168",
+      "cong_trinh": "thường kiệt",
+      "stt_cau_kien": "3",
+      "ten_cau_kien": "Hoành",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 4,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "28 x 28 x 455 = 1",
+      "khoi_luong": "357",
+      "cong_trinh": "thường kiệt",
+      "stt_cau_kien": "5",
+      "ten_cau_kien": "cột",
+      "ghi_chu": "2,11 m3"
+    },
+    {
+      "dong": 5,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "25 x 25 x 280 = 4",
+      "khoi_luong": "700",
+      "cong_trinh": "\"",
+      "stt_cau_kien": "6",
+      "ten_cau_kien": "cột",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 6,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "4 x 40 x 450 = 1",
+      "khoi_luong": "72",
+      "cong_trinh": "\"",
+      "stt_cau_kien": "7",
+      "ten_cau_kien": "Ván cửa",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 7,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "6 x 40 x 450 = 1",
+      "khoi_luong": "108",
+      "cong_trinh": "\"",
+      "stt_cau_kien": "8",
+      "ten_cau_kien": "Tàu mái",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 8,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "6 x 35 x 280 = 2",
+      "khoi_luong": "118",
+      "cong_trinh": "\"",
+      "stt_cau_kien": "9",
+      "ten_cau_kien": "Tàu mái",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 9,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "12 x 12 x 280 = 4",
+      "khoi_luong": "161",
+      "cong_trinh": "phúc khố",
+      "stt_cau_kien": "10",
+      "ten_cau_kien": "Hoành",
+      "ghi_chu": "3,928 m3 3,9m3 48,5%"
+    },
+    {
+      "dong": 10,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "4 x 49 x 160 = 2",
+      "khoi_luong": "63",
+      "cong_trinh": "\"",
+      "stt_cau_kien": "11",
+      "ten_cau_kien": "Ván cửa",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 11,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "4 x 40 x 160 = 8",
+      "khoi_luong": "205",
+      "cong_trinh": "\"",
+      "stt_cau_kien": "12",
+      "ten_cau_kien": "Ván cửa",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 12,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "4 x 30 x 160 = 2",
+      "khoi_luong": "38",
+      "cong_trinh": "\"",
+      "stt_cau_kien": "13",
+      "ten_cau_kien": "Ván cửa",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 13,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "240 x 75 x 8 = 2",
+      "khoi_luong": "288",
+      "cong_trinh": "phúc khố",
+      "stt_cau_kien": "14",
+      "ten_cau_kien": "chân phong",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 14,
+      "ngay": "20/4/2025",
+      "kich_thuoc_so_luong": "Hết cây",
+      "khoi_luong": "",
+      "cong_trinh": "",
+      "stt_cau_kien": "15",
+      "ten_cau_kien": "",
+      "ghi_chu": ""
+    }
+  ],
+  "date_events": [
+    {
+      "ngay": "14/4/2025",
+      "dong_bat_dau": 1,
+      "dong_ket_thuc": 3,
+      "do_tin_cay": "high",
+      "vi_tri": "cột Ngày/Tháng/Năm dòng 1"
+    },
+    {
+      "ngay": "20/4/2025",
+      "dong_bat_dau": 4,
+      "dong_ket_thuc": 14,
+      "do_tin_cay": "high",
+      "vi_tri": "cột Ngày/Tháng/Năm dòng 4"
+    }
+  ],
+  "validation": {
+    "line_volume": [
+      {
+        "dong": 1,
+        "ngay": "14/4/2025",
+        "kich_thuoc_so_luong": "25 x 25 x 420 = 6",
+        "khoi_luong_ghi": 1.575,
+        "khoi_luong_tinh": 1.575,
+        "chenh_lech": 0.0,
+        "trang_thai": "OK"
+      },
+      {
+        "dong": 2,
+        "ngay": "14/4/2025",
+        "kich_thuoc_so_luong": "6 x 30 x 420 = 1",
+        "khoi_luong_ghi": 0.075,
+        "khoi_luong_tinh": 0.076,
+        "chenh_lech": 0.0006,
+        "trang_thai": "OK"
+      },
+      {
+        "dong": 3,
+        "ngay": "14/4/2025",
+        "kich_thuoc_so_luong": "10 x 10 x 420 = 9",
+        "khoi_luong_ghi": 0.168,
+        "khoi_luong_tinh": 0.378,
+        "chenh_lech": 0.21,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 4,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "28 x 28 x 455 = 1",
+        "khoi_luong_ghi": 357.0,
+        "khoi_luong_tinh": 0.357,
+        "chenh_lech": 356.64328,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 5,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "25 x 25 x 280 = 4",
+        "khoi_luong_ghi": 700.0,
+        "khoi_luong_tinh": 0.7,
+        "chenh_lech": 699.3,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 6,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "4 x 40 x 450 = 1",
+        "khoi_luong_ghi": 72.0,
+        "khoi_luong_tinh": 0.072,
+        "chenh_lech": 71.928,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 7,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "6 x 40 x 450 = 1",
+        "khoi_luong_ghi": 108.0,
+        "khoi_luong_tinh": 0.108,
+        "chenh_lech": 107.892,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 8,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "6 x 35 x 280 = 2",
+        "khoi_luong_ghi": 118.0,
+        "khoi_luong_tinh": 0.118,
+        "chenh_lech": 117.8824,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 9,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "12 x 12 x 280 = 4",
+        "khoi_luong_ghi": 161.0,
+        "khoi_luong_tinh": 0.161,
+        "chenh_lech": 160.83872,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 10,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "4 x 49 x 160 = 2",
+        "khoi_luong_ghi": 63.0,
+        "khoi_luong_tinh": 0.063,
+        "chenh_lech": 62.93728,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 11,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "4 x 40 x 160 = 8",
+        "khoi_luong_ghi": 205.0,
+        "khoi_luong_tinh": 0.205,
+        "chenh_lech": 204.7952,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 12,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "4 x 30 x 160 = 2",
+        "khoi_luong_ghi": 38.0,
+        "khoi_luong_tinh": 0.038,
+        "chenh_lech": 37.9616,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 13,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "240 x 75 x 8 = 2",
+        "khoi_luong_ghi": 288.0,
+        "khoi_luong_tinh": 0.288,
+        "chenh_lech": 287.712,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "dong": 14,
+        "ngay": "20/4/2025",
+        "kich_thuoc_so_luong": "Hết cây",
+        "khoi_luong_ghi": null,
+        "khoi_luong_tinh": null,
+        "chenh_lech": null,
+        "trang_thai": "KHONG_CO_DU_LIEU"
+      }
+    ],
+    "daily_summary": [
+      {
+        "ngay": "14/4/2025",
+        "so_dong": 3,
+        "tong_m3_tinh": 2.029
+      },
+      {
+        "ngay": "20/4/2025",
+        "so_dong": 10,
+        "tong_m3_tinh": 2.11
+      }
+    ],
+    "daily_total_validation": [
+      {
+        "ngay": "14/4/2025",
+        "tong_ghi_tren_giay": 1.818,
+        "tong_tinh": 2.029,
+        "chenh_lech": 0.2106,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "ngay": "20/4/2025",
+        "tong_ghi_tren_giay": 2.11,
+        "tong_tinh": 2.11,
+        "chenh_lech": 0.00048,
+        "trang_thai": "OK"
+      },
+      {
+        "ngay": "20/4/2025",
+        "tong_ghi_tren_giay": 3.928,
+        "tong_tinh": 2.11,
+        "chenh_lech": 1.81848,
+        "trang_thai": "CANH_BAO"
+      },
+      {
+        "ngay": "20/4/2025",
+        "tong_ghi_tren_giay": 3.9,
+        "tong_tinh": 2.11,
+        "chenh_lech": 1.79048,
+        "trang_thai": "CANH_BAO"
+      }
+    ],
+    "warnings": [
+      "THIEU_NGAY_XE",
+      "DONG_3_CANH_BAO",
+      "DONG_4_CANH_BAO",
+      "DONG_5_CANH_BAO",
+      "DONG_6_CANH_BAO",
+      "DONG_7_CANH_BAO",
+      "DONG_8_CANH_BAO",
+      "DONG_9_CANH_BAO",
+      "DONG_10_CANH_BAO",
+      "DONG_11_CANH_BAO",
+      "DONG_12_CANH_BAO",
+      "DONG_13_CANH_BAO",
+      "DONG_14_KHONG_CO_DU_LIEU",
+      "TONG_NGAY_14/4/2025_CANH_BAO",
+      "TONG_NGAY_20/4/2025_CANH_BAO",
+      "TONG_NGAY_20/4/2025_CANH_BAO"
+    ]
+  }
+}

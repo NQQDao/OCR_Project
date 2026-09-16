@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "source": {
+    "file": "mau_14_rotated_v5.jpg",
+    "model": "gemini-3.6-flash",
+    "rotation_degrees": 90
+  },
+  "document_type": "NHẬT KÝ XẺ GỖ TẠI / THÔNG TIN GỖ THÀNH KHÍ",
+  "header": {
+    "ngay_xe": "",
+    "so_xe": "619-RO558/1A",
+    "kich_thuoc_go_tron": "8.6 - v258, độ TT: 8.6 - v258",
+    "khoi_luong_go_tron": "4,508",
+    "kich_thuoc_xe": "4,0 còn 4,6"
+  },
+  "items": [
+    {
+      "dong": 1,
+      "ngay": "4/9/2026",
+      "kich_thuoc_so_luong": "25 x 25 x 400 = 2",
+      "khoi_luong": "0,500",
+      "cong_trinh": "bùi xá (M)",
+      "stt_cau_kien": "",
+      "ten_cau_kien": "khoang giang 2",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 2,
+      "ngay": "4/9/2026",
+      "kich_thuoc_so_luong": "22 x 22 x c280 = 1",
+      "khoi_luong": "0,135",
+      "cong_trinh": "chùa dâu (NK)",
+      "stt_cau_kien": "21",
+      "ten_cau_kien": "xà dọc",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 3,
+      "ngay": "4/9/2026",
+      "kich_thuoc_so_luong": "22 x 22 x 60 = 2",
+      "khoi_luong": "0,058",
+      "cong_trinh": "chùa dâu (NK)",
+      "stt_cau_kien": "11",
+      "ten_cau_kien": "cột biên",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 4,
+      "ngay": "4/9/2026",
+      "kich_thuoc_so_luong": "10 x 10 x 400 = 1",
+      "khoi_luong": "0,040",
+      "cong_trinh": "bùi xá (Tổ)",
+      "stt_cau_kien": "",
+      "ten_cau_kien": "hoành",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 5,
+      "ngay": "4/9/2026",
+      "kich_thuoc_so_luong": "13 x 13 x 315 = 2",
+      "khoi_luong": "0,106",
+      "cong_trinh": "cổ ngõa (HU)",
+      "stt_cau_kien": "13",
+      "ten_cau_kien": "XTH",
+      "ghi_chu": ""
+    },
+    {
+      "dong": 6,
+      "ngay": "4/9/2026",
+      "kich_thuoc_so_luong": "11 x 13 x 365 = 1",
+      "khoi_luong": "0,051",
+      "cong_trinh": "bùi xá (Tổ)",
+      "stt_cau_kien": "",
+      "ten_cau_kien": "XTH",
+      "ghi_chu": "0,890 m3"
+    }
+  ],
+  "date_events": [
+    {
+      "ngay": "4/9/2026",
+      "dong_bat_dau": 1,
+      "dong_ket_thuc": 6,
+      "do_tin_cay": "high",
+      "vi_tri": "Cột Ngày/Tháng/Năm"
+    }
+  ],
+  "validation": {
+    "line_volume": [
+      {
+        "dong": 1,
+        "ngay": "4/9/2026",
+        "kich_thuoc_so_luong": "25 x 25 x 400 = 2",
+        "khoi_luong_ghi": 0.5,
+        "khoi_luong_tinh": 0.5,
+        "chenh_lech": 0.0,
+        "trang_thai": "OK"
+      },
+      {
+        "dong": 2,
+        "ngay": "4/9/2026",
+        "kich_thuoc_so_luong": "22 x 22 x c280 = 1",
+        "khoi_luong_ghi": 0.135,
+        "khoi_luong_tinh": 0.136,
+        "chenh_lech": 0.00052,
+        "trang_thai": "OK"
+      },
+      {
+        "dong": 3,
+        "ngay": "4/9/2026",
+        "kich_thuoc_so_luong": "22 x 22 x 60 = 2",
+        "khoi_luong_ghi": 0.058,
+        "khoi_luong_tinh": 0.058,
+        "chenh_lech": 8e-05,
+        "trang_thai": "OK"
+      },
+      {
+        "dong": 4,
+        "ngay": "4/9/2026",
+        "kich_thuoc_so_luong": "10 x 10 x 400 = 1",
+        "khoi_luong_ghi": 0.04,
+        "khoi_luong_tinh": 0.04,
+        "chenh_lech": 0.0,
+        "trang_thai": "OK"
+      },
+      {
+        "dong": 5,
+        "ngay": "4/9/2026",
+        "kich_thuoc_so_luong": "13 x 13 x 315 = 2",
+        "khoi_luong_ghi": 0.106,
+        "khoi_luong_tinh": 0.106,
+        "chenh_lech": 0.00047,
+        "trang_thai": "OK"
+      },
+      {
+        "dong": 6,
+        "ngay": "4/9/2026",
+        "kich_thuoc_so_luong": "11 x 13 x 365 = 1",
+        "khoi_luong_ghi": 0.051,
+        "khoi_luong_tinh": 0.052,
+        "chenh_lech": 0.001195,
+        "trang_thai": "OK"
+      }
+    ],
+    "daily_summary": [
+      {
+        "ngay": "4/9/2026",
+        "so_dong": 6,
+        "tong_m3_tinh": 0.892
+      }
+    ],
+    "daily_total_validation": [
+      {
+        "ngay": "4/9/2026",
+        "tong_ghi_tren_giay": 0.89,
+        "tong_tinh": 0.892,
+        "chenh_lech": 0.002265,
+        "trang_thai": "OK"
+      }
+    ],
+    "warnings": [
+      "THIEU_NGAY_XE"
+    ]
+  }
+}

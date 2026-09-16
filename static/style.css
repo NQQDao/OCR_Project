@@ -1,0 +1,194 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #f4f6f8;
+    font-family: Arial, sans-serif;
+    color: #1f2937;
+}
+
+.container {
+    max-width: 1500px;
+    margin: auto;
+    padding: 24px;
+}
+
+header {
+    background: white;
+    padding: 20px 24px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+header h1 {
+    margin: 0 0 6px;
+    font-size: 25px;
+}
+
+header p {
+    margin: 0;
+    color: #6b7280;
+}
+
+.toolbar {
+    background: white;
+    padding: 14px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+button {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+#status {
+    margin-left: auto;
+    font-weight: bold;
+}
+
+main {
+    display: grid;
+    grid-template-columns: 42% 58%;
+    gap: 16px;
+}
+
+.image-panel,
+.data-panel,
+.json-panel {
+    background: white;
+    padding: 18px;
+    border-radius: 10px;
+}
+
+.image-container {
+    min-height: 700px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    background: #f8fafc;
+    padding: 12px;
+    overflow: auto;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 750px;
+    object-fit: contain;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-weight: bold;
+}
+
+.form-grid input {
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 1000px;
+}
+
+th {
+    background: #1f4e78;
+    color: white;
+    padding: 9px;
+}
+
+td {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 6px;
+    vertical-align: top;
+}
+
+td input {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    padding: 7px;
+    border-radius: 5px;
+}
+
+.validation {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 7px;
+    font-weight: bold;
+}
+
+.success-box {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.warning-box {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.json-panel {
+    margin-top: 16px;
+}
+
+#jsonViewer {
+    width: 100%;
+    min-height: 300px;
+    background: #111827;
+    color: #e5e7eb;
+    padding: 14px;
+    border-radius: 8px;
+    font-family: Consolas, monospace;
+    font-size: 13px;
+}
+
+@media (max-width: 1000px) {
+
+    main {
+        grid-template-columns: 1fr;
+    }
+
+    .image-container {
+        min-height: 400px;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #status {
+        width: 100%;
+        margin-left: 0;
+    }
+}

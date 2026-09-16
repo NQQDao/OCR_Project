@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>OCR Vật tư gỗ</title>
+
+    <link
+        rel="stylesheet"
+        href="/static/style.css"
+    >
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <header>
+
+        <h1>
+            HỆ THỐNG NHẬP DỮ LIỆU VẬT TƯ GỖ
+        </h1>
+
+        <p>
+            OCR → JSON → Kiểm tra → Excel
+        </p>
+
+    </header>
+
+
+    <!-- =====================================================
+         UPLOAD
+    ====================================================== -->
+
+    <section class="toolbar">
+
+        <input
+            id="imageInput"
+            type="file"
+            accept="image/*"
+        >
+
+        <button
+            id="ocrButton"
+            onclick="runOCR()"
+        >
+            Chạy OCR
+        </button>
+
+        <button
+            onclick="saveJSON()"
+        >
+            Lưu JSON
+        </button>
+
+        <button
+            onclick="downloadExcel()"
+        >
+            Xuất Excel
+        </button>
+
+        <span id="status">
+            Chưa xử lý
+        </span>
+
+    </section>
+
+
+    <!-- =====================================================
+         MAIN
+    ====================================================== -->
+
+    <main>
+
+        <!-- ẢNH -->
+
+        <section class="image-panel">
+
+            <h2>ẢNH PHIẾU</h2>
+
+            <div
+                id="imageContainer"
+                class="image-container"
+            >
+
+                <p>
+                    Chưa chọn ảnh
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- DỮ LIỆU -->
+
+        <section class="data-panel">
+
+            <h2>THÔNG TIN OCR</h2>
+
+
+            <div class="form-grid">
+
+                <label>
+                    Số xẻ
+
+                    <input
+                        id="so_xe"
+                        type="text"
+                    >
+                </label>
+
+
+                <label>
+                    Ngày xẻ
+
+                    <input
+                        id="ngay_xe"
+                        type="text"
+                    >
+                </label>
+
+
+                <label>
+                    Kích thước gỗ tròn
+
+                    <input
+                        id="kich_thuoc_go_tron"
+                        type="text"
+                    >
+                </label>
+
+
+                <label>
+                    Khối lượng gỗ tròn
+
+                    <input
+                        id="khoi_luong_go_tron"
+                        type="text"
+                    >
+                </label>
+
+
+                <label>
+                    Kích thước xẻ
+
+                    <input
+                        id="kich_thuoc_xe"
+                        type="text"
+                    >
+                </label>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Dòng</th>
+
+                            <th>Ngày</th>
+
+                            <th>Kích thước & SL</th>
+
+                            <th>Khối lượng</th>
+
+                            <th>Công trình</th>
+
+                            <th>STT</th>
+
+                            <th>Tên cấu kiện</th>
+
+                            <th>Ghi chú</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody
+                        id="itemsTable"
+                    ></tbody>
+
+                </table>
+
+            </div>
+
+
+            <div
+                id="validation"
+                class="validation"
+            ></div>
+
+        </section>
+
+    </main>
+
+
+    <!-- JSON -->
+
+    <section class="json-panel">
+
+        <h2>JSON</h2>
+
+        <textarea
+            id="jsonViewer"
+            spellcheck="false"
+        ></textarea>
+
+    </section>
+
+</div>
+
+
+<script>
+
+let currentJsonFile = null;
+let currentData = null;
+
+
+function setStatus(text) {
+
+    document.getElementById(
+        "status"
+    ).textContent = text;
+
+}
+
+
+function showImage(file) {
+
+    const url =
+        URL.createObjectURL(file);
+
+    document.getElementById(
+        "imageContainer"
+    ).innerHTML = `
+        <img
+            src="${url}"
+            class="preview-image"
+        >
+    `;
+}
+
+
+async function runOCR() {
+
+    const input =
+        document.getElementById(
+            "imageInput"
+        );
+
+    if (!input.files.length) {
+
+        alert(
+            "Hãy chọn ảnh trước."
+        );
+
+        return;
+    }
+
+    const file =
+        input.files[0];
+
+    showImage(file);
+
+    const formData =
+        new FormData();
+
+    formData.append(
+        "file",
+        file
+    );
+
+
+    setStatus(
+        "Đang OCR..."
+    );
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/ocr",
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.detail ||
+                "OCR thất bại"
+            );
+
+        }
+
+
+        currentJsonFile =
+            result.json_file;
+
+
+        await loadJSON(
+            currentJsonFile
+        );
+
+
+        setStatus(
+            "OCR hoàn thành"
+        );
+
+
+    } catch (error) {
+
+        setStatus(
+            "Lỗi: " +
+            error.message
+        );
+
+    }
+
+}
+
+
+async function loadJSON(filename) {
+
+    const response =
+        await fetch(
+            "/api/json/" +
+            encodeURIComponent(
+                filename
+            )
+        );
+
+
+    currentData =
+        await response.json();
+
+
+    renderData();
+
+}
+
+
+function renderData() {
+
+    if (!currentData) {
+        return;
+    }
+
+
+    const header =
+        currentData.header ||
+        {};
+
+
+    document.getElementById(
+        "so_xe"
+    ).value =
+        header.so_xe || "";
+
+
+    document.getElementById(
+        "ngay_xe"
+    ).value =
+        header.ngay_xe || "";
+
+
+    document.getElementById(
+        "kich_thuoc_go_tron"
+    ).value =
+        header.kich_thuoc_go_tron || "";
+
+
+    document.getElementById(
+        "khoi_luong_go_tron"
+    ).value =
+        header.khoi_luong_go_tron || "";
+
+
+    document.getElementById(
+        "kich_thuoc_xe"
+    ).value =
+        header.kich_thuoc_xe || "";
+
+
+    const tbody =
+        document.getElementById(
+            "itemsTable"
+        );
+
+
+    tbody.innerHTML = "";
+
+
+    const items =
+        currentData.items || [];
+
+
+    items.forEach(
+        (item, index) => {
+
+            const tr =
+                document.createElement(
+                    "tr"
+                );
+
+
+            tr.innerHTML = `
+
+                <td>
+                    ${item.dong ?? index + 1}
+                </td>
+
+                <td>
+                    <input
+                        data-field="ngay"
+                        value="${escapeHtml(item.ngay || "")}"
+                    >
+                </td>
+
+                <td>
+                    <input
+                        data-field="kich_thuoc_so_luong"
+                        value="${escapeHtml(
+                            item.kich_thuoc_so_luong || ""
+                        )}"
+                    >
+                </td>
+
+                <td>
+                    <input
+                        data-field="khoi_luong"
+                        value="${escapeHtml(
+                            item.khoi_luong || ""
+                        )}"
+                    >
+                </td>
+
+                <td>
+                    <input
+                        data-field="cong_trinh"
+                        value="${escapeHtml(
+                            item.cong_trinh || ""
+                        )}"
+                    >
+                </td>
+
+                <td>
+                    <input
+                        data-field="stt_cau_kien"
+                        value="${escapeHtml(
+                            item.stt_cau_kien || ""
+                        )}"
+                    >
+                </td>
+
+                <td>
+                    <input
+                        data-field="ten_cau_kien"
+                        value="${escapeHtml(
+                            item.ten_cau_kien || ""
+                        )}"
+                    >
+                </td>
+
+                <td>
+                    <input
+                        data-field="ghi_chu"
+                        value="${escapeHtml(
+                            item.ghi_chu || ""
+                        )}"
+                    >
+                </td>
+
+            `;
+
+
+            tr.querySelectorAll(
+                "input"
+            ).forEach(
+                input => {
+
+                    input.addEventListener(
+                        "input",
+                        () => {
+
+                            item[
+                                input.dataset.field
+                            ] =
+                                input.value;
+
+                        }
+                    );
+
+                }
+            );
+
+
+            tbody.appendChild(tr);
+
+        }
+    );
+
+
+    document.getElementById(
+        "jsonViewer"
+    ).value =
+        JSON.stringify(
+            currentData,
+            null,
+            2
+        );
+
+
+    renderValidation();
+
+}
+
+
+function renderValidation() {
+
+    const validation =
+        currentData.validation ||
+        {};
+
+
+    const lineVolume =
+        validation.line_volume ||
+        [];
+
+
+    const warnings =
+        lineVolume.filter(
+            x =>
+                x.trang_thai &&
+                x.trang_thai !== "OK"
+        );
+
+
+    const box =
+        document.getElementById(
+            "validation"
+        );
+
+
+    if (warnings.length) {
+
+        box.className =
+            "validation warning-box";
+
+        box.innerHTML =
+            `
+            ⚠ Có ${warnings.length}
+            dòng cần kiểm tra.
+            `;
+
+    } else {
+
+        box.className =
+            "validation success-box";
+
+        box.innerHTML =
+            `
+            ✓ Khối lượng các dòng
+            đang khớp.
+            `;
+
+    }
+
+}
+
+
+function updateJSONFromForm() {
+
+    if (!currentData) {
+        return;
+    }
+
+
+    if (!currentData.header) {
+
+        currentData.header = {};
+
+    }
+
+
+    currentData.header.so_xe =
+        document.getElementById(
+            "so_xe"
+        ).value;
+
+
+    currentData.header.ngay_xe =
+        document.getElementById(
+            "ngay_xe"
+        ).value;
+
+
+    currentData.header
+        .kich_thuoc_go_tron =
+        document.getElementById(
+            "kich_thuoc_go_tron"
+        ).value;
+
+
+    currentData.header
+        .khoi_luong_go_tron =
+        document.getElementById(
+            "khoi_luong_go_tron"
+        ).value;
+
+
+    currentData.header.kich_thuoc_xe =
+        document.getElementById(
+            "kich_thuoc_xe"
+        ).value;
+
+
+    document.getElementById(
+        "jsonViewer"
+    ).value =
+        JSON.stringify(
+            currentData,
+            null,
+            2
+        );
+
+}
+
+
+async function saveJSON() {
+
+    if (!currentData ||
+        !currentJsonFile) {
+
+        alert(
+            "Chưa có JSON."
+        );
+
+        return;
+    }
+
+
+    updateJSONFromForm();
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/json/" +
+                encodeURIComponent(
+                    currentJsonFile
+                ),
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify(
+                        currentData
+                    )
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.detail ||
+                "Không lưu được JSON"
+            );
+
+        }
+
+
+        setStatus(
+            "Đã lưu JSON"
+        );
+
+
+    } catch (error) {
+
+        alert(
+            error.message
+        );
+
+    }
+
+}
+
+
+function downloadExcel() {
+
+    window.location.href =
+        "/api/excel";
+
+}
+
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+</script>
+
+</body>
+
+</html>
