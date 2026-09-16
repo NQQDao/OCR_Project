@@ -1,7 +1,7 @@
 # json_to_excel_v2.py
 # OCR_Project - JSON -> Excel theo mẫu phiếu NHẬT KÝ XE GỖ
 # Chỉ xử lý 1 JSON mỗi lần. Không ghi đè Excel cũ.
-# Excel xuất vào: D:\workspace\OCR_Project\excel_exports
+# Excel xuất vào thư mục excel_exports của project
 
 from __future__ import annotations
 import json, re, sys
@@ -10,7 +10,7 @@ from typing import Any
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, Side
 
-BASE_DIR = Path(r"D:\workspace\OCR_Project")
+BASE_DIR = Path(__file__).resolve().parent
 JSON_DIR = BASE_DIR / "output"
 
 # Excel xuất từ website

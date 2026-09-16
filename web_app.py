@@ -10,8 +10,7 @@ from fastapi.staticfiles import StaticFiles
 # ============================================================
 # CẤU HÌNH
 # ============================================================
-
-BASE_DIR = Path(r"D:\workspace\OCR_Project")
+BASE_DIR = Path(__file__).resolve().parent
 
 OUTPUT_DIR = BASE_DIR / "output"
 UPLOAD_DIR = BASE_DIR / "web_uploads"

@@ -31,7 +31,7 @@ from google.genai import types
 
 MODEL = "gemini-3.6-flash"
 
-BASE_DIR = Path(r"D:\workspace\OCR_Project")
+BASE_DIR = Path(__file__).resolve().parent
 
 IMAGE_DIR = BASE_DIR / "images"
 OUTPUT_DIR = BASE_DIR / "output"
