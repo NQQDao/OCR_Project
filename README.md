@@ -1,24 +1,32 @@
+# OCR Project (Powered by Gemini)
+
+Hệ thống nhận diện và trích xuất dữ liệu từ hình ảnh/tài liệu sử dụng sức mạnh của Google Gemini 3.6 Flash.
+
+---
+
+## 📌 Tính năng chính
+* Trích xuất văn bản từ hình ảnh với độ chính xác cao.
+* Xử lý tốt các tài liệu phức tạp (hóa đơn, biểu mẫu, chữ viết tay).
+* Trả về dữ liệu có cấu trúc (JSON, Markdown) theo yêu cầu prompt.
+* Tốc độ xử lý nhanh và tối ưu chi phí nhờ model Flash.
+
+---
+
 ## 🛠 Công nghệ sử dụng
 * **Ngôn ngữ:** Python 3.x
-* **OCR Engine:** [Tesseract OCR](https://github.com/tesseract-ocr/tesseract)
-* **Thư viện chính:** `pytesseract`, `opencv-python`, `Pillow`
+* **AI Engine:** Google Gemini API (Model: `gemini-3.6-flash`)
+* **Thư viện chính:** `google-generativeai` (hoặc SDK tương ứng), `python-dotenv` (quản lý biến môi trường)
 
 ---
 
 ## 🚀 Hướng dẫn cài đặt
 
-### 1. Cài đặt Tesseract OCR Engine (Bắt buộc)
-Do `pytesseract` chỉ là wrapper của Python, bạn cần cài đặt trực tiếp bộ công cụ Tesseract lên hệ điều hành:
+### 1. Yêu cầu hệ thống & API Key
+* Python >= 3.9
+* Cần có **API Key** từ [Google AI Studio](https://aistudio.google.com/).
 
-* **Windows:**
-  1. Tải bộ cài installer từ [UB-Mannheim Tesseract](https://github.com/UB-Mannheim/tesseract/wiki).
-  2. Trong quá trình cài đặt, tích chọn **Additional language data** nếu cần nhận diện tiếng Việt (`vie.traineddata`).
-  3. Đường dẫn mặc định: `C:\Program Files\Tesseract-OCR\tesseract.exe`.
-  4. Thêm thư mục trên vào biến môi trường **PATH** của hệ thống.
-
-* **Linux (Ubuntu/Debian):**
-  ```bash
-  sudo apt-get update
-  sudo apt-get install tesseract-ocr
-  # Cài gói ngôn ngữ tiếng Việt (nếu cần):
-  sudo apt-get install tesseract-ocr-vie
+### 2. Cài đặt môi trường
+Clone repo về máy:
+```bash
+git clone [https://github.com/NQQDao/OCR_Project.git](https://github.com/NQQDao/OCR_Project.git)
+cd OCR_Project
