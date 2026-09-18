@@ -24,6 +24,12 @@ from __future__ import annotations
 import json
 import re
 import sys
+# Ép stdout/stderr dùng UTF-8 trên Windows
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -1038,29 +1044,49 @@ def create_warning_sheet(wb: Workbook, records: list[dict]) -> None:
 def create_batch_excel(json_paths: list[Path]) -> Path:
     records: list[dict] = []
 
+    print("===== KIỂM TRA CREATE BATCH EXCEL =====")
+    print("Số JSON đầu vào:", len(json_paths))
+
     for json_path in json_paths:
+
+        print(f"Đang đọc JSON: {json_path.name}")
+
         try:
             data = read_json(json_path)
+
+            print(
+                f"  -> Đọc thành công: {json_path.name}"
+            )
+
+            print(
+                f"  -> Số items: {len(data.get('items', []))}"
+            )
+
             records.append(data)
+
         except Exception as e:
-            print(f"[CANH BAO] {json_path.name}: {e}")
+
+            print(
+                f"  -> [CANH BAO] {json_path.name}: {e}"
+            )
+
+    print(
+        f"===== TỔNG RECORDS: {len(records)} ====="
+    )
 
     if not records:
-        raise ValueError("Không có JSON hợp lệ để tạo Excel.")
+        raise ValueError(
+            "Không có JSON hợp lệ để tạo Excel."
+        )
 
     enrich_records(records)
 
     wb = Workbook()
-    create_main_sheet(wb, records)
-    create_daily_summary_sheet(wb, records)
-    create_summary_sheet(wb, records)
-    create_detail_sheet(wb, records)
-    create_warning_sheet(wb, records)
 
-    output = unique_path("NHAT_KY_XE_GO_BATCH")
-    wb.save(output)
-    return output
-
+    create_main_sheet(
+        wb,
+        records
+    )
 
 # ============================================================
 # MAIN
@@ -1073,9 +1099,24 @@ def main():
         for argument in sys.argv[1:]:
             path = Path(argument)
             if not path.is_absolute():
-                path = JSON_DIR / path
-            if path.exists() and path.suffix.lower() == ".json":
-                json_paths.append(path)
+                # Cho phép cả:
+                #   mau_01_v52.json
+                #   .\\output\\mau_01_v52.json
+                #   output\\mau_01_v52.json
+                candidates = [
+                    BASE_DIR / path,
+                    JSON_DIR / path.name,
+                ]
+            else:
+                candidates = [path]
+
+            found = next(
+                (candidate.resolve() for candidate in candidates
+                 if candidate.is_file() and candidate.suffix.lower() == ".json"),
+                None,
+            )
+            if found and found not in json_paths:
+                json_paths.append(found)
     else:
         json_paths = sorted(JSON_DIR.glob("*.json"))
 

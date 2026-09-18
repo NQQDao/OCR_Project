@@ -2,6 +2,7 @@ import subprocess
 import json
 import sys
 from pathlib import Path
+from unittest import result
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
@@ -274,7 +275,7 @@ def export_excel(json_file: str):
         result = subprocess.run(
             [
                 sys.executable,
-                str(BASE_DIR / "json_to_excel.py"),
+                str(BASE_DIR / "json_to_excel_batch.py"),
                 json_file
             ],
             cwd=str(BASE_DIR),
@@ -321,3 +322,341 @@ def export_excel(json_file: str):
         ),
         filename=excel_path.name
     )
+# ============================================================
+# XUẤT EXCEL TỔNG HỢP NHIỀU JSON
+# ============================================================
+
+@app.post("/api/excel/batch")
+async def export_excel_batch(data: dict):
+
+    json_files = data.get("json_files", [])
+    print("===== API EXCEL BATCH =====")
+    print("JSON nhận từ website:", json_files)
+    print("Số JSON nhận được:", len(json_files))
+
+    if not isinstance(json_files, list) or not json_files:
+        raise HTTPException(
+            status_code=400,
+            detail="Chưa có danh sách JSON để xuất Excel."
+        )
+
+    safe_files = []
+
+    for filename in json_files:
+
+        if not isinstance(filename, str):
+            continue
+
+        filename = Path(filename).name
+
+        if not filename.lower().endswith(".json"):
+            continue
+
+        json_path = OUTPUT_DIR / filename
+
+        if json_path.exists():
+            safe_files.append(filename)
+
+    if not safe_files:
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy JSON hợp lệ."
+        )
+
+    try:
+
+        import subprocess
+        print("===== CHẠY JSON TO EXCEL =====")
+        print("safe_files:", safe_files)
+        print("Số file truyền cho Python:", len(safe_files))
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(BASE_DIR / "json_to_excel_batch.py"),
+                *safe_files
+            ],
+            cwd=str(BASE_DIR),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace"
+        )
+        print("===== KẾT QUẢ JSON TO EXCEL =====")
+        print("Return code:", result.returncode)
+        print("STDOUT:")
+        print(result.stdout)
+        print("STDERR:")
+        print(result.stderr)
+
+        if result.returncode != 0:
+
+            raise RuntimeError(
+                result.stderr
+                or result.stdout
+                or "json_to_excel.py bị lỗi."
+            )
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=f"Không tạo được Excel tổng hợp: {e}"
+        )
+
+    excel_dir = BASE_DIR / "excel_exports"
+
+    excel_files = sorted(
+        [
+        p for p in excel_dir.glob("*.xlsx")
+        if not p.name.startswith("~$")
+        ],
+    key=lambda p: p.stat().st_mtime,
+    reverse=True
+)
+
+    if not excel_files:
+        raise HTTPException(
+            status_code=500,
+            detail="Không tìm thấy file Excel tổng hợp."
+        )
+
+    excel_path = excel_files[0]
+
+    return FileResponse(
+        excel_path,
+        media_type=(
+            "application/vnd.openxmlformats-officedocument."
+            "spreadsheetml.sheet"
+        ),
+        filename=excel_path.name
+    )
+# ============================================================
+# OCR HÀNG LOẠT
+# ============================================================
+
+@app.post("/api/ocr/batch")
+async def run_ocr_batch(
+    files: list[UploadFile] = File(...)
+):
+
+    if not files:
+        raise HTTPException(
+            status_code=400,
+            detail="Chưa chọn ảnh."
+        )
+
+    allowed = {
+        ".jpg",
+        ".jpeg",
+        ".png"
+    }
+
+    results = []
+
+    try:
+        import ocr
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Không import được ocr.py: {e}"
+        )
+
+    for file in files:
+
+        if not file.filename:
+            results.append({
+                "status": "error",
+                "file": "",
+                "error": "Tên file không hợp lệ."
+            })
+            continue
+
+        filename = Path(
+            file.filename
+        ).name
+
+        suffix = Path(
+            filename
+        ).suffix.lower()
+
+        if suffix not in allowed:
+            results.append({
+                "status": "error",
+                "file": filename,
+                "error": "Chỉ hỗ trợ JPG, JPEG, PNG."
+            })
+            continue
+
+        upload_path = (
+            UPLOAD_DIR / filename
+        )
+
+        try:
+
+            content = await file.read()
+
+            upload_path.write_bytes(
+                content
+            )
+
+            # OCR từng ảnh
+            ocr.process_image(
+                upload_path
+            )
+
+            # Tìm JSON tương ứng
+            json_path = (
+                OUTPUT_DIR
+                / f"{upload_path.stem}_v51.json"
+            )
+
+            if not json_path.exists():
+
+                candidates = list(
+                    OUTPUT_DIR.glob(
+                        f"{upload_path.stem}*.json"
+                    )
+                )
+
+                if candidates:
+                    json_path = candidates[0]
+
+            if not json_path.exists():
+
+                results.append({
+                    "status": "error",
+                    "file": filename,
+                    "error": (
+                        "OCR chạy xong nhưng "
+                        "không tìm thấy JSON."
+                    )
+                })
+
+                continue
+
+            results.append({
+                "status": "success",
+                "file": filename,
+                "json_file": json_path.name
+            })
+
+        except Exception as e:
+
+            results.append({
+                "status": "error",
+                "file": filename,
+                "error": str(e)
+            })
+
+    success_count = sum(
+        1
+        for item in results
+        if item["status"] == "success"
+    )
+
+    error_count = len(results) - success_count
+
+    return {
+        "status": "completed",
+        "total": len(results),
+        "success": success_count,
+        "error": error_count,
+        "results": results
+    }
+@app.post("/api/ocr/batch")
+async def run_ocr_batch(files: list[UploadFile] = File(...)):
+    if not files:
+        raise HTTPException(
+            status_code=400,
+            detail="Chưa chọn ảnh."
+        )
+
+    allowed = {".jpg", ".jpeg", ".png"}
+    results = []
+
+    try:
+        import ocr
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Không import được ocr.py: {e}"
+        )
+
+    for file in files:
+
+        if not file.filename:
+            results.append({
+                "status": "error",
+                "file": "",
+                "error": "Tên file không hợp lệ."
+            })
+            continue
+
+        filename = Path(file.filename).name
+        suffix = Path(filename).suffix.lower()
+
+        if suffix not in allowed:
+            results.append({
+                "status": "error",
+                "file": filename,
+                "error": "Chỉ hỗ trợ JPG, JPEG, PNG."
+            })
+            continue
+
+        upload_path = UPLOAD_DIR / filename
+
+        try:
+            content = await file.read()
+            upload_path.write_bytes(content)
+
+            # Chạy OCR
+            ocr.process_image(upload_path)
+
+            # Tìm JSON kết quả
+            json_path = OUTPUT_DIR / f"{upload_path.stem}_v51.json"
+
+            if not json_path.exists():
+                candidates = list(
+                    OUTPUT_DIR.glob(
+                        f"{upload_path.stem}*.json"
+                    )
+                )
+
+                if candidates:
+                    json_path = candidates[0]
+
+            if not json_path.exists():
+                results.append({
+                    "status": "error",
+                    "file": filename,
+                    "error": "OCR chạy xong nhưng không tìm thấy JSON."
+                })
+                continue
+
+            results.append({
+                "status": "success",
+                "file": filename,
+                "json_file": json_path.name
+            })
+
+        except Exception as e:
+            results.append({
+                "status": "error",
+                "file": filename,
+                "error": str(e)
+            })
+
+    success_count = sum(
+        1 for item in results
+        if item["status"] == "success"
+    )
+
+    error_count = len(results) - success_count
+
+    return {
+        "status": "completed",
+        "total": len(results),
+        "success": success_count,
+        "error": error_count,
+        "results": results
+    }
