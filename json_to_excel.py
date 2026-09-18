@@ -686,8 +686,8 @@ def create_daily_summary_sheet(wb: Workbook, records: list[dict]) -> None:
     headers = [
         "Ngày",
         "File / Phiếu",
-        "Ngày xe",
-        "Số xe",
+        "Ngày xẻ",
+        "Số xẻ",
         "Kích thước gỗ tròn",
         "Khối lượng gỗ tròn (m³)",
         "Số dòng thành khí",

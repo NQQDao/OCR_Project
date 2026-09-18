@@ -4,7 +4,7 @@
 #
 # Nhiều JSON -> 1 file Excel tổng hợp
 # Mẫu chính bám theo mẫu NHẬT KÝ GỖ XẺ HÀNG NGÀY:
-#   - Ngày nhập / Ngày xe / Tháng
+#   - Ngày nhập / Ngày xẻ / Tháng
 #   - Gỗ tròn: Số, Ký hiệu, KT mua vào, KT đo thực tế,
 #     Khối lượng, Đơn giá, Thành tiền
 #   - Xe thành khí: Rộng, Cao, Dài, SL, Khối lượng
@@ -468,16 +468,16 @@ def create_main_sheet(wb: Workbook, records: list[dict]) -> None:
     # Nhóm tiêu đề dòng 2.
     group_defs = [
         ("A2", "A3", "Ngày nhập"),
-        ("B2", "B3", "Ngày xe"),
+        ("B2", "B3", "Ngày xẻ"),
         ("C2", "C3", "Tháng"),
         ("D2", "L2", "Gỗ tròn"),
-        ("M2", "Q2", "Xe thành khí"),
+        ("M2", "Q2", "Xẻ thành khí"),
         ("R2", "R3", "Công trình"),
         ("S2", "S3", "STT"),
         ("T2", "T3", "Tên Cấu kiện"),
         ("U2", "U3", "Nhà cung cấp"),
-        ("V2", "V3", "Khối lượng thành khí"),
-        ("W2", "W3", "Phần trăm"),
+        ("V2", "V3", "Tổng khối lượng gỗ thành phẩm (m³)"),
+        ("W2", "W3", "Tỷ lệ % thành phẩm"),
     ]
 
     for start, end, title in group_defs:
@@ -496,7 +496,7 @@ def create_main_sheet(wb: Workbook, records: list[dict]) -> None:
         "G3": "Vành",
         "H3": "Dài",
         "I3": "Vành",
-        "J3": "Khối lượng",
+        "J3": "Khối lượng gỗ tròn",
         "K3": "Đơn giá",
         "L3": "Thành tiền",
         "M3": "Rộng",
@@ -692,8 +692,8 @@ def create_daily_summary_sheet(wb: Workbook, records: list[dict]) -> None:
     headers = [
         "Ngày",
         "File / Phiếu",
-        "Ngày xe",
-        "Số xe",
+        "Ngày xẻ",
+        "Số xẻ",
         "Kích thước gỗ tròn",
         "Khối lượng gỗ tròn (m³)",
         "Số dòng thành khí",
@@ -798,10 +798,10 @@ def create_summary_sheet(wb: Workbook, records: list[dict]) -> None:
     ws["A1"].alignment = st["center"]
 
     headers = [
-        "STT", "File / Phiếu", "Ngày xe", "Số xe",
+        "STT", "File / Phiếu", "Ngày xẻ", "Số xẻ",
         "Kích thước gỗ tròn", "Khối lượng gỗ tròn (m³)",
         "Số dòng gỗ thành khí", "Tổng khối lượng thành khí (m³)",
-        "Tỷ lệ", "Kích thước xe",
+        "Tỷ lệ % thành phẩm", "Kích thước xẻ",
     ]
 
     for col, value in enumerate(headers, 1):
@@ -879,14 +879,14 @@ def create_detail_sheet(wb: Workbook, records: list[dict]) -> None:
     ws["A1"].alignment = st["center"]
 
     headers = [
-        "File / Phiếu", "Ngày", "Ngày xe", "Số xe",
+        "File / Phiếu", "Ngày", "Ngày xẻ", "Số xẻ",
         "Thông tin gỗ tròn OCR gốc", "Khối lượng gỗ tròn (m³)",
         "STT dòng", "Kích thước và số lượng",
         "Dài (cm)", "Rộng (cm)", "Dày (cm)", "SL",
         "Khối lượng ghi (m³)", "Khối lượng tính (m³)",
         "Chênh lệch (m³)", "Trạng thái",
         "Công trình", "STT cấu kiện", "Tên cấu kiện",
-        "Kích thước xe", "Ghi chú", "Nguồn ảnh",
+        "Kích thước xẻ", "Ghi chú", "Nguồn ảnh",
     ]
 
     for col, value in enumerate(headers, 1):
@@ -982,7 +982,7 @@ def create_warning_sheet(wb: Workbook, records: list[dict]) -> None:
     ws["A1"].alignment = st["center"]
 
     headers = [
-        "File", "Ngày", "Ngày xe", "Số xe", "STT dòng",
+        "File", "Ngày", "Ngày xẻ", "Số xẻ", "STT dòng",
         "Kích thước", "Khối lượng ghi", "Khối lượng tính",
         "Chênh lệch", "Trạng thái",
     ]
