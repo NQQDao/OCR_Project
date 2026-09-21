@@ -14,3 +14,4 @@ excel_export/
 .env.*
 !.env.example
 cloudflared.exe
+*.code-workspace
