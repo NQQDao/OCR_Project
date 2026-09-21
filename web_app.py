@@ -329,8 +329,13 @@ def export_excel(json_file: str):
 @app.post("/api/excel/batch")
 async def export_excel_batch(data: dict):
 
-    json_files = data.get("json_files", [])
+    print()
+    print("========================================")
     print("===== API EXCEL BATCH =====")
+    print("========================================")
+
+    json_files = data.get("json_files", [])
+
     print("JSON nhận từ website:", json_files)
     print("Số JSON nhận được:", len(json_files))
 
@@ -340,7 +345,7 @@ async def export_excel_batch(data: dict):
             detail="Chưa có danh sách JSON để xuất Excel."
         )
 
-    safe_files = []
+    json_paths = []
 
     for filename in json_files:
 
@@ -354,73 +359,77 @@ async def export_excel_batch(data: dict):
 
         json_path = OUTPUT_DIR / filename
 
-        if json_path.exists():
-            safe_files.append(filename)
+        if json_path.exists() and json_path.is_file():
 
-    if not safe_files:
+            json_paths.append(json_path)
+
+            print(
+                f"[OK] JSON hợp lệ: {json_path.name}"
+            )
+
+        else:
+
+            print(
+                f"[BO QUA] Không tìm thấy JSON: {filename}"
+            )
+
+    if not json_paths:
+
         raise HTTPException(
             status_code=404,
             detail="Không tìm thấy JSON hợp lệ."
         )
 
+    print()
+    print("===== CHUẨN BỊ CREATE BATCH EXCEL =====")
+    print("Số JSON hợp lệ:", len(json_paths))
+
+    for path in json_paths:
+        print(" -", path.name)
+
     try:
 
-        import subprocess
-        print("===== CHẠY JSON TO EXCEL =====")
-        print("safe_files:", safe_files)
-        print("Số file truyền cho Python:", len(safe_files))
-        result = subprocess.run(
-            [
-                sys.executable,
-                str(BASE_DIR / "json_to_excel_batch.py"),
-                *safe_files
-            ],
-            cwd=str(BASE_DIR),
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace"
-        )
-        print("===== KẾT QUẢ JSON TO EXCEL =====")
-        print("Return code:", result.returncode)
-        print("STDOUT:")
-        print(result.stdout)
-        print("STDERR:")
-        print(result.stderr)
+        import json_to_excel_batch
 
-        if result.returncode != 0:
+        print()
+        print("===== GỌI CREATE_BATCH_EXCEL =====")
 
-            raise RuntimeError(
-                result.stderr
-                or result.stdout
-                or "json_to_excel.py bị lỗi."
+        excel_path = (
+            json_to_excel_batch.create_batch_excel(
+                json_paths
             )
+        )
+
+        print()
+        print("===== CREATE BATCH EXCEL HOÀN TẤT =====")
+        print("Excel vừa tạo:", excel_path)
+        print("Excel tồn tại:", excel_path.exists())
 
     except Exception as e:
 
+        print()
+        print("===== LỖI CREATE BATCH EXCEL =====")
+        print(str(e))
+
         raise HTTPException(
             status_code=500,
-            detail=f"Không tạo được Excel tổng hợp: {e}"
+            detail=(
+                "Không tạo được Excel tổng hợp: "
+                + str(e)
+            )
         )
 
-    excel_dir = BASE_DIR / "excel_exports"
+    if not excel_path.exists():
 
-    excel_files = sorted(
-        [
-        p for p in excel_dir.glob("*.xlsx")
-        if not p.name.startswith("~$")
-        ],
-    key=lambda p: p.stat().st_mtime,
-    reverse=True
-)
-
-    if not excel_files:
         raise HTTPException(
             status_code=500,
-            detail="Không tìm thấy file Excel tổng hợp."
+            detail="Đã tạo Excel nhưng không tìm thấy file."
         )
 
-    excel_path = excel_files[0]
+    print()
+    print("===== TRẢ FILE EXCEL VỀ WEBSITE =====")
+    print("Tên file:", excel_path.name)
+    print("Đường dẫn:", excel_path)
 
     return FileResponse(
         excel_path,

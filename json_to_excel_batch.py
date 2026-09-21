@@ -1083,10 +1083,41 @@ def create_batch_excel(json_paths: list[Path]) -> Path:
 
     wb = Workbook()
 
+    # ============================================================
+    # TẠO 5 SHEET
+    # ============================================================
+
     create_main_sheet(
         wb,
         records
     )
+
+    create_daily_summary_sheet(
+        wb,
+        records
+    )
+
+    create_summary_sheet(
+        wb,
+        records
+    )
+
+    create_detail_sheet(
+        wb,
+        records
+    )
+
+    create_warning_sheet(
+        wb,
+        records
+    )
+
+    output = unique_path(
+        "NHAT_KY_XE_GO_BATCH"
+    )
+    wb.save(output)
+
+    return output
 
 # ============================================================
 # MAIN
