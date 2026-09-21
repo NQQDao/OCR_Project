@@ -13,3 +13,4 @@ excel_export/
 .env
 .env.*
 !.env.example
+cloudflared.exe

@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  # Dịch vụ Cơ sở dữ liệu PostgreSQL
+  db:
+    image: postgres:17-alpine
+    container_name: ocr_postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-123321}
+      POSTGRES_DB: ocr_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ocr_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Dịch vụ Web App OCR
+  web:
+    build: .
+    container_name: ocr_web_app
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-123321}@db:5432/ocr_db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./output:/app/output
+      - ./web_uploads:/app/web_uploads
+      - ./excel_exports:/app/excel_exports
+      - ./abbreviations.json:/app/abbreviations.json
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+    driver: local

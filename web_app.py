@@ -4,9 +4,20 @@ import sys
 from pathlib import Path
 from unittest import result
 
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+
+from abbreviation_manager import abbreviation_mgr
+from database import SessionLocal, is_db_connected
+from crud import (
+    create_or_update_document,
+    get_documents,
+    get_document_by_id,
+    get_document_by_file_name,
+    delete_document
+)
+from init_db import init_database
 
 # ============================================================
 # CẤU HÌNH
@@ -35,6 +46,19 @@ app.mount(
     StaticFiles(directory=STATIC_DIR),
     name="static"
 )
+
+
+@app.on_event("startup")
+def startup_event():
+    """Khởi tạo database khi server bật (nếu có kết nối)."""
+    if is_db_connected():
+        try:
+            init_database()
+            print("[DB] Khởi tạo kết nối PostgreSQL thành công!")
+        except Exception as e:
+            print(f"[DB Warning] Không thể khởi tạo database: {e}")
+    else:
+        print("[DB Info] Chưa kết nối được PostgreSQL. Hệ thống tiếp tục chạy với tệp JSON cục bộ.")
 
 
 # ============================================================
@@ -153,6 +177,16 @@ async def run_ocr(
             detail="OCR chạy xong nhưng không tìm thấy JSON."
         )
 
+    # Tự động đồng bộ vào PostgreSQL nếu có kết nối
+    if is_db_connected():
+        try:
+            db = SessionLocal()
+            json_data = json.loads(json_path.read_text(encoding="utf-8"))
+            create_or_update_document(db, json_data, json_path.name, filename)
+            db.close()
+        except Exception as db_err:
+            print(f"[DB Sync Error] {db_err}")
+
     return {
         "status": "success",
         "file": filename,
@@ -238,6 +272,15 @@ async def save_json(
             status_code=500,
             detail=f"Không lưu được JSON: {e}"
         )
+
+    # Tự động cập nhật PostgreSQL
+    if is_db_connected():
+        try:
+            db = SessionLocal()
+            create_or_update_document(db, data, filename)
+            db.close()
+        except Exception as db_err:
+            print(f"[DB Save Error] {db_err}")
 
     return {
         "status": "saved",
@@ -543,6 +586,16 @@ async def run_ocr_batch(
 
                 continue
 
+            # Tự động đồng bộ vào PostgreSQL nếu có kết nối
+            if is_db_connected():
+                try:
+                    db = SessionLocal()
+                    json_data = json.loads(json_path.read_text(encoding="utf-8"))
+                    create_or_update_document(db, json_data, json_path.name, filename)
+                    db.close()
+                except Exception as db_err:
+                    print(f"[DB Sync Error] {db_err}")
+
             results.append({
                 "status": "success",
                 "file": filename,
@@ -572,100 +625,165 @@ async def run_ocr_batch(
         "error": error_count,
         "results": results
     }
-@app.post("/api/ocr/batch")
-async def run_ocr_batch(files: list[UploadFile] = File(...)):
-    if not files:
-        raise HTTPException(
-            status_code=400,
-            detail="Chưa chọn ảnh."
-        )
+# ============================================================
+# TỪ ĐIỂN CHỮ VIẾT TẮT & HUẤN LUYỆN PROMPT
+# ============================================================
 
-    allowed = {".jpg", ".jpeg", ".png"}
-    results = []
-
+@app.get("/api/abbreviations")
+def get_abbreviations(category: str = None, search: str = None):
     try:
-        import ocr
+        items = abbreviation_mgr.get_items(category=category, search=search)
+        categories = abbreviation_mgr.get_categories()
+        return {
+            "status": "success",
+            "categories": categories,
+            "items": items,
+            "total": len(items)
+        }
     except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Không import được ocr.py: {e}"
-        )
+        raise HTTPException(status_code=500, detail=f"Lỗi lấy từ điển: {e}")
 
-    for file in files:
 
-        if not file.filename:
-            results.append({
-                "status": "error",
-                "file": "",
-                "error": "Tên file không hợp lệ."
-            })
-            continue
+@app.get("/api/abbreviations/prompt-preview")
+def get_abbreviations_prompt_preview():
+    try:
+        prompt_text = abbreviation_mgr.get_prompt_context()
+        return {
+            "status": "success",
+            "prompt_text": prompt_text
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi tạo prompt: {e}")
 
-        filename = Path(file.filename).name
-        suffix = Path(filename).suffix.lower()
 
-        if suffix not in allowed:
-            results.append({
-                "status": "error",
-                "file": filename,
-                "error": "Chỉ hỗ trợ JPG, JPEG, PNG."
-            })
-            continue
+@app.post("/api/abbreviations")
+async def save_abbreviation(item: dict):
+    try:
+        if not item.get("short"):
+            raise HTTPException(status_code=400, detail="Từ viết tắt không được để trống.")
 
-        upload_path = UPLOAD_DIR / filename
+        saved_item = abbreviation_mgr.add_item(item)
+        return {
+            "status": "success",
+            "message": "Đã lưu từ viết tắt thành công!",
+            "item": saved_item
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi lưu từ viết tắt: {e}")
 
-        try:
-            content = await file.read()
-            upload_path.write_bytes(content)
 
-            # Chạy OCR
-            ocr.process_image(upload_path)
+@app.delete("/api/abbreviations/{item_id}")
+def delete_abbreviation(item_id: str):
+    try:
+        deleted = abbreviation_mgr.delete_item(item_id)
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Không tìm thấy mục cần xóa.")
+        return {
+            "status": "success",
+            "message": "Đã xóa thành công!"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi xóa từ viết tắt: {e}")
 
-            # Tìm JSON kết quả
-            json_path = OUTPUT_DIR / f"{upload_path.stem}_v51.json"
 
-            if not json_path.exists():
-                candidates = list(
-                    OUTPUT_DIR.glob(
-                        f"{upload_path.stem}*.json"
-                    )
-                )
+@app.post("/api/abbreviations/reset-defaults")
+def reset_abbreviations_defaults():
+    try:
+        data = abbreviation_mgr.reset_to_defaults()
+        return {
+            "status": "success",
+            "message": "Đã khôi phục từ điển mặc định ban đầu!",
+            "total": len(data.get("items", []))
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi khôi phục mặc định: {e}")
 
-                if candidates:
-                    json_path = candidates[0]
 
-            if not json_path.exists():
-                results.append({
-                    "status": "error",
-                    "file": filename,
-                    "error": "OCR chạy xong nhưng không tìm thấy JSON."
-                })
-                continue
+# ============================================================
+# CƠ SỞ DỮ LIỆU POSTGRESQL API
+# ============================================================
 
-            results.append({
-                "status": "success",
-                "file": filename,
-                "json_file": json_path.name
-            })
-
-        except Exception as e:
-            results.append({
-                "status": "error",
-                "file": filename,
-                "error": str(e)
-            })
-
-    success_count = sum(
-        1 for item in results
-        if item["status"] == "success"
-    )
-
-    error_count = len(results) - success_count
-
+@app.get("/api/database/status")
+def get_database_status():
+    connected = is_db_connected()
     return {
-        "status": "completed",
-        "total": len(results),
-        "success": success_count,
-        "error": error_count,
-        "results": results
+        "status": "connected" if connected else "disconnected",
+        "database": "PostgreSQL",
+        "message": "Đã kết nối cơ sở dữ liệu PostgreSQL." if connected else "Chưa kết nối CSDL (đang lưu file JSON cục bộ)."
     }
+
+
+@app.get("/api/documents")
+def list_documents(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    search: str = Query(None)
+):
+    if not is_db_connected():
+        raise HTTPException(status_code=503, detail="Chưa kết nối tới cơ sở dữ liệu PostgreSQL.")
+    db = SessionLocal()
+    try:
+        docs = get_documents(db, skip=skip, limit=limit, search=search)
+        results = []
+        for d in docs:
+            results.append({
+                "id": d.id,
+                "file_name": d.file_name,
+                "image_path": d.image_path,
+                "so_xe": d.so_xe,
+                "ngay_xe": d.ngay_xe,
+                "kich_thuoc_go_tron": d.kich_thuoc_go_tron,
+                "total_items": len(d.items),
+                "created_at": d.created_at.isoformat() if d.created_at else None
+            })
+        return {
+            "status": "success",
+            "total": len(results),
+            "documents": results
+        }
+    finally:
+        db.close()
+
+
+@app.get("/api/documents/{doc_id}")
+def get_document_detail(doc_id: int):
+    if not is_db_connected():
+        raise HTTPException(status_code=503, detail="Chưa kết nối tới cơ sở dữ liệu PostgreSQL.")
+    db = SessionLocal()
+    try:
+        doc = get_document_by_id(db, doc_id)
+        if not doc:
+            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu trong CSDL.")
+        return {
+            "status": "success",
+            "document": {
+                "id": doc.id,
+                "file_name": doc.file_name,
+                "image_path": doc.image_path,
+                "so_xe": doc.so_xe,
+                "ngay_xe": doc.ngay_xe,
+                "kich_thuoc_go_tron": doc.kich_thuoc_go_tron,
+                "khoi_luong_go_tron": doc.khoi_luong_go_tron,
+                "kich_thuoc_xe": doc.kich_thuoc_xe,
+                "raw_json": doc.raw_json,
+                "items": [
+                    {
+                        "dong": it.dong,
+                        "ngay": it.ngay,
+                        "kich_thuoc_so_luong": it.kich_thuoc_so_luong,
+                        "khoi_luong": it.khoi_luong,
+                        "cong_trinh": it.cong_trinh,
+                        "ten_cau_kien": it.ten_cau_kien,
+                        "ghi_chu": it.ghi_chu
+                    }
+                    for it in doc.items
+                ]
+            }
+        }
+    finally:
+        db.close()
+

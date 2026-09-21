@@ -540,6 +540,237 @@
                 text-align: center;
             }
         }
+
+        /* ===== TỪ ĐIỂN CHỮ VIẾT TẮT STYLES ===== */
+        .btn-dict {
+            background: #fff8eb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .btn-dict:hover {
+            background: #fef3c7;
+            transform: translateY(-1px);
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 33, 51, 0.65);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 16px;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 18px;
+            width: 100%;
+            max-width: 1050px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.96) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 16px 24px;
+            background: linear-gradient(135deg, #1e3a8a, #0b72d9);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: 0;
+            color: white;
+            border-radius: 8px;
+            width: 32px;
+            height: 32px;
+            font-size: 18px;
+            cursor: pointer;
+            display: grid;
+            place-items: center;
+            transition: 0.15s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.35);
+        }
+
+        .modal-body {
+            padding: 18px 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .dict-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 16px;
+        }
+
+        .dict-tab {
+            padding: 9px 18px;
+            border: 0;
+            background: transparent;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            font-size: 14px;
+            transition: 0.15s;
+        }
+
+        .dict-tab:hover {
+            color: var(--primary);
+        }
+
+        .dict-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .dict-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .dict-search {
+            flex: 1 1 220px;
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .dict-search:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(11, 114, 217, 0.15);
+        }
+
+        .dict-select {
+            padding: 9px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            background: white;
+        }
+
+        .dict-badge {
+            display: inline-block;
+            padding: 4px 9px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
+        }
+
+        .dict-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .tag-cong_trinh {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .tag-cau_kien {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .tag-go_tron_quy_cach {
+            background: #ede9fe;
+            color: #5b21b6;
+            border: 1px solid #ddd6fe;
+        }
+
+        .tag-ghi_chu {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .dict-form-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            display: none;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        .dict-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .dict-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .prompt-preview-box {
+            background: #0f2133;
+            color: #8be9fd;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            padding: 18px;
+            border-radius: 10px;
+            white-space: pre-wrap;
+            max-height: 480px;
+            overflow-y: auto;
+            border: 1px solid #1e3a8a;
+        }
     </style>
 </head>
 
@@ -563,6 +794,7 @@
             <button id="ocrButton" class="btn btn-primary" onclick="runOCR()">🔍 Chạy OCR</button>
             <button class="btn btn-secondary" onclick="saveJSON()">💾 Lưu JSON</button>
             <button class="btn btn-success" onclick="downloadExcelBatch()">📚 Xuất Excel tổng hợp</button>
+            <button type="button" class="btn btn-dict" onclick="openAbbreviationModal()">📖 Từ điển viết tắt</button>
             <span id="status" class="status">● Chưa xử lý</span>
         </section>
 
@@ -1223,7 +1455,358 @@
                 e.preventDefault();
             }
         });
+
+        // ===== QUẢN LÝ BỘ TỪ ĐIỂN CHỮ VIẾT TẮT =====
+        let allAbbreviations = [];
+        let abbrCategories = {};
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function openAbbreviationModal() {
+            document.getElementById("dictModal").style.display = "flex";
+            loadAbbreviations();
+        }
+
+        function closeAbbreviationModal() {
+            document.getElementById("dictModal").style.display = "none";
+            toggleAddAbbrForm(false);
+        }
+
+        function switchDictTab(tab) {
+            const tabList = document.getElementById("tabDictList");
+            const tabPrompt = document.getElementById("tabDictPrompt");
+            const contentList = document.getElementById("dictTabContentList");
+            const contentPrompt = document.getElementById("dictTabContentPrompt");
+
+            if (tab === 'list') {
+                tabList.classList.add("active");
+                tabPrompt.classList.remove("active");
+                contentList.style.display = "block";
+                contentPrompt.style.display = "none";
+            } else {
+                tabPrompt.classList.add("active");
+                tabList.classList.remove("active");
+                contentList.style.display = "none";
+                contentPrompt.style.display = "block";
+                fetchDictPromptPreview();
+            }
+        }
+
+        async function loadAbbreviations() {
+            try {
+                const res = await fetch("/api/abbreviations");
+                const data = await res.json();
+                if (data.status === "success") {
+                    allAbbreviations = data.items || [];
+                    abbrCategories = data.categories || {};
+                    renderAbbreviationTable(allAbbreviations);
+                } else {
+                    alert("Lỗi tải từ điển: " + (data.detail || "Không xác định"));
+                }
+            } catch (err) {
+                console.error("Lỗi fetch abbreviations:", err);
+            }
+        }
+
+        function filterAbbreviations() {
+            const cat = document.getElementById("dictCategoryFilter").value;
+            const q = document.getElementById("dictSearchInput").value.toLowerCase().trim();
+
+            const filtered = allAbbreviations.filter(item => {
+                const matchCat = (cat === "all" || item.category === cat);
+                if (!matchCat) return false;
+                if (!q) return true;
+
+                const s = (item.short || "").toLowerCase();
+                const f = (item.full || "").toLowerCase();
+                const d = (item.description || "").toLowerCase();
+                const syn = (item.synonyms || []).join(" ").toLowerCase();
+
+                return s.includes(q) || f.includes(q) || d.includes(q) || syn.includes(q);
+            });
+
+            renderAbbreviationTable(filtered);
+        }
+
+        function renderAbbreviationTable(items) {
+            const tbody = document.getElementById("dictTableBody");
+            if (!items.length) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 24px; color: var(--muted);">Không tìm thấy từ viết tắt nào.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = items.map(it => {
+                const catName = abbrCategories[it.category] || it.category;
+                const tagClass = `tag-${it.category || 'ghi_chu'}`;
+                const syns = (it.synonyms && it.synonyms.length) 
+                    ? it.synonyms.map(s => `<code style="background: #f1f5f9; padding: 2px 5px; border-radius: 4px; font-size: 11px;">${escapeHtml(s)}</code>`).join(" ")
+                    : '<span style="color:#94a3b8;">—</span>';
+
+                return `
+                    <tr>
+                        <td><span class="dict-badge">${escapeHtml(it.short)}</span></td>
+                        <td style="font-weight: 600; color: var(--text);">${escapeHtml(it.full || '—')}</td>
+                        <td><span class="dict-tag ${tagClass}">${escapeHtml(catName)}</span></td>
+                        <td>${syns}</td>
+                        <td style="font-size: 12px; color: var(--muted);">${escapeHtml(it.description || '—')}</td>
+                        <td style="text-align: center;">
+                            <button type="button" class="mini-btn" style="padding: 4px 8px; font-size: 12px; margin-right: 4px;" onclick="editAbbrItem('${it.id}')" title="Sửa">✏️</button>
+                            <button type="button" class="mini-btn" style="padding: 4px 8px; font-size: 12px; color: var(--danger); border-color: #fca5a5;" onclick="deleteAbbrItem('${it.id}', '${escapeHtml(it.short)}')" title="Xóa">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function toggleAddAbbrForm(show = null) {
+            const box = document.getElementById("dictFormBox");
+            const isVisible = box.style.display === "block";
+            const willShow = (show === null) ? !isVisible : show;
+
+            box.style.display = willShow ? "block" : "none";
+            if (willShow && show === null) {
+                document.getElementById("dictFormTitle").textContent = "➕ Thêm từ viết tắt mới vào từ điển";
+                document.getElementById("dictFormId").value = "";
+                document.getElementById("dictFormShort").value = "";
+                document.getElementById("dictFormFull").value = "";
+                document.getElementById("dictFormSynonyms").value = "";
+                document.getElementById("dictFormDescription").value = "";
+                document.getElementById("dictFormShort").focus();
+            }
+        }
+
+        function editAbbrItem(id) {
+            const item = allAbbreviations.find(it => it.id === id);
+            if (!item) return;
+
+            document.getElementById("dictFormTitle").textContent = `✏️ Chỉnh sửa từ viết tắt: "${item.short}"`;
+            document.getElementById("dictFormId").value = item.id;
+            document.getElementById("dictFormShort").value = item.short || "";
+            document.getElementById("dictFormFull").value = item.full || "";
+            document.getElementById("dictFormCategory").value = item.category || "cong_trinh";
+            document.getElementById("dictFormSynonyms").value = (item.synonyms || []).join(", ");
+            document.getElementById("dictFormDescription").value = item.description || "";
+
+            toggleAddAbbrForm(true);
+            document.getElementById("dictFormBox").scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+
+        async function submitAbbrForm() {
+            const id = document.getElementById("dictFormId").value;
+            const short = document.getElementById("dictFormShort").value.trim();
+            const full = document.getElementById("dictFormFull").value.trim();
+            const category = document.getElementById("dictFormCategory").value;
+            const synonymsStr = document.getElementById("dictFormSynonyms").value.trim();
+            const description = document.getElementById("dictFormDescription").value.trim();
+
+            if (!short) {
+                alert("Vui lòng nhập chữ viết tắt!");
+                return;
+            }
+
+            const synonyms = synonymsStr ? synonymsStr.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+            const payload = {
+                id: id || undefined,
+                short,
+                full,
+                category,
+                synonyms,
+                description
+            };
+
+            try {
+                const res = await fetch("/api/abbreviations", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    toggleAddAbbrForm(false);
+                    await loadAbbreviations();
+                } else {
+                    alert("Lỗi lưu từ điển: " + (data.detail || "Không rõ"));
+                }
+            } catch (err) {
+                alert("Lỗi kết nối khi lưu: " + err);
+            }
+        }
+
+        async function deleteAbbrItem(id, short) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa từ viết tắt "${short}" khỏi từ điển không?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/abbreviations/${id}`, { method: "DELETE" });
+                const data = await res.json();
+                if (data.status === "success") {
+                    await loadAbbreviations();
+                } else {
+                    alert("Lỗi khi xóa: " + (data.detail || "Không rõ"));
+                }
+            } catch (err) {
+                alert("Lỗi kết nối khi xóa: " + err);
+            }
+        }
+
+        async function resetDictDefaults() {
+            if (!confirm("Khôi phục toàn bộ từ điển về bộ mặc định ban đầu của xưởng mộc? Các từ bạn đã sửa sẽ được khôi phục.")) {
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/abbreviations/reset-defaults", { method: "POST" });
+                const data = await res.json();
+                if (data.status === "success") {
+                    await loadAbbreviations();
+                    alert(data.message);
+                } else {
+                    alert("Lỗi: " + (data.detail || "Không rõ"));
+                }
+            } catch (err) {
+                alert("Lỗi kết nối: " + err);
+            }
+        }
+
+        async function fetchDictPromptPreview() {
+            const box = document.getElementById("dictPromptPreviewBox");
+            box.textContent = "Đang tải preview prompt...";
+            try {
+                const res = await fetch("/api/abbreviations/prompt-preview");
+                const data = await res.json();
+                if (data.status === "success") {
+                    box.textContent = data.prompt_text || "(Trống)";
+                }
+            } catch (err) {
+                box.textContent = "Lỗi tải prompt preview: " + err;
+            }
+        }
+
+        function copyDictPromptPreview() {
+            const text = document.getElementById("dictPromptPreviewBox").textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Đã sao chép prompt vào Clipboard!");
+            }).catch(() => {
+                alert("Không thể sao chép tự động. Hãy bôi đen văn bản để sao chép.");
+            });
+        }
     </script>
+
+    <!-- MODAL TỪ ĐIỂN CHỮ VIẾT TẮT -->
+    <div id="dictModal" class="modal-backdrop" onclick="if(event.target===this) closeAbbreviationModal()">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📖</span>
+                    <span>BỘ TỪ ĐIỂN "HUẤN LUYỆN CHỮ VIẾT TẮT"</span>
+                </div>
+                <button type="button" class="modal-close" onclick="closeAbbreviationModal()" title="Đóng">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="dict-tabs">
+                    <button type="button" id="tabDictList" class="dict-tab active" onclick="switchDictTab('list')">📚 Danh mục từ viết tắt</button>
+                    <button type="button" id="tabDictPrompt" class="dict-tab" onclick="switchDictTab('prompt')">🤖 Prompt Gemini đang dùng</button>
+                </div>
+
+                <!-- TAB 1: DANH MỤC -->
+                <div id="dictTabContentList">
+                    <div class="dict-controls">
+                        <select id="dictCategoryFilter" class="dict-select" onchange="filterAbbreviations()">
+                            <option value="all">Tất cả phân loại</option>
+                            <option value="cong_trinh">Mã công trình</option>
+                            <option value="cau_kien">Cấu kiện mộc</option>
+                            <option value="go_tron_quy_cach">Quy cách & Gỗ tròn</option>
+                            <option value="ghi_chu">Ghi chú & Đơn vị</option>
+                        </select>
+                        <input id="dictSearchInput" type="text" class="dict-search" placeholder="🔍 Tìm kiếm chữ viết tắt, tên đầy đủ..." oninput="filterAbbreviations()">
+                        <button type="button" class="btn btn-primary" style="padding: 8px 14px; font-size: 13px;" onclick="toggleAddAbbrForm()">+ Thêm từ viết tắt</button>
+                        <button type="button" class="btn btn-secondary" style="padding: 8px 14px; font-size: 13px;" onclick="resetDictDefaults()" title="Khôi phục về bộ từ điển mặc định ban đầu">↺ Khôi phục mặc định</button>
+                    </div>
+
+                    <!-- FORM THÊM / SỬA -->
+                    <div id="dictFormBox" class="dict-form-box">
+                        <h4 id="dictFormTitle" style="margin: 0 0 12px; font-size: 14px; color: var(--primary);">➕ Thêm từ viết tắt mới vào từ điển</h4>
+                        <input type="hidden" id="dictFormId" value="">
+                        <div class="dict-form-grid">
+                            <div class="field">
+                                <label>Chữ viết tắt / Ký hiệu (*)</label>
+                                <input id="dictFormShort" type="text" placeholder="vd: HU, HL 2A, ps, đT" required>
+                            </div>
+                            <div class="field">
+                                <label>Tên đầy đủ / Ý nghĩa</label>
+                                <input id="dictFormFull" type="text" placeholder="vd: Cổ ngõa (HU), Phát sinh">
+                            </div>
+                            <div class="field">
+                                <label>Phân loại (*)</label>
+                                <select id="dictFormCategory" class="dict-select" style="padding: 11px 12px; width: 100%;">
+                                    <option value="cong_trinh">Mã công trình</option>
+                                    <option value="cau_kien">Cấu kiện mộc</option>
+                                    <option value="go_tron_quy_cach">Quy cách & Gỗ tròn</option>
+                                    <option value="ghi_chu">Ghi chú & Đơn vị</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label>Biến thể dễ nhầm (phân cách bằng dấu phẩy)</label>
+                                <input id="dictFormSynonyms" type="text" placeholder="vd: HLZA, HL 2a, p5">
+                            </div>
+                            <div class="field full">
+                                <label>Ghi chú / Ngữ cảnh</label>
+                                <input id="dictFormDescription" type="text" placeholder="vd: Công trình Cổ ngõa thường ghi tắt HU ở cột công trình">
+                            </div>
+                        </div>
+                        <div class="dict-form-actions">
+                            <button type="button" class="btn btn-secondary" style="padding: 7px 14px; font-size: 13px;" onclick="toggleAddAbbrForm(false)">Hủy</button>
+                            <button type="button" class="btn btn-primary" style="padding: 7px 16px; font-size: 13px;" onclick="submitAbbrForm()">💾 Lưu vào từ điển</button>
+                        </div>
+                    </div>
+
+                    <!-- BẢNG DANH SÁCH -->
+                    <div class="table-wrapper" style="max-height: 460px; overflow-y: auto;">
+                        <table class="dict-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 140px;">Từ viết tắt</th>
+                                    <th>Tên đầy đủ / Nghĩa</th>
+                                    <th style="width: 150px;">Phân loại</th>
+                                    <th>Biến thể dễ nhầm</th>
+                                    <th>Ghi chú</th>
+                                    <th style="width: 110px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dictTableBody">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 20px; color: var(--muted);">Đang tải dữ liệu từ điển...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 2: PROMPT PREVIEW -->
+                <div id="dictTabContentPrompt" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <div class="hint">Khối ngữ cảnh từ điển này sẽ được tự động đưa vào Prompt mỗi khi gửi ảnh sang Gemini OCR:</div>
+                        <div style="display: flex; gap: 8px;">
+                            <button type="button" class="mini-btn" onclick="fetchDictPromptPreview()">🔄 Làm mới</button>
+                            <button type="button" class="mini-btn" onclick="copyDictPromptPreview()">📋 Sao chép</button>
+                        </div>
+                    </div>
+                    <pre id="dictPromptPreviewBox" class="prompt-preview-box">Đang tải...</pre>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

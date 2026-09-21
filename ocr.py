@@ -11,6 +11,8 @@ from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
 
+from abbreviation_manager import abbreviation_mgr
+
 
 # ============================================================
 # OCR V5.1
@@ -144,7 +146,7 @@ class Document(BaseModel):
 # 4. PROMPT DUY NHẤT
 # ============================================================
 
-OCR_PROMPT = r"""
+BASE_OCR_PROMPT = r"""
 Bạn là hệ thống OCR chuyên nghiệp đọc biểu mẫu tiếng Việt viết tay.
 
 Ảnh đã được xoay đúng chiều.
@@ -344,6 +346,17 @@ Không trả lời bằng văn bản bên ngoài JSON.
 """
 
 
+def get_ocr_prompt() -> str:
+    """Ghép nối prompt cơ bản với bộ từ điển huấn luyện chữ viết tắt mới nhất."""
+    dict_context = abbreviation_mgr.get_prompt_context()
+    if dict_context:
+        return f"{BASE_OCR_PROMPT}\n\n{dict_context}"
+    return BASE_OCR_PROMPT
+
+
+OCR_PROMPT = get_ocr_prompt()
+
+
 # ============================================================
 # 5. XỬ LÝ ẢNH
 # ============================================================
@@ -415,7 +428,7 @@ def call_gemini(
                 model=MODEL,
 
                 contents=[
-                    OCR_PROMPT,
+                    get_ocr_prompt(),
 
                     types.Part.from_bytes(
                         data=image_bytes,
