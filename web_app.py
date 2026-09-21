@@ -68,12 +68,12 @@ def startup_event():
 @app.get("/", response_class=HTMLResponse)
 def home():
 
-    html_file = TEMPLATE_DIR / "index_new_v2.html"
+    html_file = TEMPLATE_DIR / "index.html"
 
     if not html_file.exists():
         raise HTTPException(
             status_code=500,
-            detail="Không tìm thấy templates/index_new_v2.html"
+            detail="Không tìm thấy templates/index.html"
         )
 
     return html_file.read_text(
