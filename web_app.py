@@ -216,7 +216,14 @@ async def run_ocr(
             json_path = candidates[0]
 
     if not json_path.exists():
-
+        err_file = OUTPUT_DIR / f"{upload_path.stem}_ERROR.txt"
+        err_429 = OUTPUT_DIR / f"{upload_path.stem}_ERROR_429.txt"
+        if err_429.exists():
+            err_detail = err_429.read_text(encoding="utf-8", errors="ignore").strip()
+            raise HTTPException(status_code=500, detail=f"Lỗi Quota Gemini (429): {err_detail[:300]}")
+        elif err_file.exists():
+            err_detail = err_file.read_text(encoding="utf-8", errors="ignore").strip()
+            raise HTTPException(status_code=500, detail=f"Lỗi Gemini AI: {err_detail[:300]}")
         raise HTTPException(
             status_code=500,
             detail="OCR chạy xong nhưng không tìm thấy JSON."
@@ -610,16 +617,19 @@ async def run_ocr_batch(
                     json_path = candidates[0]
 
             if not json_path.exists():
+                err_file = OUTPUT_DIR / f"{upload_path.stem}_ERROR.txt"
+                err_429 = OUTPUT_DIR / f"{upload_path.stem}_ERROR_429.txt"
+                err_msg = "OCR chạy xong nhưng không tìm thấy JSON."
+                if err_429.exists():
+                    err_msg = f"Lỗi Gemini 429 Quota: {err_429.read_text(encoding='utf-8', errors='ignore')[:200]}"
+                elif err_file.exists():
+                    err_msg = f"Lỗi Gemini AI: {err_file.read_text(encoding='utf-8', errors='ignore')[:200]}"
 
                 results.append({
                     "status": "error",
                     "file": filename,
-                    "error": (
-                        "OCR chạy xong nhưng "
-                        "không tìm thấy JSON."
-                    )
+                    "error": err_msg
                 })
-
                 continue
 
             # Tự động đồng bộ vào PostgreSQL nếu có kết nối
