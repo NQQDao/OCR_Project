@@ -1,0 +1,15 @@
+{
+  "name": "ocr-r2-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker R2 CDN Gateway for Wood OCR Project",
+  "main": "src/index.js",
+  "scripts": {
+    "login": "wrangler login",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.136.1"
+  }
+}
+

@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from abbreviation_manager import abbreviation_mgr
-from database import SessionLocal, is_db_connected
+from database import SessionLocal, is_db_connected, DB_TYPE, DATABASE_URL
 from crud import (
     create_or_update_document,
     get_documents,
@@ -47,6 +47,35 @@ app.mount(
     name="static"
 )
 
+app.mount(
+    "/web_uploads",
+    StaticFiles(directory=UPLOAD_DIR),
+    name="web_uploads"
+)
+
+
+def sync_output_json_to_db():
+    """Tự động đồng bộ các file JSON trong output/ vào CSDL SQLite/PostgreSQL nếu chưa có."""
+    if not is_db_connected():
+        return
+    db = SessionLocal()
+    try:
+        from models import Document
+        existing_filenames = {d.file_name for d in db.query(Document.file_name).all()}
+        for json_path in OUTPUT_DIR.glob("*.json"):
+            if json_path.name not in existing_filenames:
+                try:
+                    data = json.loads(json_path.read_text(encoding="utf-8"))
+                    img_name = (data.get("source", {}) or {}).get("file", "")
+                    create_or_update_document(db, data, json_path.name, img_name)
+                    print(f"[DB Auto-sync] Đã nạp file {json_path.name} vào CSDL.")
+                except Exception as e:
+                    print(f"[DB Auto-sync Error] {json_path.name}: {e}")
+    except Exception as err:
+        print(f"[DB Auto-sync Error] {err}")
+    finally:
+        db.close()
+
 
 @app.on_event("startup")
 def startup_event():
@@ -54,11 +83,12 @@ def startup_event():
     if is_db_connected():
         try:
             init_database()
-            print("[DB] Khởi tạo kết nối PostgreSQL thành công!")
+            sync_output_json_to_db()
+            print(f"[DB] Khởi tạo kết nối CSDL {DB_TYPE.upper()} thành công! ({DATABASE_URL})")
         except Exception as e:
-            print(f"[DB Warning] Không thể khởi tạo database: {e}")
+            print(f"[DB Warning] Không thể khởi tạo database {DB_TYPE.upper()}: {e}")
     else:
-        print("[DB Info] Chưa kết nối được PostgreSQL. Hệ thống tiếp tục chạy với tệp JSON cục bộ.")
+        print(f"[DB Info] Chưa kết nối được CSDL {DB_TYPE.upper()}. Hệ thống tiếp tục chạy với tệp JSON cục bộ.")
 
 
 # ============================================================
@@ -187,6 +217,14 @@ async def run_ocr(
         except Exception as db_err:
             print(f"[DB Sync Error] {db_err}")
 
+    # Tự động đẩy file lên Cloudflare R2 nếu đã cấu hình
+    if is_r2_configured():
+        try:
+            upload_image(upload_path, filename)
+            upload_json(json_path, json_path.name)
+        except Exception as r2_err:
+            print(f"[R2 Auto-upload Error] {r2_err}")
+
     return {
         "status": "success",
         "file": filename,
@@ -310,52 +348,28 @@ def export_excel(json_file: str):
             detail="File được chọn không phải JSON."
         )
 
-    excel_dir = BASE_DIR / "excel_exports"
-    excel_dir.mkdir(parents=True, exist_ok=True)
-
     try:
-        # Chạy chính file json_to_excel.py bằng Python
-        result = subprocess.run(
-            [
-                sys.executable,
-                str(BASE_DIR / "json_to_excel_batch.py"),
-                json_file
-            ],
-            cwd=str(BASE_DIR),
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace"
-        )
-
-        if result.returncode != 0:
-            raise RuntimeError(
-                result.stderr or result.stdout or "json_to_excel.py bị lỗi."
-            )
-
+        import json_to_excel_batch
+        excel_path = json_to_excel_batch.create_batch_excel([json_path])
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=f"Không tạo được Excel: {e}"
         )
 
-    # Tìm file Excel mới nhất có cùng tên JSON
-    excel_files = sorted(
-        excel_dir.glob(f"{json_path.stem}*.xlsx"),
-        key=lambda p: p.stat().st_mtime,
-        reverse=True
-    )
-
-    if not excel_files:
+    if not excel_path or not excel_path.exists():
         raise HTTPException(
             status_code=500,
-            detail=(
-                "json_to_excel.py chạy xong nhưng "
-                "không tìm thấy file Excel trong excel_exports."
-            )
+            detail="Đã tạo Excel nhưng không tìm thấy file."
         )
 
-    excel_path = excel_files[0]
+
+    # Tự động đẩy file Excel lên Cloudflare R2 nếu đã cấu hình
+    if is_r2_configured():
+        try:
+            upload_excel(excel_path, excel_path.name)
+        except Exception as r2_err:
+            print(f"[R2 Excel Auto-upload Error] {r2_err}")
 
     return FileResponse(
         excel_path,
@@ -473,6 +487,13 @@ async def export_excel_batch(data: dict):
     print("===== TRẢ FILE EXCEL VỀ WEBSITE =====")
     print("Tên file:", excel_path.name)
     print("Đường dẫn:", excel_path)
+
+    # Tự động đẩy file Excel tổng hợp lên Cloudflare R2 nếu đã cấu hình
+    if is_r2_configured():
+        try:
+            upload_excel(excel_path, excel_path.name)
+        except Exception as r2_err:
+            print(f"[R2 Excel Batch Auto-upload Error] {r2_err}")
 
     return FileResponse(
         excel_path,
@@ -596,6 +617,14 @@ async def run_ocr_batch(
                 except Exception as db_err:
                     print(f"[DB Sync Error] {db_err}")
 
+            # Tự động đẩy file lên Cloudflare R2 nếu đã cấu hình
+            if is_r2_configured():
+                try:
+                    upload_image(upload_path, filename)
+                    upload_json(json_path, json_path.name)
+                except Exception as r2_err:
+                    print(f"[R2 Batch Auto-upload Error] {r2_err}")
+
             results.append({
                 "status": "success",
                 "file": filename,
@@ -647,13 +676,53 @@ def get_abbreviations(category: str = None, search: str = None):
 @app.get("/api/abbreviations/prompt-preview")
 def get_abbreviations_prompt_preview():
     try:
-        prompt_text = abbreviation_mgr.get_prompt_context()
+        effective_text = abbreviation_mgr.get_effective_prompt_context()
+        default_text = abbreviation_mgr.get_prompt_context()
+        custom_text = abbreviation_mgr.get_custom_prompt()
         return {
             "status": "success",
-            "prompt_text": prompt_text
+            "prompt_text": effective_text,
+            "default_prompt": default_text,
+            "custom_prompt": custom_text,
+            "is_custom": custom_text is not None
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Lỗi tạo prompt: {e}")
+
+
+@app.post("/api/prompt/custom")
+async def save_custom_prompt_endpoint(data: dict):
+    try:
+        prompt_text = data.get("prompt_text", "")
+        if not prompt_text or not prompt_text.strip():
+            raise HTTPException(status_code=400, detail="Nội dung prompt không được để trống.")
+        
+        abbreviation_mgr.save_custom_prompt(prompt_text)
+        return {
+            "status": "success",
+            "message": "Đã lưu Prompt tùy chỉnh thành công vào cơ sở dữ liệu!",
+            "is_custom": True
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi lưu prompt tùy chỉnh: {e}")
+
+
+@app.post("/api/prompt/reset")
+def reset_custom_prompt_endpoint():
+    try:
+        abbreviation_mgr.reset_custom_prompt()
+        default_text = abbreviation_mgr.get_prompt_context()
+        return {
+            "status": "success",
+            "message": "Đã khôi phục Prompt về mặc định tự động sinh từ bộ từ điển!",
+            "prompt_text": default_text,
+            "is_custom": False
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Lỗi khôi phục prompt: {e}")
+
 
 
 @app.post("/api/abbreviations")
@@ -704,16 +773,81 @@ def reset_abbreviations_defaults():
 
 
 # ============================================================
-# CƠ SỞ DỮ LIỆU POSTGRESQL API
+# CLOUDFLARE R2 OBJECT STORAGE API
+# ============================================================
+
+from r2_storage import (
+    get_r2_status,
+    is_r2_configured,
+    list_r2_files,
+    test_r2_connection,
+    sync_all_local_files_to_r2,
+    upload_image,
+    upload_json,
+    upload_excel
+)
+
+@app.get("/api/r2/status")
+def get_cloudflare_r2_status():
+    """Kiểm tra trạng thái cấu hình và kết nối tới Cloudflare R2 Bucket."""
+    return get_r2_status()
+
+
+@app.post("/api/r2/test-connection")
+def test_cloudflare_r2_endpoint():
+    """Thực hiện test ghi và đọc trực tiếp trên Cloudflare R2."""
+    return test_r2_connection()
+
+
+@app.post("/api/r2/sync-all")
+def sync_all_to_cloudflare_r2():
+    """Đồng bộ toàn bộ file cục bộ (JSON, Excel, Ảnh) lên Cloudflare R2."""
+    images_dir = BASE_DIR / "images"
+    excel_dir = BASE_DIR / "excel_exports"
+    return sync_all_local_files_to_r2(
+        output_dir=OUTPUT_DIR,
+        uploads_dir=UPLOAD_DIR,
+        images_dir=images_dir,
+        excel_dir=excel_dir
+    )
+
+
+@app.get("/api/r2/files")
+def list_cloudflare_r2_files(prefix: str = Query("")):
+    """Liệt kê danh sách file đang lưu trữ trên Cloudflare R2."""
+    if not is_r2_configured():
+        return {
+            "status": "not_configured",
+            "files": [],
+            "message": "Chưa cấu hình Cloudflare R2 trong .env"
+        }
+    files = list_r2_files(prefix=prefix)
+    return {
+        "status": "success",
+        "total": len(files),
+        "files": files
+    }
+
+
+
+# ============================================================
+# CƠ SỞ DỮ LIỆU (SQLITE / POSTGRESQL) API
 # ============================================================
 
 @app.get("/api/database/status")
+
 def get_database_status():
     connected = is_db_connected()
+    db_name = "SQLite" if DB_TYPE == "sqlite" else "PostgreSQL"
+    safe_url = DATABASE_URL
+    if "@" in safe_url:
+        safe_url = safe_url.split("@")[-1]
     return {
         "status": "connected" if connected else "disconnected",
-        "database": "PostgreSQL",
-        "message": "Đã kết nối cơ sở dữ liệu PostgreSQL." if connected else "Chưa kết nối CSDL (đang lưu file JSON cục bộ)."
+        "database": db_name,
+        "db_type": DB_TYPE,
+        "database_url": safe_url,
+        "message": f"Đã kết nối cơ sở dữ liệu {db_name}." if connected else f"Chưa kết nối CSDL {db_name} (đang lưu file JSON cục bộ)."
     }
 
 
@@ -724,7 +858,9 @@ def list_documents(
     search: str = Query(None)
 ):
     if not is_db_connected():
-        raise HTTPException(status_code=503, detail="Chưa kết nối tới cơ sở dữ liệu PostgreSQL.")
+        raise HTTPException(status_code=503, detail=f"Chưa kết nối tới cơ sở dữ liệu {DB_TYPE.upper()}.")
+    if skip == 0 and not search:
+        sync_output_json_to_db()
     db = SessionLocal()
     try:
         docs = get_documents(db, skip=skip, limit=limit, search=search)
@@ -752,7 +888,7 @@ def list_documents(
 @app.get("/api/documents/{doc_id}")
 def get_document_detail(doc_id: int):
     if not is_db_connected():
-        raise HTTPException(status_code=503, detail="Chưa kết nối tới cơ sở dữ liệu PostgreSQL.")
+        raise HTTPException(status_code=503, detail=f"Chưa kết nối tới cơ sở dữ liệu {DB_TYPE.upper()}.")
     db = SessionLocal()
     try:
         doc = get_document_by_id(db, doc_id)
@@ -786,4 +922,34 @@ def get_document_detail(doc_id: int):
         }
     finally:
         db.close()
-
+
+
+@app.delete("/api/documents/{doc_id}")
+def delete_document_endpoint(doc_id: int):
+    if not is_db_connected():
+        raise HTTPException(status_code=503, detail=f"Chưa kết nối tới cơ sở dữ liệu {DB_TYPE.upper()}.")
+    db = SessionLocal()
+    try:
+        doc = get_document_by_id(db, doc_id)
+        if not doc:
+            raise HTTPException(status_code=404, detail="Không tìm thấy phiếu để xóa.")
+        file_name = doc.file_name
+        success = delete_document(db, doc_id)
+        if not success:
+            raise HTTPException(status_code=500, detail="Không thể xóa phiếu khỏi CSDL.")
+        # Xóa file JSON tương ứng nếu có
+        json_file = OUTPUT_DIR / file_name
+        if json_file.exists():
+            try:
+                json_file.unlink()
+            except Exception as del_err:
+                print(f"[Delete JSON Warning] {del_err}")
+        return {
+            "status": "success",
+            "message": f"Đã xóa phiếu ID #{doc_id} thành công!"
+        }
+    finally:
+        db.close()
+
+
+

@@ -1,0 +1,11 @@
+name = "ocr-r2-worker"
+main = "src/index.js"
+compatibility_date = "2024-09-01"
+
+# Gắn kết Cloudflare R2 Bucket vào Worker
+# Thay thế "ocr-wood-storage" bằng tên Bucket bạn đã đặt trên Cloudflare Dashboard
+[[r2_buckets]]
+binding = "MY_BUCKET"
+bucket_name = "ocr-vn01"
+
+

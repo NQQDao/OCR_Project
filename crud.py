@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, desc
 
-from models import Document, DocumentItem, DateEvent, Abbreviation
+from models import Document, DocumentItem, DateEvent, Abbreviation, SystemSetting
 
 
 def parse_float(val: Any) -> Optional[float]:
@@ -196,3 +196,41 @@ def delete_db_abbreviation(db: Session, item_id: str) -> bool:
     db.delete(abbr)
     db.commit()
     return True
+
+
+# ============================================================
+# CRUD CẤU HÌNH HỆ THỐNG / PROMPT TÙY CHỈNH
+# ============================================================
+
+def get_system_setting(db: Session, key: str, default: Optional[str] = None) -> Optional[str]:
+    """Lấy giá trị cấu hình hệ thống theo key."""
+    setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+    if setting:
+        return setting.value
+    return default
+
+
+def set_system_setting(db: Session, key: str, value: str, description: Optional[str] = None) -> SystemSetting:
+    """Lưu hoặc cập nhật giá trị cấu hình hệ thống theo key."""
+    setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+    if not setting:
+        setting = SystemSetting(key=key, value=value, description=description)
+        db.add(setting)
+    else:
+        setting.value = value
+        if description is not None:
+            setting.description = description
+    db.commit()
+    db.refresh(setting)
+    return setting
+
+
+def delete_system_setting(db: Session, key: str) -> bool:
+    """Xóa cấu hình hệ thống theo key."""
+    setting = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+    if not setting:
+        return False
+    db.delete(setting)
+    db.commit()
+    return True
+

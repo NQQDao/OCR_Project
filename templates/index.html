@@ -1046,6 +1046,228 @@
             overflow-y: auto;
             border: 1px solid #1e3a8a;
         }
+
+        /* ===== MAIN NAVIGATION TABS ===== */
+        .app-nav-tabs {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+        }
+
+        .nav-tab-btn {
+            background: transparent;
+            border: none;
+            outline: none;
+            padding: 9px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--muted);
+            border-radius: 9px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.15s ease;
+        }
+
+        .nav-tab-btn:hover {
+            background: rgba(11, 114, 217, 0.08);
+            color: var(--primary);
+        }
+
+        .nav-tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 3px 10px rgba(11, 114, 217, 0.25);
+        }
+
+        .nav-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .nav-tab-btn:not(.active) .nav-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        /* ===== HISTORY DASHBOARD PANEL ===== */
+        .history-panel {
+            background: white;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 18px rgba(18, 50, 74, 0.04);
+            margin-bottom: 25px;
+        }
+
+        .history-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .history-search-box {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 500px;
+        }
+
+        .history-search-box input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.15s;
+            background: #f8fafc;
+        }
+
+        .history-search-box input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(11, 114, 217, 0.12);
+        }
+
+        .history-search-box .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: var(--muted);
+            pointer-events: none;
+        }
+
+        .history-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .history-table-wrap {
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            overflow-x: auto;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .history-table th {
+            background: #f1f6fa;
+            color: #1e3a8a;
+            padding: 12px 10px;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 2px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .history-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eef2f6;
+            vertical-align: middle;
+        }
+
+        .history-table tbody tr:hover {
+            background: #f8fbfe;
+        }
+
+        .thumb-mini {
+            width: 46px;
+            height: 46px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: transform 0.15s;
+            display: block;
+            margin: 0 auto;
+            background: #f1f5f9;
+        }
+
+        .thumb-mini:hover {
+            transform: scale(1.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .thumb-placeholder {
+            width: 46px;
+            height: 46px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin: 0 auto;
+            color: var(--muted);
+        }
+
+        .history-action-btns {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-action-sm {
+            padding: 5px 9px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: white;
+            transition: all 0.15s;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .btn-action-sm:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary-dark);
+        }
+
+        .btn-action-sm.danger:hover {
+            background: #fee2e2;
+            border-color: #ef4444;
+            color: #b91c1c;
+        }
+
+        .tag-pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            background: #e2e8f0;
+            color: #334155;
+        }
+
+        .tag-pill.success {
+            background: var(--success-bg);
+            color: var(--success);
+        }
     </style>
 </head>
 
@@ -1059,10 +1281,26 @@
                     <p>OCR → JSON → Kiểm tra → Chỉnh sửa → Excel</p>
                 </div>
             </div>
-            <div class="header-badge">● Hệ thống OCR</div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div id="r2HeaderBadge" class="header-badge" style="cursor: pointer; background: rgba(255, 255, 255, 0.18); transition: 0.2s;" onclick="openR2Modal()" title="Bấm để xem trạng thái và cấu hình Cloudflare R2">☁️ R2: Đang kiểm tra...</div>
+                <div class="header-badge">● Hệ thống OCR</div>
+            </div>
         </header>
 
-        <section class="toolbar">
+        <!-- THANH ĐIỀU HƯỚNG CHÍNH -->
+        <nav class="app-nav-tabs">
+            <button type="button" class="nav-tab-btn active" id="tabBtnWorkspace" onclick="switchTab('workspace')">
+                <span>🔍 Quét & Nhập liệu OCR</span>
+            </button>
+            <button type="button" class="nav-tab-btn" id="tabBtnHistory" onclick="switchTab('history')">
+                <span>📂 Lịch sử phiếu xẻ</span>
+                <span class="nav-badge" id="historyBadgeCount">0</span>
+            </button>
+        </nav>
+
+        <!-- TAB 1: MÀN HÌNH LÀM VIỆC OCR -->
+        <div id="workspaceTabContent">
+            <section class="toolbar">
             <div class="file-wrap">
                 <input id="imageInput" type="file" accept="image/*" multiple>
             </div>
@@ -1070,6 +1308,7 @@
             <button class="btn btn-secondary" onclick="saveJSON()">💾 Lưu JSON</button>
             <button class="btn btn-success" onclick="downloadExcelBatch()">📚 Xuất Excel tổng hợp</button>
             <button type="button" class="btn btn-dict" onclick="openAbbreviationModal()">📖 Từ điển viết tắt</button>
+            <button type="button" class="btn" style="background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd;" onclick="openR2Modal()">☁️ Cloudflare R2</button>
             <span id="status" class="status">● Chưa xử lý</span>
         </section>
 
@@ -1186,6 +1425,54 @@
             <textarea id="jsonViewer" spellcheck="false"
                 placeholder="JSON sẽ hiển thị tại đây sau khi OCR..."></textarea>
         </section>
+        </div>
+
+        <!-- TAB 2: LỊCH SỬ PHIẾU XẺ GỖ -->
+        <div id="historyTabContent" style="display: none;">
+            <section class="panel history-panel">
+                <div class="panel-head">
+                    <div class="panel-title"><span class="panel-icon">📂</span> LỊCH SỬ PHIẾU XẺ GỖ ĐÃ LƯU</div>
+                    <span class="panel-sub">Tra cứu, xem lại ảnh gốc, đối chiếu và xuất báo cáo</span>
+                </div>
+                <div class="panel-body">
+                    <!-- Toolbar for search and actions -->
+                    <div class="history-toolbar">
+                        <div class="history-search-box">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="historySearchInput" placeholder="Tìm theo số xẻ, ngày xẻ, công trình, quy cách gỗ..." oninput="debounceHistorySearch()">
+                        </div>
+                        <div class="history-actions">
+                            <button type="button" class="btn btn-secondary" onclick="loadHistoryDocuments()">🔄 Làm mới</button>
+                            <button type="button" class="btn btn-info" id="btnExportBatchHistory" onclick="exportSelectedHistoryExcel()" disabled>📚 Xuất Excel các phiếu đã chọn (<span id="selectedCountBadge">0</span>)</button>
+                        </div>
+                    </div>
+
+                    <!-- Table of documents -->
+                    <div class="history-table-wrap">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this.checked)"></th>
+                                    <th style="width: 50px; text-align: center;">STT</th>
+                                    <th style="width: 70px; text-align: center;">Ảnh</th>
+                                    <th>Số xẻ</th>
+                                    <th>Ngày xẻ</th>
+                                    <th>Quy cách gỗ tròn</th>
+                                    <th style="text-align: center;">Số dòng</th>
+                                    <th>Thời gian lưu</th>
+                                    <th style="width: 230px; text-align: center;">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr>
+                                    <td colspan="9" style="text-align: center; padding: 30px; color: var(--muted);">Đang tải danh sách phiếu...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </div>
     </div>
 
     <script>
@@ -1640,7 +1927,14 @@
                 });
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.detail || "Không lưu được JSON");
-                setStatus("✓ Đã lưu JSON");
+                setStatus("✓ Đã lưu JSON & CSDL");
+                fetch("/api/documents?limit=1")
+                    .then(r => r.json())
+                    .then(d => {
+                        const b = document.getElementById("historyBadgeCount");
+                        if (b && d.total !== undefined) b.textContent = d.total;
+                    })
+                    .catch(() => {});
             } catch (error) {
                 alert(error.message);
             }
@@ -1854,8 +2148,9 @@
         }
 
         // ===== XEM ẢNH TOÀN MÀN HÌNH (LIGHTBOX) =====
-        function openFullscreenModal() {
-            if (!currentImageUrl) {
+        function openFullscreenModal(src = null) {
+            const targetSrc = src || currentImageUrl;
+            if (!targetSrc) {
                 alert("Hãy chọn ảnh trước khi xem toàn màn hình.");
                 return;
             }
@@ -1863,7 +2158,7 @@
             const img = document.getElementById("lightboxImage");
             if (!modal || !img) return;
 
-            img.src = currentImageUrl;
+            img.src = targetSrc;
             lightboxScale = 1;
             lightboxRotation = imageRotation;
             applyLightboxTransform();
@@ -2141,27 +2436,559 @@
         }
 
         async function fetchDictPromptPreview() {
+            const editor = document.getElementById("dictPromptEditor");
             const box = document.getElementById("dictPromptPreviewBox");
-            box.textContent = "Đang tải preview prompt...";
+            const badge = document.getElementById("promptStatusBadge");
+            if (editor) editor.value = "Đang tải dữ liệu prompt từ máy chủ...";
+            if (box) box.textContent = "Đang tải preview prompt...";
             try {
                 const res = await fetch("/api/abbreviations/prompt-preview");
                 const data = await res.json();
                 if (data.status === "success") {
-                    box.textContent = data.prompt_text || "(Trống)";
+                    const txt = data.prompt_text || "(Trống)";
+                    if (editor) editor.value = txt;
+                    if (box) box.textContent = txt;
+
+                    if (badge) {
+                        if (data.is_custom) {
+                            badge.textContent = "⚡ Đang dùng Prompt tùy chỉnh (Lưu trong SQLite)";
+                            badge.style.background = "rgba(245, 158, 11, 0.2)";
+                            badge.style.color = "#fcd34d";
+                            badge.style.border = "1px solid #f59e0b";
+                        } else {
+                            badge.textContent = "✓ Đang dùng Prompt tự động sinh từ Từ điển";
+                            badge.style.background = "rgba(16, 185, 129, 0.2)";
+                            badge.style.color = "#6ee7b7";
+                            badge.style.border = "1px solid #10b981";
+                        }
+                    }
                 }
             } catch (err) {
-                box.textContent = "Lỗi tải prompt preview: " + err;
+                if (editor) editor.value = "Lỗi tải prompt preview: " + err;
+                if (box) box.textContent = "Lỗi: " + err;
             }
         }
 
+        async function saveCustomPrompt() {
+            const editor = document.getElementById("dictPromptEditor");
+            if (!editor) return;
+            const text = editor.value.trim();
+            if (!text) {
+                alert("Nội dung prompt không được để trống!");
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/prompt/custom", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt_text: text })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                    alert("Đã lưu Prompt tùy chỉnh thành công vào CSDL SQLite!\nGemini OCR sẽ áp dụng bộ quy tắc này ngay lập tức cho các lần đọc ảnh tiếp theo.");
+                    await fetchDictPromptPreview();
+                } else {
+                    alert("Lỗi khi lưu prompt: " + (data.detail || "Không rõ"));
+                }
+            } catch (err) {
+                alert("Lỗi kết nối khi lưu prompt: " + err);
+            }
+        }
+
+        async function resetCustomPrompt() {
+            if (!confirm("Khôi phục Prompt về mặc định tự động sinh từ bộ từ điển SQLite? Các chỉnh sửa viết tay riêng trong Prompt sẽ được xóa.")) {
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/prompt/reset", { method: "POST" });
+                const data = await res.json();
+                if (data.status === "success") {
+                    alert("Đã khôi phục Prompt mặc định ban đầu!");
+                    await fetchDictPromptPreview();
+                } else {
+                    alert("Lỗi khôi phục: " + (data.detail || "Không rõ"));
+                }
+            } catch (err) {
+                alert("Lỗi kết nối: " + err);
+            }
+        }
+
+        function insertPromptTemplate(type) {
+            const editor = document.getElementById("dictPromptEditor");
+            if (!editor) return;
+
+            let snippet = "";
+            if (type === 'column') {
+                snippet = '\n- PHÂN BIỆT CỘT: "tên_viết_tay" thuộc cột Công trình, KHÔNG tách chữ sang cột Cấu kiện (ví dụ: "cửa nga my" -> Công trình).\n';
+            } else if (type === 'caukien') {
+                snippet = '\n- CẤU KIỆN MỘC: "từ_viết_tắt" -> [Tên Cấu Kiện Chuẩn] (chống đọc nhầm thành [từ_sai]).\n';
+            } else if (type === 'symbol') {
+                snippet = '\n- KÝ HIỆU: "[Ký_hiệu]" -> [Ý nghĩa kỹ thuật] (giữ nguyên trong cột cấu kiện, không chuyển sang cột công trình).\n';
+            }
+
+            // Chèn tại vị trí con trỏ hoặc cuối văn bản
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const text = editor.value;
+
+            if (start !== undefined && end !== undefined) {
+                editor.value = text.substring(0, start) + snippet + text.substring(end);
+                editor.selectionStart = editor.selectionEnd = start + snippet.length;
+            } else {
+                editor.value += snippet;
+            }
+            editor.focus();
+        }
+
         function copyDictPromptPreview() {
-            const text = document.getElementById("dictPromptPreviewBox").textContent;
+            const editor = document.getElementById("dictPromptEditor");
+            const text = editor ? editor.value : (document.getElementById("dictPromptPreviewBox")?.textContent || "");
             navigator.clipboard.writeText(text).then(() => {
-                alert("Đã sao chép prompt vào Clipboard!");
+                alert("Đã sao chép nội dung Prompt vào Clipboard!");
             }).catch(() => {
                 alert("Không thể sao chép tự động. Hãy bôi đen văn bản để sao chép.");
             });
         }
+
+
+        // ============================================================
+        // MODULE QUẢN LÝ LỊCH SỬ PHIẾU XẺ GỖ (DATABASE DASHBOARD)
+        // ============================================================
+        let historySearchTimeout = null;
+        let cachedHistoryDocs = [];
+
+        function switchTab(tabName) {
+            const workspace = document.getElementById("workspaceTabContent");
+            const history = document.getElementById("historyTabContent");
+            const btnWorkspace = document.getElementById("tabBtnWorkspace");
+            const btnHistory = document.getElementById("tabBtnHistory");
+
+            if (tabName === "history") {
+                workspace.style.display = "none";
+                history.style.display = "block";
+                btnWorkspace.classList.remove("active");
+                btnHistory.classList.add("active");
+                loadHistoryDocuments();
+            } else {
+                workspace.style.display = "block";
+                history.style.display = "none";
+                btnWorkspace.classList.add("active");
+                btnHistory.classList.remove("active");
+            }
+        }
+
+        async function loadHistoryDocuments(searchQuery = "") {
+            const tbody = document.getElementById("historyTableBody");
+            const badgeCount = document.getElementById("historyBadgeCount");
+
+            try {
+                let url = "/api/documents?limit=100";
+                if (searchQuery) {
+                    url += `&search=${encodeURIComponent(searchQuery)}`;
+                }
+
+                const res = await fetch(url);
+                if (!res.ok) {
+                    throw new Error("Không thể kết nối cơ sở dữ liệu");
+                }
+                const data = await res.json();
+                cachedHistoryDocs = data.documents || [];
+
+                if (badgeCount) {
+                    badgeCount.textContent = data.total !== undefined ? data.total : cachedHistoryDocs.length;
+                }
+
+                renderHistoryTable(cachedHistoryDocs);
+            } catch (err) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--danger);">Lỗi tải danh sách phiếu: ${err.message}</td></tr>`;
+            }
+        }
+
+        function renderHistoryTable(docs) {
+            const tbody = document.getElementById("historyTableBody");
+            const selectAll = document.getElementById("selectAllHistory");
+            if (selectAll) selectAll.checked = false;
+            updateSelectedHistoryCount();
+
+            if (!docs || docs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 40px 20px; color: var(--muted);">
+                    <div style="font-size: 36px; margin-bottom: 8px;">📭</div>
+                    <strong>Chưa có phiếu xẻ nào trong cơ sở dữ liệu</strong>
+                    <div style="font-size: 12px; margin-top: 4px;">Các phiếu sau khi OCR và bấm "Lưu dữ liệu" sẽ tự động xuất hiện tại đây.</div>
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = docs.map((doc, idx) => {
+                const thumbHtml = doc.image_path
+                    ? `<img src="/web_uploads/${encodeURIComponent(doc.image_path)}" class="thumb-mini" alt="Ảnh phiếu" title="Bấm xem to" onclick="openFullscreenModal('/web_uploads/${encodeURIComponent(doc.image_path)}')">`
+                    : `<div class="thumb-placeholder" title="Không có ảnh">📄</div>`;
+
+                const timeStr = doc.created_at
+                    ? new Date(doc.created_at).toLocaleString("vi-VN", { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : "-";
+
+                return `
+                    <tr>
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="history-select-item" value="${escapeHtml(doc.file_name)}" onchange="updateSelectedHistoryCount()">
+                        </td>
+                        <td style="text-align: center; color: var(--muted); font-weight: bold;">${idx + 1}</td>
+                        <td style="text-align: center;">${thumbHtml}</td>
+                        <td><strong>${escapeHtml(doc.so_xe || "Chưa có số xẻ")}</strong></td>
+                        <td>${escapeHtml(doc.ngay_xe || "-")}</td>
+                        <td>${escapeHtml(doc.kich_thuoc_go_tron || "-")}</td>
+                        <td style="text-align: center;"><span class="tag-pill success">${doc.total_items} dòng</span></td>
+                        <td style="color: var(--muted); font-size: 12px;">${timeStr}</td>
+                        <td>
+                            <div class="history-action-btns">
+                                <button type="button" class="btn-action-sm" onclick="reloadDocumentToWorkspace(${doc.id}, '${escapeHtml(doc.file_name)}')" title="Nạp toàn bộ ảnh và dữ liệu vào bàn làm việc">
+                                    <span>👁️ Mở lại</span>
+                                </button>
+                                <a class="btn-action-sm" href="/api/excel?json_file=${encodeURIComponent(doc.file_name)}" target="_blank" title="Tải file Excel phiếu này">
+                                    <span>📥 Excel</span>
+                                </a>
+                                <button type="button" class="btn-action-sm danger" onclick="deleteHistoryDocument(${doc.id}, '${escapeHtml(doc.so_xe || ('ID #' + doc.id))}')" title="Xóa phiếu">
+                                    <span>🗑️</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function debounceHistorySearch() {
+            clearTimeout(historySearchTimeout);
+            historySearchTimeout = setTimeout(() => {
+                const query = document.getElementById("historySearchInput").value.trim();
+                loadHistoryDocuments(query);
+            }, 300);
+        }
+
+        async function reloadDocumentToWorkspace(docId, fileName) {
+            setStatus("⏳ Đang nạp dữ liệu phiếu...");
+            try {
+                let doc = null;
+                let rawData = null;
+
+                // 1. Thử lấy từ CSDL trước (nếu có docId)
+                if (docId) {
+                    try {
+                        const res = await fetch(`/api/documents/${docId}`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            doc = data.document;
+                            rawData = doc ? doc.raw_json : null;
+                        }
+                    } catch (e) {
+                        console.warn("Lỗi nạp từ DB, chuyển sang thử nạp JSON:", e);
+                    }
+                }
+
+                // 2. Dự phòng: Nếu CSDL chưa có hoặc lỗi, nạp trực tiếp qua API JSON
+                if (!rawData && fileName) {
+                    const resJson = await fetch(`/api/json/${encodeURIComponent(fileName)}`);
+                    if (resJson.ok) {
+                        rawData = await resJson.json();
+                        doc = {
+                            id: docId || 0,
+                            file_name: fileName,
+                            so_xe: (rawData.header && rawData.header.so_xe) || "",
+                            image_path: (rawData.source && rawData.source.file) || "",
+                            raw_json: rawData
+                        };
+                    }
+                }
+
+                if (!rawData) {
+                    throw new Error("Không thể tải thông tin phiếu từ CSDL hoặc file JSON.");
+                }
+
+                currentJsonFile = (doc && doc.file_name) || fileName;
+                currentData = rawData;
+
+                // Nạp vào khung JSON
+                document.getElementById("jsonViewer").value = JSON.stringify(currentData, null, 2);
+
+                // Render form header và items
+                renderData();
+
+                // Nạp lại ảnh đối chiếu nếu có
+                const imgName = (doc && doc.image_path) || (rawData.source && rawData.source.file);
+                if (imgName) {
+                    showImage(`/web_uploads/${encodeURIComponent(imgName)}`);
+                }
+
+                // Chuyển sang Tab 1
+                switchTab("workspace");
+                const label = (doc && doc.so_xe) || (doc && doc.id) || currentJsonFile;
+                setStatus(`● Đã nạp phiếu số xẻ ${label} vào bàn làm việc!`);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+            } catch (err) {
+                alert("Lỗi nạp phiếu: " + err.message);
+                setStatus("● Lỗi nạp phiếu");
+            }
+        }
+
+        async function deleteHistoryDocument(docId, label) {
+            if (!confirm(`Bạn có chắc chắn muốn xóa phiếu "${label}" khỏi cơ sở dữ liệu không?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/documents/${docId}`, { method: "DELETE" });
+                const data = await res.json();
+                if (res.ok && data.status === "success") {
+                    await loadHistoryDocuments(document.getElementById("historySearchInput").value.trim());
+                    setStatus(`● Đã xóa phiếu ${label}`);
+                } else {
+                    alert("Lỗi xóa phiếu: " + (data.detail || "Không rõ"));
+                }
+            } catch (err) {
+                alert("Lỗi kết nối khi xóa: " + err.message);
+            }
+        }
+
+        function toggleSelectAllHistory(checked) {
+            const items = document.querySelectorAll(".history-select-item");
+            items.forEach(cb => cb.checked = checked);
+            updateSelectedHistoryCount();
+        }
+
+        function updateSelectedHistoryCount() {
+            const items = document.querySelectorAll(".history-select-item:checked");
+            const btn = document.getElementById("btnExportBatchHistory");
+            const badge = document.getElementById("selectedCountBadge");
+            const count = items.length;
+
+            if (badge) badge.textContent = count;
+            if (btn) btn.disabled = (count === 0);
+        }
+
+        async function exportSelectedHistoryExcel() {
+            const checkedBoxes = Array.from(document.querySelectorAll(".history-select-item:checked"));
+            if (!checkedBoxes.length) {
+                alert("Vui lòng tích chọn ít nhất 1 phiếu để xuất Excel!");
+                return;
+            }
+
+            const jsonFiles = checkedBoxes.map(cb => cb.value).filter(Boolean);
+            setStatus(`⏳ Đang xuất Excel gộp ${jsonFiles.length} phiếu...`);
+
+            try {
+                const res = await fetch("/api/excel/batch", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ json_files: jsonFiles })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || "Lỗi tạo file Excel gộp");
+                }
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `VatTuGo_TongHop_LichSu_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                setStatus(`● Đã xuất Excel thành công ${jsonFiles.length} phiếu!`);
+            } catch (err) {
+                alert("Lỗi xuất Excel: " + err.message);
+                setStatus("● Lỗi xuất Excel");
+            }
+        }
+
+        // ===== CLOUDFLARE R2 OBJECT STORAGE =====
+        function openR2Modal() {
+            const modal = document.getElementById("r2Modal");
+            if (modal) modal.style.display = "flex";
+            checkR2Status();
+        }
+
+        function closeR2Modal() {
+            const modal = document.getElementById("r2Modal");
+            if (modal) modal.style.display = "none";
+        }
+
+        async function checkR2Status(showFeedback = false) {
+            try {
+                const res = await fetch("/api/r2/status");
+                const data = await res.json();
+
+                // Cập nhật badge trên header
+                const hBadge = document.getElementById("r2HeaderBadge");
+                if (hBadge) {
+                    if (data.connected) {
+                        hBadge.innerHTML = "☁️ R2: <span style='color: #86efac; font-weight: bold;'>Đã kết nối</span>";
+                    } else if (data.configured) {
+                        hBadge.innerHTML = "☁️ R2: <span style='color: #fde047; font-weight: bold;'>Lỗi kết nối</span>";
+                    } else {
+                        hBadge.innerHTML = "☁️ R2: <span style='color: #cbd5e1;'>Chưa cấu hình</span>";
+                    }
+                }
+
+                // Cập nhật trong modal
+                const mBadge = document.getElementById("r2ModalStatusBadge");
+                if (mBadge) {
+                    if (data.connected) {
+                        mBadge.textContent = "● ĐÃ KẾT NỐI S3";
+                        mBadge.style.background = "#dcfce7";
+                        mBadge.style.color = "#15803d";
+                    } else if (data.configured) {
+                        mBadge.textContent = "⚠ LỖI XÁC THỰC";
+                        mBadge.style.background = "#fef3c7";
+                        mBadge.style.color = "#b45309";
+                    } else {
+                        mBadge.textContent = "○ CHƯA CẤU HÌNH";
+                        mBadge.style.background = "#f1f5f9";
+                        mBadge.style.color = "#64748b";
+                    }
+                }
+
+                const bName = document.getElementById("r2BucketName");
+                if (bName) bName.textContent = data.bucket || "ocr-wood-storage";
+
+                const pubUrl = document.getElementById("r2PublicUrlDisplay");
+                if (pubUrl) {
+                    if (data.public_url) {
+                        pubUrl.innerHTML = `<a href="${escapeHtml(data.public_url)}" target="_blank" style="color:#0284c7; text-decoration: underline;">${escapeHtml(data.public_url)}</a>`;
+                    } else {
+                        pubUrl.textContent = "Chưa cấu hình (đang dùng S3 Direct)";
+                    }
+                }
+
+                const msgBox = document.getElementById("r2StatusMessage");
+                if (msgBox) {
+                    msgBox.textContent = data.message || "Sẵn sàng kết nối.";
+                    msgBox.style.borderLeftColor = data.connected ? "#10b981" : (data.configured ? "#f59e0b" : "#64748b");
+                }
+
+                if (showFeedback) {
+                    alert(`Trạng thái R2: ${data.message}`);
+                }
+                return data;
+            } catch (err) {
+                console.error("Lỗi lấy trạng thái R2:", err);
+            }
+        }
+
+        async function testR2Connection() {
+            const btn = document.getElementById("btnTestR2");
+            const out = document.getElementById("r2ActionOutput");
+            if (btn) btn.disabled = true;
+            if (out) {
+                out.style.display = "block";
+                out.textContent = "⏳ Đang thực hiện kiểm tra ghi và đọc file test trên Cloudflare R2...";
+            }
+
+            try {
+                const res = await fetch("/api/r2/test-connection", { method: "POST" });
+                const data = await res.json();
+                if (out) {
+                    out.textContent = JSON.stringify(data, null, 2);
+                }
+                await checkR2Status();
+                if (data.success) {
+                    alert("✓ " + data.message);
+                } else {
+                    alert("⚠ " + data.message);
+                }
+            } catch (e) {
+                if (out) out.textContent = "Lỗi: " + e.message;
+                alert("Lỗi kiểm tra R2: " + e.message);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function syncAllR2Files() {
+            if (!confirm("Bắt đầu đồng bộ tất cả ảnh phiếu, file JSON và file Excel lên Cloudflare R2?")) {
+                return;
+            }
+
+            const btn = document.getElementById("btnSyncR2");
+            const out = document.getElementById("r2ActionOutput");
+            if (btn) btn.disabled = true;
+            if (out) {
+                out.style.display = "block";
+                out.textContent = "⏳ Đang quét và đồng bộ các file lên Cloudflare R2... Vui lòng đợi...";
+            }
+
+            try {
+                const res = await fetch("/api/r2/sync-all", { method: "POST" });
+                const data = await res.json();
+                if (out) {
+                    out.textContent = JSON.stringify(data, null, 2);
+                }
+                if (data.status === "success") {
+                    alert(`✓ Đồng bộ thành công: ${data.synced_count} file đã được đẩy lên Cloudflare R2!`);
+                    await loadR2FilesList();
+                } else {
+                    alert("⚠ " + (data.message || "Không thể đồng bộ."));
+                }
+            } catch (e) {
+                if (out) out.textContent = "Lỗi đồng bộ: " + e.message;
+                alert("Lỗi đồng bộ: " + e.message);
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function loadR2FilesList() {
+            const container = document.getElementById("r2FilesContainer");
+            const tbody = document.getElementById("r2FilesTableBody");
+            if (container) container.style.display = "block";
+            if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--muted); padding: 15px;">Đang tải danh sách file từ Cloudflare R2...</td></tr>';
+
+            try {
+                const res = await fetch("/api/r2/files");
+                const data = await res.json();
+                if (data.status !== "success" || !data.files || data.files.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--muted); padding: 15px;">${data.message || "Chưa có file nào trên Cloudflare R2."}</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = data.files.map(f => {
+                    const viewLink = f.public_url
+                        ? `<a href="${escapeHtml(f.public_url)}" target="_blank" class="mini-btn" style="color: #0284c7; text-decoration: none; padding: 3px 8px; font-size: 11px;">Xem ↗</a>`
+                        : `<span style="color: #94a3b8; font-size: 11px;">Chưa gắn URL</span>`;
+                    const sizeKb = (f.size / 1024).toFixed(1) + " KB";
+                    const dateStr = f.last_modified ? new Date(f.last_modified).toLocaleString("vi-VN") : "—";
+                    return `
+                        <tr>
+                            <td style="font-family: monospace; font-size: 12px; word-break: break-all;">${escapeHtml(f.key)}</td>
+                            <td style="font-size: 12px;">${sizeKb}</td>
+                            <td style="font-size: 12px; color: var(--muted);">${dateStr}</td>
+                            <td style="text-align: center;">${viewLink}</td>
+                        </tr>
+                    `;
+                }).join("");
+            } catch (e) {
+                if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--danger); padding: 15px;">Lỗi tải danh sách: ${escapeHtml(e.message)}</td></tr>`;
+            }
+        }
+
+        // Tự động tải số lượng phiếu lịch sử và trạng thái Cloudflare R2 khi trang sẵn sàng
+        window.addEventListener("DOMContentLoaded", () => {
+            fetch("/api/documents?limit=1")
+                .then(r => r.json())
+                .then(d => {
+                    const b = document.getElementById("historyBadgeCount");
+                    if (b && d.total !== undefined) b.textContent = d.total;
+                })
+                .catch(() => {});
+
+            checkR2Status();
+        });
     </script>
 
     <!-- MODAL TỪ ĐIỂN CHỮ VIẾT TẮT -->
@@ -2186,6 +3013,7 @@
                     <div class="dict-controls">
                         <select id="dictCategoryFilter" class="dict-select" onchange="filterAbbreviations()">
                             <option value="all">Tất cả phân loại</option>
+                            <option value="de_nham">⚠️ Từ dễ nhầm (Cấu kiện vs Công trình)</option>
                             <option value="cong_trinh">Mã công trình</option>
                             <option value="cau_kien">Cấu kiện mộc</option>
                             <option value="go_tron_quy_cach">Quy cách & Gỗ tròn</option>
@@ -2212,12 +3040,14 @@
                             <div class="field">
                                 <label>Phân loại (*)</label>
                                 <select id="dictFormCategory" class="dict-select" style="padding: 11px 12px; width: 100%;">
+                                    <option value="de_nham">⚠️ Từ dễ nhầm (Cấu kiện vs Công trình)</option>
                                     <option value="cong_trinh">Mã công trình</option>
                                     <option value="cau_kien">Cấu kiện mộc</option>
                                     <option value="go_tron_quy_cach">Quy cách & Gỗ tròn</option>
                                     <option value="ghi_chu">Ghi chú & Đơn vị</option>
                                 </select>
                             </div>
+
                             <div class="field">
                                 <label>Biến thể dễ nhầm (phân cách bằng dấu phẩy)</label>
                                 <input id="dictFormSynonyms" type="text" placeholder="vd: HLZA, HL 2a, p5">
@@ -2255,16 +3085,136 @@
                     </div>
                 </div>
 
-                <!-- TAB 2: PROMPT PREVIEW -->
+                <!-- TAB 2: PROMPT GEMINI ĐANG DÙNG & TÙY CHỈNH -->
                 <div id="dictTabContentPrompt" style="display: none;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                        <div class="hint">Khối ngữ cảnh từ điển này sẽ được tự động đưa vào Prompt mỗi khi gửi ảnh sang Gemini OCR:</div>
+                    <!-- HƯỚNG DẪN CHI TIẾT & MẪU CHÈN NHANH -->
+                    <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <strong style="color: #60a5fa; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                💡 Hướng dẫn nhập quy tắc chống nhầm từ trực tiếp vào Prompt
+                            </strong>
+                            <span id="promptStatusBadge" class="badge" style="background: #1e3a8a; color: #93c5fd; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600;">Đang kiểm tra...</span>
+                        </div>
+                        <p style="font-size: 13px; color: #cbd5e1; margin-bottom: 10px; line-height: 1.5;">
+                            Khi phát hiện chữ viết tay hay bị AI đọc sai (ví dụ thợ viết <em>"cửa nga my"</em> khiến AI nhầm sang cấu kiện, hay <em>"thg lương"</em> bị nhầm thành <em>"tháng lương"</em>), thay vì thêm vào danh sách từ, bạn có thể <strong>gõ trực tiếp các dòng quy tắc vào khung soạn thảo bên dưới</strong> và bấm <strong>"💾 Lưu Prompt tùy chỉnh"</strong> để lưu vào SQLite.
+                        </p>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                            <span style="font-size: 12px; color: #94a3b8; font-weight: 600;">Chèn nhanh mẫu quy tắc:</span>
+                            <button type="button" class="mini-btn" style="padding: 4px 10px; font-size: 12px; background: rgba(59, 130, 246, 0.15); border-color: #3b82f6; color: #93c5fd; cursor: pointer;" onclick="insertPromptTemplate('column')">➕ Mẫu: Cột Công trình vs Cấu kiện</button>
+                            <button type="button" class="mini-btn" style="padding: 4px 10px; font-size: 12px; background: rgba(16, 185, 129, 0.15); border-color: #10b981; color: #6ee7b7; cursor: pointer;" onclick="insertPromptTemplate('caukien')">➕ Mẫu: Cấu kiện mộc cổ truyền</button>
+                            <button type="button" class="mini-btn" style="padding: 4px 10px; font-size: 12px; background: rgba(245, 158, 11, 0.15); border-color: #f59e0b; color: #fcd34d; cursor: pointer;" onclick="insertPromptTemplate('symbol')">➕ Mẫu: Ký hiệu viết tắt đa nghĩa</button>
+                        </div>
+                    </div>
+
+                    <!-- THANH CÔNG CỤ SOẠN THẢO PROMPT -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="hint" style="font-size: 13px;">
+                            Khung soạn thảo Prompt (Nội dung bên dưới sẽ được nạp trực tiếp cho Gemini OCR):
+                        </div>
                         <div style="display: flex; gap: 8px;">
-                            <button type="button" class="mini-btn" onclick="fetchDictPromptPreview()">🔄 Làm mới</button>
+                            <button type="button" class="mini-btn" style="background: #2563eb; color: white; border-color: #2563eb; font-weight: 600;" onclick="saveCustomPrompt()">💾 Lưu Prompt tùy chỉnh</button>
+                            <button type="button" class="mini-btn" style="background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: #ef4444;" onclick="resetCustomPrompt()" title="Khôi phục Prompt sinh tự động từ bộ từ điển">↺ Khôi phục mặc định</button>
+                            <button type="button" class="mini-btn" onclick="fetchDictPromptPreview()">🔄 Tải lại</button>
                             <button type="button" class="mini-btn" onclick="copyDictPromptPreview()">📋 Sao chép</button>
                         </div>
                     </div>
-                    <pre id="dictPromptPreviewBox" class="prompt-preview-box">Đang tải...</pre>
+
+                    <!-- VÙNG SOẠN THẢO PROMPT VÀ PRE ẨN ĐỒNG BỘ -->
+                    <textarea id="dictPromptEditor" class="prompt-preview-box" style="width: 100%; height: 420px; resize: vertical; box-sizing: border-box; outline: none; border: 1px solid #2563eb; font-family: Consolas, monospace; font-size: 13px;" placeholder="Đang tải nội dung Prompt..."></textarea>
+                    <pre id="dictPromptPreviewBox" style="display: none;"></pre>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL CLOUDFLARE R2 & WORKER CDN -->
+    <div id="r2Modal" class="modal-backdrop" onclick="if(event.target===this) closeR2Modal()">
+        <div class="modal-card" style="max-width: 920px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0284c7, #0369a1);">
+                <div class="modal-title">
+                    <span>☁️</span>
+                    <span>LƯU TRỮ ĐÁM MÂY CLOUDFLARE R2 & WORKER CDN</span>
+                </div>
+                <button type="button" class="modal-close" onclick="closeR2Modal()" title="Đóng">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- THẺ TRẠNG THÁI -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <h4 style="margin: 0; font-size: 15px; color: #0369a1; display: flex; align-items: center; gap: 8px;">
+                            <span>📊 Trạng thái kết nối:</span>
+                            <span id="r2ModalStatusBadge" class="badge" style="background: #e2e8f0; color: #475569; padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700;">Đang kiểm tra...</span>
+                        </h4>
+                        <button type="button" class="mini-btn" style="background: white;" onclick="checkR2Status(true)">🔄 Làm mới</button>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; font-size: 13px;">
+                        <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <strong style="color: #64748b;">R2 Bucket:</strong>
+                            <div id="r2BucketName" style="font-family: monospace; font-weight: 600; color: #0f172a; margin-top: 2px;">ocr-wood-storage</div>
+                        </div>
+                        <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                            <strong style="color: #64748b;">Worker CDN Public URL:</strong>
+                            <div id="r2PublicUrlDisplay" style="font-family: monospace; font-weight: 600; color: #0284c7; margin-top: 2px; word-break: break-all;">Chưa cấu hình</div>
+                        </div>
+                    </div>
+
+                    <div id="r2StatusMessage" style="margin-top: 10px; font-size: 13px; color: #64748b; padding: 8px 12px; background: #ffffff; border-radius: 8px; border-left: 4px solid #0284c7;">
+                        Đang lấy thông tin cấu hình...
+                    </div>
+                </div>
+
+                <!-- THANH CÔNG CỤ THAO TÁC -->
+                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                    <button type="button" class="btn btn-primary" id="btnTestR2" style="background: #0284c7; padding: 9px 16px; font-size: 13px;" onclick="testR2Connection()">
+                        ⚡ Kiểm tra đọc/ghi R2
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnSyncR2" style="background: #059669; color: white; padding: 9px 16px; font-size: 13px;" onclick="syncAllR2Files()">
+                        🚀 Đồng bộ toàn bộ dữ liệu (Ảnh & Excel)
+                    </button>
+                    <button type="button" class="btn btn-secondary" style="padding: 9px 16px; font-size: 13px;" onclick="loadR2FilesList()">
+                        📁 Danh sách file trên R2
+                    </button>
+                </div>
+
+                <!-- HỘP HIỂN THỊ KẾT QUẢ / LOG -->
+                <div id="r2ActionOutput" style="display: none; background: #0f172a; color: #38bdf8; font-family: Consolas, monospace; font-size: 12px; padding: 12px; border-radius: 8px; margin-bottom: 16px; white-space: pre-wrap; max-height: 180px; overflow-y: auto;"></div>
+
+                <!-- DANH SÁCH FILE TRÊN R2 -->
+                <div id="r2FilesContainer" style="display: none; margin-bottom: 16px;">
+                    <h5 style="margin: 0 0 8px; font-size: 13px; color: #334155;">Các file trên Cloudflare R2:</h5>
+                    <div class="table-wrapper" style="max-height: 250px; overflow-y: auto;">
+                        <table class="dict-table">
+                            <thead>
+                                <tr>
+                                    <th>Đường dẫn file (Key)</th>
+                                    <th style="width: 100px;">Kích thước</th>
+                                    <th style="width: 170px;">Thời gian sửa</th>
+                                    <th style="width: 110px; text-align: center;">Mở xem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="r2FilesTableBody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--muted); padding: 15px;">Chưa tải danh sách.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- HƯỚNG DẪN TRIỂN KHAI R2 & WORKER -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px;">
+                    <strong style="color: #15803d; font-size: 13px; display: block; margin-bottom: 6px;">
+                        📘 Hướng dẫn kết nối Cloudflare R2 & Deploy Worker CDN:
+                    </strong>
+                    <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #166534; line-height: 1.6;">
+                        <li>Tạo Bucket trên <a href="https://dash.cloudflare.com" target="_blank" style="color: #0284c7; font-weight: 600;">Cloudflare Dashboard</a> mục <strong>R2</strong> (mặc định đặt tên: <code>ocr-wood-storage</code>).</li>
+                        <li>Tạo <strong>R2 API Token</strong> với quyền <em>Object Read & Write</em>, sau đó điền <code>R2_ACCOUNT_ID</code>, <code>R2_ACCESS_KEY_ID</code>, <code>R2_SECRET_ACCESS_KEY</code> vào file <code>.env</code>.</li>
+                        <li>Deploy Worker CDN: Mở terminal chạy <code>cd cloudflare_worker</code> rồi <code>npx wrangler deploy</code>.</li>
+                        <li>Dán URL Worker vào <code>R2_PUBLIC_URL</code> trong file <code>.env</code> để truy cập ảnh & Excel với băng thông 0đ (Zero Egress Fee)!</li>
+                    </ol>
                 </div>
             </div>
         </div>

@@ -172,7 +172,7 @@ PHẦN 1 - HEADER
 
 QUY TẮC:
 
-1. so_xe chỉ chứa số xe.
+1. so_xe chỉ chứa số xẻ.
 2. Tuyệt đối không nối ngày vào so_xe.
 3. Không tự đổi chữ I thành số 1.
 4. Không tự đổi số 1 thành chữ I.
@@ -336,7 +336,7 @@ Sau khi đọc toàn bộ bảng, hãy kiểm tra:
 
 - số dòng thực tế
 - tất cả các ngày trong bảng
-- số xe
+- số xẻ
 - kích thước
 - khối lượng
 - ghi chú tổng m3
@@ -347,11 +347,12 @@ Không trả lời bằng văn bản bên ngoài JSON.
 
 
 def get_ocr_prompt() -> str:
-    """Ghép nối prompt cơ bản với bộ từ điển huấn luyện chữ viết tắt mới nhất."""
-    dict_context = abbreviation_mgr.get_prompt_context()
+    """Ghép nối prompt cơ bản với bộ từ điển huấn luyện chữ viết tắt và quy tắc tùy chỉnh mới nhất."""
+    dict_context = abbreviation_mgr.get_effective_prompt_context()
     if dict_context:
         return f"{BASE_OCR_PROMPT}\n\n{dict_context}"
     return BASE_OCR_PROMPT
+
 
 
 OCR_PROMPT = get_ocr_prompt()
@@ -1067,7 +1068,7 @@ def build_warnings(
 
     warnings = []
 
-    # Thiếu số xe
+    # Thiếu số xẻ
     if not document.header.so_xe:
 
         warnings.append(
@@ -1391,12 +1392,12 @@ def process_image(
     )
 
     print(
-        "Số xe:",
+        "Số xẻ:",
         document.header.so_xe
     )
 
     print(
-        "Ngày xe:",
+        "Ngày xẻ:",
         document.header.ngay_xe
     )
 

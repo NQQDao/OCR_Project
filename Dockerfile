@@ -32,4 +32,4 @@ RUN mkdir -p output web_uploads excel_exports images
 EXPOSE 8000
 
 # Khởi động ứng dụng
-CMD ["uvicorn", "web_app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn web_app:app --host 0.0.0.0 --port ${PORT:-8000}"]

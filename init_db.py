@@ -1,5 +1,5 @@
 # ============================================================
-# init_db.py - Khởi tạo CSDL PostgreSQL và bảng cho OCR_Project
+# init_db.py - Khởi tạo CSDL (SQLite / PostgreSQL) và bảng
 # ============================================================
 
 import json
@@ -7,9 +7,6 @@ import os
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
-
-import psycopg2
-from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 
 # Reconfigure stdout/stderr for Windows console
 if hasattr(sys.stdout, "reconfigure"):
@@ -21,12 +18,19 @@ BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from database import DATABASE_URL, engine, SessionLocal, Base
+from database import DATABASE_URL, DB_TYPE, engine, SessionLocal, Base
 from models import Document, DocumentItem, DateEvent, Abbreviation
 
 
-def ensure_database_exists(db_url: str):
+def ensure_postgres_database_exists(db_url: str) -> bool:
     """Đảm bảo database mục tiêu (ví dụ: ocr_db) đã được tạo trên máy chủ Postgres."""
+    try:
+        import psycopg2
+        from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
+    except ImportError:
+        print("[CANH_BAO] Chưa cài đặt psycopg2, bỏ qua bước tự động tạo DB Postgres.")
+        return False
+
     parsed = urlparse(db_url)
     db_name = parsed.path.lstrip("/")
     user = parsed.username or "postgres"
@@ -51,9 +55,9 @@ def ensure_database_exists(db_url: str):
         exists = cur.fetchone()
         if not exists:
             cur.execute(f'CREATE DATABASE "{db_name}"')
-            print(f"[OK] Đã tạo mới cơ sở dữ liệu '{db_name}'.")
+            print(f"[OK] Đã tạo mới cơ sở dữ liệu PostgreSQL '{db_name}'.")
         else:
-            print(f"[OK] Cơ sở dữ liệu '{db_name}' đã sẵn sàng.")
+            print(f"[OK] Cơ sở dữ liệu PostgreSQL '{db_name}' đã sẵn sàng.")
 
         cur.close()
         conn.close()
@@ -64,7 +68,7 @@ def ensure_database_exists(db_url: str):
 
 
 def seed_initial_abbreviations():
-    """Nạp bộ từ điển mặc định từ abbreviations.json vào PostgreSQL nếu bảng còn trống."""
+    """Nạp bộ từ điển mặc định từ abbreviations.json vào CSDL nếu bảng còn trống."""
     json_path = BASE_DIR / "abbreviations.json"
     if not json_path.exists():
         return
@@ -73,7 +77,7 @@ def seed_initial_abbreviations():
     try:
         count = db.query(Abbreviation).count()
         if count == 0:
-            print("[INFO] Đang nạp từ điển ban đầu vào bảng abbreviations...")
+            print(f"[INFO] Đang nạp từ điển ban đầu vào bảng abbreviations ({DB_TYPE.upper()})...")
             content = json.loads(json_path.read_text(encoding="utf-8"))
             for it in content.get("items", []):
                 abbr = Abbreviation(
@@ -86,7 +90,7 @@ def seed_initial_abbreviations():
                 )
                 db.add(abbr)
             db.commit()
-            print(f"[OK] Đã nạp {len(content.get('items', []))} từ viết tắt vào PostgreSQL.")
+            print(f"[OK] Đã nạp {len(content.get('items', []))} từ viết tắt vào CSDL.")
         else:
             print(f"[OK] Bảng abbreviations đã có sẵn {count} bản ghi.")
     except Exception as e:
@@ -96,19 +100,22 @@ def seed_initial_abbreviations():
         db.close()
 
 
-def init_database():
-    """Khởi tạo toàn diện cơ sở dữ liệu và bảng."""
+def init_database() -> bool:
+    """Khởi tạo toàn diện cơ sở dữ liệu và các bảng."""
     print("=" * 60)
-    print("KHỞI TẠO CƠ SỞ DỮ LIỆU POSTGRESQL (OCR_PROJECT)")
+    print(f"KHỞI TẠO CƠ SỞ DỮ LIỆU {DB_TYPE.upper()} (OCR_PROJECT)")
     print("=" * 60)
 
-    # 1. Tạo database nếu chưa có
-    ensure_database_exists(DATABASE_URL)
+    # 1. Đảm bảo CSDL tồn tại
+    if DB_TYPE == "postgresql":
+        ensure_postgres_database_exists(DATABASE_URL)
+    elif DB_TYPE == "sqlite":
+        print(f"[OK] CSDL SQLite tự động quản lý tệp: {DATABASE_URL}")
 
-    # 2. Tạo tất cả bảng
+    # 2. Tạo tất cả bảng quan hệ
     try:
         Base.metadata.create_all(bind=engine)
-        print("[OK] Đã khởi tạo cấu trúc các bảng: documents, document_items, date_events, abbreviations.")
+        print("[OK] Đã khởi tạo cấu trúc các bảng: documents, document_items, date_events, abbreviations, system_settings.")
     except Exception as e:
         print(f"[LOI] Không thể khởi tạo bảng: {e}")
         return False
@@ -117,7 +124,7 @@ def init_database():
     seed_initial_abbreviations()
 
     print("=" * 60)
-    print("HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU THÀNH CÔNG!")
+    print(f"HOÀN TẤT KHỞI TẠO CƠ SỞ DỮ LIỆU {DB_TYPE.upper()} THÀNH CÔNG!")
     print("=" * 60)
     return True
 

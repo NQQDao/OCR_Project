@@ -19,7 +19,7 @@ class Document(Base):
     image_path = Column(String(500), nullable=True)
     document_type = Column(String(255), nullable=True)
 
-    # Thông tin xe & ngày xẻ
+    # Thông tin số xẻ & ngày xẻ
     ngay_nhap = Column(String(50), nullable=True)
     ngay_xe = Column(String(50), index=True, nullable=True)
     so_xe = Column(String(100), index=True, nullable=True)
@@ -111,3 +111,14 @@ class Abbreviation(Base):
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class SystemSetting(Base):
+    """Bảng lưu các cấu hình hệ thống (ví dụ: Prompt Gemini tùy chỉnh)."""
+    __tablename__ = "system_settings"
+
+    key = Column(String(100), primary_key=True, index=True)
+    value = Column(Text, nullable=False)
+    description = Column(Text, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

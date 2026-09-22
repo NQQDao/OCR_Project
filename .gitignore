@@ -15,3 +15,15 @@ excel_export/
 !.env.example
 cloudflared.exe
 *.code-workspace
+
+# SQLite databases
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Cloudflare Worker
+cloudflare_worker/node_modules/
+cloudflare_worker/.wrangler/
+

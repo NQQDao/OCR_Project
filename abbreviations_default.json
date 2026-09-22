@@ -1,19 +1,103 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "categories": {
     "cong_trinh": "Mã / Tên công trình",
     "cau_kien": "Tên cấu kiện mộc",
+    "de_nham": "Từ dễ nhầm (Cấu kiện vs Công trình)",
     "go_tron_quy_cach": "Quy cách & Gỗ tròn",
     "ghi_chu": "Ghi chú & Đơn vị"
   },
   "items": [
+    {
+      "id": "dn_cua_ngamy",
+      "category": "de_nham",
+      "short": "cửa nga my",
+      "full": "Cửa Nga My [CỘT CÔNG TRÌNH]",
+      "description": "Cửa Nga My là tên CÔNG TRÌNH (đơn hàng cửa Nga My). KHÔNG tách chữ 'Cửa' sang cột Cấu kiện! Cấu kiện ở dòng này là: khung ngang, cái đứng, đố, ván bưng...",
+      "synonyms": [
+        "cửa nga my (đỏ)",
+        "cửa nga my (tổ)",
+        "cửa nga my (t)",
+        "cua nga my"
+      ]
+    },
+    {
+      "id": "dn_chua_dau",
+      "category": "de_nham",
+      "short": "chùa dâu",
+      "full": "Chùa Dâu [CỘT CÔNG TRÌNH]",
+      "description": "Chùa Dâu là tên CÔNG TRÌNH (không phải cấu kiện, không phải loại gỗ). Kèm các phân khu: (SL), (ch), (kh), (NK), (đỏ), (tổ).",
+      "synonyms": [
+        "chùa dâu (SL)",
+        "chùa dâu (ch)",
+        "chùa dâu (kh)",
+        "chùa dâu (khách)",
+        "chùa dâu (NK)",
+        "chùa dâu (đỏ)",
+        "chùa dâu (tổ)"
+      ]
+    },
+    {
+      "id": "dn_co_ngoa",
+      "category": "de_nham",
+      "short": "cổ ngoã",
+      "full": "Cổ Ngõa / Cổ Ngoã [CỘT CÔNG TRÌNH]",
+      "description": "Tên CÔNG TRÌNH Cổ Ngõa (hay nhầm thành cổ ngựa, cỏ ngọt). Kèm phân khu: (HU), (HL), (HL2A), (HL2B), (TA), (hạ), (TQ).",
+      "synonyms": [
+        "cổ ngõa",
+        "cổ ngoa",
+        "co ngoa",
+        "co ngoã"
+      ]
+    },
+    {
+      "id": "dn_bui_xa",
+      "category": "de_nham",
+      "short": "bùi xá",
+      "full": "Bùi Xá [CỘT CÔNG TRÌNH]",
+      "description": "Tên CÔNG TRÌNH Bùi Xá (hay nhầm thành bãi xá, bụi xả). Kèm phân khu: (tổ), (hậu), (M), + M.",
+      "synonyms": [
+        "bùi xá (tổ)",
+        "bùi xá (hậu)",
+        "bùi xá (M)",
+        "bùi xá + M",
+        "bui xa"
+      ]
+    },
+    {
+      "id": "dn_uc_ly",
+      "category": "de_nham",
+      "short": "ức lý",
+      "full": "Ức Lý [CỘT CÔNG TRÌNH]",
+      "description": "Tên CÔNG TRÌNH Ức Lý (hay nhầm thành ốc lí, ức lí). Ký hiệu (đôi) đi kèm chỉ cặp cấu kiện.",
+      "synonyms": [
+        "ức lý (đôi)",
+        "uc ly",
+        "ức lí"
+      ]
+    },
+    {
+      "id": "dn_lau_xa",
+      "category": "de_nham",
+      "short": "lầu xá",
+      "full": "Lầu Xá [CỘT CÔNG TRÌNH]",
+      "description": "Tên CÔNG TRÌNH Lầu Xá (không phải cấu kiện lầu nhà).",
+      "synonyms": [
+        "lầu xá (M)",
+        "lau xa"
+      ]
+    },
     {
       "id": "ct_hu",
       "category": "cong_trinh",
       "short": "HU",
       "full": "Cổ ngõa (HU)",
       "description": "Công trình Cổ ngõa ký hiệu HU",
-      "synonyms": ["HU.", "Hu", "HV"]
+      "synonyms": [
+        "HU.",
+        "Hu",
+        "HV"
+      ]
     },
     {
       "id": "ct_hl2a",
@@ -21,7 +105,12 @@
       "short": "HL 2A",
       "full": "Cổng ngoài (HL 2A)",
       "description": "Công trình Cổng ngoài khu/lô 2A",
-      "synonyms": ["HL2A", "HL-2A", "HL 2a", "HLZA"]
+      "synonyms": [
+        "HL2A",
+        "HL-2A",
+        "HL 2a",
+        "HLZA"
+      ]
     },
     {
       "id": "ct_hm",
@@ -29,7 +118,10 @@
       "short": "HM",
       "full": "Nga My (HM)",
       "description": "Công trình Nga My, thường đi kèm HM, HM1, HM2",
-      "synonyms": ["HM1", "HM2"]
+      "synonyms": [
+        "HM1",
+        "HM2"
+      ]
     },
     {
       "id": "ct_bx",
@@ -37,7 +129,10 @@
       "short": "Bùi Xá",
       "full": "Bùi Xá",
       "description": "Công trình Bùi Xá",
-      "synonyms": ["BX", "Bùi xá"]
+      "synonyms": [
+        "BX",
+        "Bùi xá"
+      ]
     },
     {
       "id": "ct_to",
@@ -45,7 +140,180 @@
       "short": "Tổ",
       "full": "Cửa Nga My (tổ) / Bùi Xá (Tổ)",
       "description": "Ký hiệu tổ thi công hoặc hạng mục Tổ",
-      "synonyms": ["Tồ", "tổ", "tồ"]
+      "synonyms": [
+        "Tồ",
+        "tổ",
+        "tồ"
+      ]
+    },
+    {
+      "id": "ck_thg_luong",
+      "category": "cau_kien",
+      "short": "thg lương",
+      "full": "Thượng Lương [CẤU KIỆN - Đòn Nóc]",
+      "description": "Cấu kiện Thượng Lương (đòn nóc nhà gỗ). Hay bị OCR nhầm thành tháng lương, thông lượng. Đi kèm: thg lg, thg lg (BS), đầu thg lương.",
+      "synonyms": [
+        "thg lg",
+        "thg lg (BS)",
+        "đầu thg lương",
+        "tháng lương",
+        "thông lượng",
+        "thương lượng"
+      ]
+    },
+    {
+      "id": "ck_dep_tl",
+      "category": "cau_kien",
+      "short": "dép TL",
+      "full": "Dép Thượng Lương [CẤU KIỆN]",
+      "description": "Đế/đệm gỗ đỡ thượng lương. Hay bị OCR nhầm thành dép tổ, đẹp tl.",
+      "synonyms": [
+        "dép tl",
+        "dep TL",
+        "dép to"
+      ]
+    },
+    {
+      "id": "ck_con_chong",
+      "category": "cau_kien",
+      "short": "con chg",
+      "full": "Con Chồng [CẤU KIỆN]",
+      "description": "Thanh gối ngàm đè trong vì kèo. Viết tắt là con chg, con chông. Hay bị OCR nhầm thành con chuồng, con chong, con chia.",
+      "synonyms": [
+        "con chồng",
+        "con chông",
+        "con chuồng",
+        "con chong"
+      ]
+    },
+    {
+      "id": "ck_khoa_giang",
+      "category": "cau_kien",
+      "short": "khoá giang",
+      "full": "Khóa Giang / Quá Giang [CẤU KIỆN]",
+      "description": "Dầm ngang liên kết cột cái. Hay bị OCR đọc nhầm thành khoa giang, quá giàng, quá giang 1.",
+      "synonyms": [
+        "khóa giang",
+        "quá giang",
+        "khoa giang",
+        "quá giàng",
+        "quá giang 1"
+      ]
+    },
+    {
+      "id": "ck_tau_dua",
+      "category": "cau_kien",
+      "short": "tàu dừa",
+      "full": "Tàu Dừa [CẤU KIỆN - Đỡ Ngói Hiên]",
+      "description": "Thanh hoành đỡ diềm mái ngói hiên. Hay bị nhầm thành tầu dừa, tầu dưa, tầu dứa.",
+      "synonyms": [
+        "tầu dừa",
+        "tau dua",
+        "tầu dưa"
+      ]
+    },
+    {
+      "id": "ck_bay_mai",
+      "category": "cau_kien",
+      "short": "bảy mái",
+      "full": "Bảy Mái / Bẩy Mái [CẤU KIỆN]",
+      "description": "Dầm vươn đỡ mái hiên. Viết tắt là bẩy hoặc không dấu bay mai.",
+      "synonyms": [
+        "bẩy mái",
+        "bay mai",
+        "bẩy"
+      ]
+    },
+    {
+      "id": "ck_la_mai",
+      "category": "cau_kien",
+      "short": "lá mái",
+      "full": "Lá Mái [CẤU KIỆN - Ván Lát Mái]",
+      "description": "Ván lát phẳng dưới ngói. Hay bị OCR nhầm thành lô mái, lầu mái, la mai.",
+      "synonyms": [
+        "la mai",
+        "lô mái",
+        "lầu mái"
+      ]
+    },
+    {
+      "id": "ck_xth",
+      "category": "cau_kien",
+      "short": "XTH",
+      "full": "Xà Thượng [CẤU KIỆN]",
+      "description": "Viết tắt Xà Thượng (thuộc cột Tên cấu kiện).",
+      "synonyms": [
+        "xth",
+        "Xth"
+      ]
+    },
+    {
+      "id": "ck_xkh",
+      "category": "cau_kien",
+      "short": "XKH",
+      "full": "Xà Khóa [CẤU KIỆN]",
+      "description": "Viết tắt Xà Khóa / Xà Khung (thuộc cột Tên cấu kiện).",
+      "synonyms": [
+        "xkh",
+        "Xkh"
+      ]
+    },
+    {
+      "id": "ck_cot_tron",
+      "category": "cau_kien",
+      "short": "cột trốn",
+      "full": "Cột Trốn / Trụ Trốn [CẤU KIỆN]",
+      "description": "Cột ngắn gác lửng trên quá giang hoặc câu đầu (không cắm đất). Hay nhầm thành cột tròn, trụ tròn.",
+      "synonyms": [
+        "trụ trốn",
+        "cot tron",
+        "tru tron"
+      ]
+    },
+    {
+      "id": "ck_cai_dung",
+      "category": "cau_kien",
+      "short": "cái đứng",
+      "full": "Cái Đứng [CẤU KIỆN CỬA]",
+      "description": "Thanh biên đứng của khuôn cửa hoặc cánh cửa. Hay nhầm thành cột đứng, gái đứng.",
+      "synonyms": [
+        "cai dung",
+        "cột đứng"
+      ]
+    },
+    {
+      "id": "ck_khuon_ngang",
+      "category": "cau_kien",
+      "short": "khuôn ngang",
+      "full": "Khuôn Ngang / Khung Ngang [CẤU KIỆN CỬA]",
+      "description": "Thanh ngang khuôn cửa. Hay nhầm thành quang ngang, khương ngang.",
+      "synonyms": [
+        "khung ngang",
+        "quang ngang",
+        "khuon ngang"
+      ]
+    },
+    {
+      "id": "ck_van_bung",
+      "category": "cau_kien",
+      "short": "ván bưng",
+      "full": "Ván Bưng [CẤU KIỆN - Vách Gỗ]",
+      "description": "Tấm ván bao che vách gỗ. Hay nhầm thành văn bưng, vốn bưng.",
+      "synonyms": [
+        "van bung",
+        "ván dong"
+      ]
+    },
+    {
+      "id": "ck_dau_doi",
+      "category": "cau_kien",
+      "short": "đầu dôi",
+      "full": "Đầu Dôi [CẤU KIỆN]",
+      "description": "Phần đầu xà nhô ra ngoài mộng. Hay nhầm thành đầu dơi, đầu đôi.",
+      "synonyms": [
+        "đầu đôi",
+        "dau doi"
+      ]
     },
     {
       "id": "ck_ts",
@@ -53,7 +321,10 @@
       "short": "TS",
       "full": "Thượng lương (TS) / Tiền sảnh",
       "description": "Cấu kiện thượng lương hoặc tiền sảnh",
-      "synonyms": ["T.S", "Ts"]
+      "synonyms": [
+        "T.S",
+        "Ts"
+      ]
     },
     {
       "id": "ck_ps",
@@ -61,7 +332,12 @@
       "short": "ps",
       "full": "Phát sinh",
       "description": "Cấu kiện hoặc kích thước phát sinh ngoài bản vẽ (vd: Hoành (ps))",
-      "synonyms": ["PS", "(ps)", "(PS)", "p5"]
+      "synonyms": [
+        "PS",
+        "(ps)",
+        "(PS)",
+        "p5"
+      ]
     },
     {
       "id": "ck_doi",
@@ -69,7 +345,10 @@
       "short": "đôi",
       "full": "Cầu dâu (đôi)",
       "description": "Cấu kiện đôi (thường dùng cho Cầu dâu)",
-      "synonyms": ["(đôi)", "doi"]
+      "synonyms": [
+        "(đôi)",
+        "doi"
+      ]
     },
     {
       "id": "ck_hoanh",
@@ -77,15 +356,10 @@
       "short": "Hoành",
       "full": "Hoành",
       "description": "Thanh dầm đỡ rui trên mái nhà gỗ",
-      "synonyms": ["hoành", "Hoành (ps)"]
-    },
-    {
-      "id": "ck_thuong_luong",
-      "category": "cau_kien",
-      "short": "Thượng lương",
-      "full": "Thượng lương",
-      "description": "Thanh nóc nhà gỗ (đòn dông)",
-      "synonyms": ["thượng lương", "TL"]
+      "synonyms": [
+        "hoành",
+        "Hoành (ps)"
+      ]
     },
     {
       "id": "ck_cau_dau",
@@ -93,7 +367,9 @@
       "short": "Cầu dâu",
       "full": "Cầu dâu",
       "description": "Cấu kiện đỡ rui góc, mái hiên",
-      "synonyms": ["cầu dâu"]
+      "synonyms": [
+        "cầu dâu"
+      ]
     },
     {
       "id": "ck_van_huynh",
@@ -101,7 +377,9 @@
       "short": "Ván huỳnh",
       "full": "Ván huỳnh",
       "description": "Ván lồng khung bao cửa",
-      "synonyms": ["ván huỳnh"]
+      "synonyms": [
+        "ván huỳnh"
+      ]
     },
     {
       "id": "ck_xa_thuong",
@@ -109,7 +387,9 @@
       "short": "xà thượng",
       "full": "Xà thượng",
       "description": "Xà trên liên kết các đầu cột",
-      "synonyms": ["Xà thượng"]
+      "synonyms": [
+        "Xà thượng"
+      ]
     },
     {
       "id": "ck_xa_ha",
@@ -117,7 +397,9 @@
       "short": "xà hạ",
       "full": "Xà hạ",
       "description": "Xà dưới giằng liên kết chân cột",
-      "synonyms": ["Xà hạ"]
+      "synonyms": [
+        "Xà hạ"
+      ]
     },
     {
       "id": "ck_rui",
@@ -125,7 +407,9 @@
       "short": "rui",
       "full": "Rui",
       "description": "Thanh gỗ gác xuôi theo chiều dốc mái",
-      "synonyms": ["Rui"]
+      "synonyms": [
+        "Rui"
+      ]
     },
     {
       "id": "ck_me",
@@ -133,7 +417,9 @@
       "short": "mè",
       "full": "Mè (Lito)",
       "description": "Thanh gỗ nhỏ gác ngang rui để lợp ngói",
-      "synonyms": ["Mè"]
+      "synonyms": [
+        "Mè"
+      ]
     },
     {
       "id": "qc_dt",
@@ -141,7 +427,14 @@
       "short": "đT",
       "full": "Đo thực tế",
       "description": "Kích thước đo thực tế đầu lóng/khúc gỗ",
-      "synonyms": ["đo TT", "đT1", "đo tt", "đT:", "dT", "dT1"]
+      "synonyms": [
+        "đo TT",
+        "đT1",
+        "đo tt",
+        "đT:",
+        "dT",
+        "dT1"
+      ]
     },
     {
       "id": "qc_dot",
@@ -149,7 +442,9 @@
       "short": "đọt",
       "full": "Ngọn đọt",
       "description": "Đầu ngọn của cây/lóng gỗ tròn",
-      "synonyms": ["đot"]
+      "synonyms": [
+        "đot"
+      ]
     },
     {
       "id": "qc_vanh",
@@ -157,7 +452,11 @@
       "short": "V...",
       "full": "Vành (Chu vi tròn, vd: V247 = vành 247cm)",
       "description": "Chữ V viết hoa đi kèm số là chỉ số đo chu vi vành gỗ tròn",
-      "synonyms": ["V247", "v247", "V"]
+      "synonyms": [
+        "V247",
+        "v247",
+        "V"
+      ]
     },
     {
       "id": "gc_m3",
@@ -165,7 +464,10 @@
       "short": "m3",
       "full": "Mét khối",
       "description": "Đơn vị thể tích gỗ (m³)",
-      "synonyms": ["m³", "M3"]
+      "synonyms": [
+        "m³",
+        "M3"
+      ]
     },
     {
       "id": "gc_sl",
@@ -173,7 +475,33 @@
       "short": "SL",
       "full": "Số lượng",
       "description": "Số lượng thanh gỗ hoặc kiện",
-      "synonyms": ["sl"]
+      "synonyms": [
+        "sl"
+      ]
+    },
+    {
+      "id": "gc_ps",
+      "category": "ghi_chu",
+      "short": "(PS)",
+      "full": "Phát Sinh [GHI CHÚ KỸ THUẬT]",
+      "description": "Phát sinh ngoài bản vẽ (vd: Hoành (PS), xà hạ (PS)). Giữ trong tên cấu kiện, KHÔNG đưa sang tên công trình.",
+      "synonyms": [
+        "PS",
+        "ps",
+        "(ps)"
+      ]
+    },
+    {
+      "id": "gc_bs",
+      "category": "ghi_chu",
+      "short": "(BS)",
+      "full": "Bổ Sung [GHI CHÚ KỸ THUẬT]",
+      "description": "Bổ sung (vd: thg lg (BS)). Giữ trong tên cấu kiện, KHÔNG tách sang công trình.",
+      "synonyms": [
+        "BS",
+        "bs",
+        "(bs)"
+      ]
     }
   ]
 }
