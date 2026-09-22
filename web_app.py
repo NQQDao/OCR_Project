@@ -829,6 +829,28 @@ def list_cloudflare_r2_files(prefix: str = Query("")):
     }
 
 
+# ============================================================
+# CLOUDFLARE D1 (SERVERLESS SQL DATABASE) API
+# ============================================================
+import d1_storage
+
+@app.get("/api/d1/status")
+def get_cloudflare_d1_status():
+    """Kiểm tra trạng thái cấu hình và kết nối tới Cloudflare D1 Database."""
+    return d1_storage.get_d1_status()
+
+
+@app.post("/api/d1/sync")
+def sync_all_to_cloudflare_d1():
+    """Đồng bộ toàn bộ bảng dữ liệu SQLite cục bộ lên Cloudflare D1 Database."""
+    if not is_db_connected():
+        raise HTTPException(status_code=503, detail="CSDL cục bộ chưa kết nối.")
+    db = SessionLocal()
+    try:
+        return d1_storage.sync_local_sqlite_to_d1(db)
+    finally:
+        db.close()
+
 
 # ============================================================
 # CƠ SỞ DỮ LIỆU (SQLITE / POSTGRESQL) API

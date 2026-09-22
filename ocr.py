@@ -10,6 +10,7 @@ from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 from pydantic import BaseModel, Field
 from google import genai
 from google.genai import types
+from dotenv import load_dotenv
 
 from abbreviation_manager import abbreviation_mgr
 
@@ -67,6 +68,12 @@ SAVE_DEBUG_IMAGE = True
 # ============================================================
 # 2. API KEY
 # ============================================================
+
+ENV_FILE = BASE_DIR / ".env"
+if ENV_FILE.exists():
+    load_dotenv(dotenv_path=ENV_FILE, override=True)
+else:
+    load_dotenv(override=True)
 
 API_KEY = os.getenv("GEMINI_API_KEY")
 

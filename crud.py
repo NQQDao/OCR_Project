@@ -94,6 +94,46 @@ def create_or_update_document(
 
     db.commit()
     db.refresh(doc)
+
+    # Tự động đồng bộ sang Cloudflare D1 nếu có cấu hình
+    try:
+        import d1_storage
+        if d1_storage.is_d1_configured():
+            doc_dict = {
+                "file_name": doc.file_name,
+                "image_path": doc.image_path,
+                "document_type": doc.document_type,
+                "ngay_nhap": doc.ngay_nhap,
+                "ngay_xe": doc.ngay_xe,
+                "so_xe": doc.so_xe,
+                "kich_thuoc_go_tron": doc.kich_thuoc_go_tron,
+                "khoi_luong_go_tron": doc.khoi_luong_go_tron,
+                "kich_thuoc_xe": doc.kich_thuoc_xe,
+                "raw_json": doc.raw_json,
+                "status": doc.status or "COMPLETED",
+                "items": [
+                    {
+                        "dong": it.dong,
+                        "ngay": it.ngay,
+                        "kich_thuoc_so_luong": it.kich_thuoc_so_luong,
+                        "rong": it.rong,
+                        "cao": it.cao,
+                        "dai": it.dai,
+                        "so_luong": it.so_luong,
+                        "khoi_luong": it.khoi_luong,
+                        "cong_trinh": it.cong_trinh,
+                        "stt_cau_kien": it.stt_cau_kien,
+                        "ten_cau_kien": it.ten_cau_kien,
+                        "nha_cung_cap": it.nha_cung_cap,
+                        "ghi_chu": it.ghi_chu
+                    }
+                    for it in doc.items
+                ]
+            }
+            d1_storage.save_document_to_d1(doc_dict)
+    except Exception as d1_err:
+        print(f"[Cloudflare D1 Warning] {d1_err}")
+
     return doc
 
 
@@ -135,6 +175,15 @@ def delete_document(db: Session, doc_id: int) -> bool:
         return False
     db.delete(doc)
     db.commit()
+
+    # Tự động xóa trên Cloudflare D1 nếu có cấu hình
+    try:
+        import d1_storage
+        if d1_storage.is_d1_configured():
+            d1_storage.delete_document_from_d1(doc_id)
+    except Exception:
+        pass
+
     return True
 
 
