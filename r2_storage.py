@@ -255,6 +255,26 @@ def get_file_bytes(r2_key: str) -> Optional[bytes]:
         return None
 
 
+def download_file_bytes(r2_key: str) -> Optional[bytes]:
+    """Bí danh cho get_file_bytes để tải nội dung file từ Cloudflare R2."""
+    return get_file_bytes(r2_key)
+
+
+def get_public_file_url(r2_key: str) -> Optional[str]:
+    """
+    Trả về đường dẫn truy cập file công khai.
+    Ưu tiên Public URL (Cloudflare Worker hoặc R2.dev), nếu không có thì sinh Presigned URL.
+    """
+    reload_r2_config()
+    if not is_r2_configured():
+        return None
+    r2_key = r2_key.lstrip("/").replace("\\", "/")
+    if R2_PUBLIC_URL:
+        clean_base = R2_PUBLIC_URL.rstrip("/")
+        return f"{clean_base}/{r2_key}"
+    return generate_presigned_url(r2_key)
+
+
 def generate_presigned_url(r2_key: str, expiration_seconds: int = 3600, http_method: str = "get_object") -> Optional[str]:
     """
     Sinh đường link tạm có chữ ký (Presigned URL) để tải hoặc xem file

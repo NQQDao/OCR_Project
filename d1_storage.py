@@ -408,20 +408,24 @@ def sync_d1_to_local_sqlite(db_session) -> Dict[str, Any]:
         file_name = d.get("file_name", "")
         if not file_name:
             continue
-        data = {
-            "document_type": d.get("document_type", "Nhật ký xẻ gỗ"),
-            "header": {
-                "ngay_nhap": d.get("ngay_nhap", ""),
-                "ngay_xe": d.get("ngay_xe", ""),
-                "so_xe": d.get("so_xe", ""),
-                "kich_thuoc_go_tron": d.get("kich_thuoc_go_tron", ""),
-                "khoi_luong_go_tron": d.get("khoi_luong_go_tron", ""),
-                "kich_thuoc_xe": d.get("kich_thuoc_xe", "")
-            },
-            "source": {"file": d.get("image_path", "")},
-            "items": d.get("items", []),
-            "date_events": []
-        }
+        raw_data = d.get("raw_json")
+        if isinstance(raw_data, dict) and raw_data.get("items"):
+            data = raw_data
+        else:
+            data = {
+                "document_type": d.get("document_type", "Nhật ký xẻ gỗ"),
+                "header": {
+                    "ngay_nhap": d.get("ngay_nhap", ""),
+                    "ngay_xe": d.get("ngay_xe", ""),
+                    "so_xe": d.get("so_xe", ""),
+                    "kich_thuoc_go_tron": d.get("kich_thuoc_go_tron", ""),
+                    "khoi_luong_go_tron": d.get("khoi_luong_go_tron", ""),
+                    "kich_thuoc_xe": d.get("kich_thuoc_xe", "")
+                },
+                "source": {"file": d.get("image_path", "")},
+                "items": d.get("items", []),
+                "date_events": []
+            }
         create_or_update_document(db_session, data, file_name, d.get("image_path", ""))
         pulled_count += 1
 

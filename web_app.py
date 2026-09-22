@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest import result
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from abbreviation_manager import abbreviation_mgr
@@ -26,12 +26,14 @@ BASE_DIR = Path(__file__).resolve().parent
 
 OUTPUT_DIR = BASE_DIR / "output"
 UPLOAD_DIR = BASE_DIR / "web_uploads"
+IMAGES_DIR = BASE_DIR / "images"
 
 TEMPLATE_DIR = BASE_DIR / "templates"
 STATIC_DIR = BASE_DIR / "static"
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
@@ -47,11 +49,129 @@ app.mount(
     name="static"
 )
 
-app.mount(
-    "/web_uploads",
-    StaticFiles(directory=UPLOAD_DIR),
-    name="web_uploads"
-)
+
+def ensure_json_file_exists(filename: str) -> Optional[Path]:
+    """Đảm bảo file JSON tồn tại trên đĩa: nếu chưa có thì tự động tái tạo từ CSDL hoặc R2."""
+    if not filename:
+        return None
+    clean_name = Path(str(filename).replace("\\", "/")).name
+    if not clean_name.lower().endswith(".json"):
+        clean_name += ".json"
+    json_path = OUTPUT_DIR / clean_name
+    if json_path.exists() and json_path.is_file() and json_path.stat().st_size > 0:
+        return json_path
+
+    # 1. Thử khôi phục từ CSDL
+    if is_db_connected():
+        db = SessionLocal()
+        try:
+            from crud import get_document_by_file_name
+            doc = get_document_by_file_name(db, clean_name)
+            if not doc:
+                alt_name = clean_name[:-5] if clean_name.endswith(".json") else f"{clean_name}.json"
+                doc = get_document_by_file_name(db, alt_name)
+
+            if doc:
+                raw_data = doc.raw_json
+                if isinstance(raw_data, str) and raw_data.strip():
+                    try:
+                        raw_data = json.loads(raw_data)
+                    except Exception:
+                        pass
+                if not raw_data or not isinstance(raw_data, dict):
+                    raw_data = {
+                        "document_type": doc.document_type or "Nhật ký xẻ gỗ",
+                        "header": {
+                            "ngay_nhap": doc.ngay_nhap or "",
+                            "ngay_xe": doc.ngay_xe or "",
+                            "so_xe": doc.so_xe or "",
+                            "kich_thuoc_go_tron": doc.kich_thuoc_go_tron or "",
+                            "khoi_luong_go_tron": doc.khoi_luong_go_tron or "",
+                            "kich_thuoc_xe": doc.kich_thuoc_xe or ""
+                        },
+                        "source": {"file": doc.image_path or ""},
+                        "items": [
+                            {
+                                "dong": it.dong,
+                                "ngay": it.ngay,
+                                "kich_thuoc_so_luong": it.kich_thuoc_so_luong,
+                                "rong": it.rong,
+                                "cao": it.cao,
+                                "dai": it.dai,
+                                "so_luong": it.so_luong,
+                                "khoi_luong": it.khoi_luong,
+                                "cong_trinh": it.cong_trinh,
+                                "stt_cau_kien": it.stt_cau_kien,
+                                "ten_cau_kien": it.ten_cau_kien,
+                                "nha_cung_cap": it.nha_cung_cap,
+                                "ghi_chu": it.ghi_chu
+                            }
+                            for it in doc.items
+                        ]
+                    }
+                OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+                json_path.write_text(json.dumps(raw_data, ensure_ascii=False, indent=2), encoding="utf-8")
+                print(f"[Ensure JSON OK] Đã tự động tái tạo {clean_name} từ CSDL vào output/")
+                return json_path
+        except Exception as e:
+            print(f"[Ensure JSON Warning] DB lookup error: {e}")
+        finally:
+            db.close()
+
+    # 2. Thử tải từ Cloudflare R2
+    try:
+        import r2_storage
+        if r2_storage.is_r2_configured():
+            data = r2_storage.download_file_bytes(f"output/{clean_name}")
+            if data:
+                OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+                json_path.write_bytes(data)
+                print(f"[Ensure JSON OK] Đã tải {clean_name} từ Cloudflare R2 về output/")
+                return json_path
+    except Exception as e:
+        print(f"[Ensure JSON Warning] R2 download error: {e}")
+
+    return None
+
+
+@app.get("/web_uploads/{filename:path}")
+def get_uploaded_image(filename: str):
+    """Truy xuất ảnh tải lên: Tìm trong web_uploads, rồi images, nếu không có thì redirect sang Cloudflare R2."""
+    clean_name = Path(str(filename).replace("\\", "/")).name
+    p1 = UPLOAD_DIR / clean_name
+    if p1.exists() and p1.is_file():
+        return FileResponse(p1)
+    p2 = IMAGES_DIR / clean_name
+    if p2.exists() and p2.is_file():
+        return FileResponse(p2)
+
+    # Nếu trên máy chủ Cloud (như Render) không có file cục bộ, chuyển hướng sang Cloudflare R2
+    try:
+        import r2_storage
+        if r2_storage.is_r2_configured():
+            r2_img = r2_storage.get_public_file_url(f"images/{clean_name}")
+            if r2_img:
+                return RedirectResponse(r2_img)
+            r2_url = r2_storage.get_public_file_url(f"web_uploads/{clean_name}")
+            if r2_url:
+                return RedirectResponse(r2_url)
+            r2_raw = r2_storage.get_public_file_url(clean_name)
+            if r2_raw:
+                return RedirectResponse(r2_raw)
+    except Exception as e:
+        print(f"[Image R2 Error] {e}")
+
+    raise HTTPException(status_code=404, detail="Không tìm thấy ảnh.")
+
+
+@app.get("/images/{filename:path}")
+def get_images_file(filename: str):
+    return get_uploaded_image(filename)
+
+
+@app.get("/api/image/{filename:path}")
+def get_api_image(filename: str):
+    return get_uploaded_image(filename)
 
 
 def sync_output_json_to_db():
@@ -265,9 +385,9 @@ def read_json(filename: str):
         filename
     ).name
 
-    json_path = OUTPUT_DIR / filename
+    json_path = ensure_json_file_exists(filename)
 
-    if not json_path.exists():
+    if not json_path or not json_path.exists():
 
         raise HTTPException(
             status_code=404,
@@ -302,18 +422,14 @@ async def save_json(
     data: dict
 ):
 
-    filename = Path(
+    clean_name = Path(
         filename
     ).name
+    if not clean_name.lower().endswith(".json"):
+        clean_name += ".json"
 
-    json_path = OUTPUT_DIR / filename
-
-    if not json_path.exists():
-
-        raise HTTPException(
-            status_code=404,
-            detail="Không tìm thấy JSON."
-        )
+    json_path = OUTPUT_DIR / clean_name
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
     try:
 
@@ -333,18 +449,67 @@ async def save_json(
             detail=f"Không lưu được JSON: {e}"
         )
 
-    # Tự động cập nhật PostgreSQL
+    # Tự động cập nhật CSDL (SQLite & Cloudflare D1)
     if is_db_connected():
         try:
             db = SessionLocal()
-            create_or_update_document(db, data, filename)
-            db.close()
+            create_or_update_document(db, data, clean_name)
+            # Đồng bộ sang Cloudflare D1 nếu có cấu hình
+            try:
+                import d1_storage
+                if d1_storage.is_d1_configured():
+                    from crud import get_document_by_file_name
+                    doc = get_document_by_file_name(db, clean_name)
+                    if doc:
+                        d1_storage.save_document_to_d1({
+                            "file_name": doc.file_name,
+                            "image_path": doc.image_path,
+                            "document_type": doc.document_type,
+                            "ngay_nhap": doc.ngay_nhap,
+                            "ngay_xe": doc.ngay_xe,
+                            "so_xe": doc.so_xe,
+                            "kich_thuoc_go_tron": doc.kich_thuoc_go_tron,
+                            "khoi_luong_go_tron": doc.khoi_luong_go_tron,
+                            "kich_thuoc_xe": doc.kich_thuoc_xe,
+                            "raw_json": doc.raw_json,
+                            "status": doc.status,
+                            "items": [
+                                {
+                                    "dong": it.dong,
+                                    "ngay": it.ngay,
+                                    "kich_thuoc_so_luong": it.kich_thuoc_so_luong,
+                                    "rong": it.rong,
+                                    "cao": it.cao,
+                                    "dai": it.dai,
+                                    "so_luong": it.so_luong,
+                                    "khoi_luong": it.khoi_luong,
+                                    "cong_trinh": it.cong_trinh,
+                                    "stt_cau_kien": it.stt_cau_kien,
+                                    "ten_cau_kien": it.ten_cau_kien,
+                                    "nha_cung_cap": it.nha_cung_cap,
+                                    "ghi_chu": it.ghi_chu
+                                }
+                                for it in doc.items
+                            ]
+                        })
+            except Exception as d1_err:
+                print(f"[D1 Save Warning] {d1_err}")
+            finally:
+                db.close()
         except Exception as db_err:
             print(f"[DB Save Error] {db_err}")
 
+    # Tự động đẩy file JSON đã sửa lên Cloudflare R2
+    try:
+        import r2_storage
+        if r2_storage.is_r2_configured():
+            r2_storage.upload_json(data, clean_name)
+    except Exception as r2_err:
+        print(f"[R2 Save JSON Warning] {r2_err}")
+
     return {
         "status": "saved",
-        "file": filename
+        "file": clean_name
     }
 
 
@@ -355,10 +520,9 @@ async def save_json(
 @app.get("/api/excel")
 def export_excel(json_file: str):
 
-    json_file = Path(json_file).name
-    json_path = OUTPUT_DIR / json_file
+    json_path = ensure_json_file_exists(json_file)
 
-    if not json_path.exists():
+    if not json_path or not json_path.exists():
         raise HTTPException(
             status_code=404,
             detail=f"Không tìm thấy JSON: {json_file}"
@@ -431,14 +595,11 @@ async def export_excel_batch(data: dict):
         if not isinstance(filename, str):
             continue
 
-        filename = Path(filename).name
+        clean_fn = Path(filename).name
 
-        if not filename.lower().endswith(".json"):
-            continue
+        json_path = ensure_json_file_exists(clean_fn)
 
-        json_path = OUTPUT_DIR / filename
-
-        if json_path.exists() and json_path.is_file():
+        if json_path and json_path.exists() and json_path.is_file():
 
             json_paths.append(json_path)
 
