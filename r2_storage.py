@@ -21,7 +21,7 @@ ENV_FILE = BASE_DIR / ".env"
 R2_ACCOUNT_ID = ""
 R2_ACCESS_KEY_ID = ""
 R2_SECRET_ACCESS_KEY = ""
-R2_BUCKET_NAME = "ocr-wood-storage"
+R2_BUCKET_NAME = "ocr-vn01"
 R2_ENDPOINT_URL = ""
 R2_PUBLIC_URL = ""
 
@@ -37,7 +37,7 @@ def reload_r2_config():
     R2_ACCOUNT_ID = os.getenv("R2_ACCOUNT_ID", "").strip()
     R2_ACCESS_KEY_ID = os.getenv("R2_ACCESS_KEY_ID", "").strip()
     R2_SECRET_ACCESS_KEY = os.getenv("R2_SECRET_ACCESS_KEY", "").strip()
-    R2_BUCKET_NAME = os.getenv("R2_BUCKET_NAME", "ocr-wood-storage").strip()
+    R2_BUCKET_NAME = os.getenv("R2_BUCKET_NAME", "ocr-vn01").strip()
     R2_ENDPOINT_URL = os.getenv("R2_ENDPOINT_URL", "").strip()
     R2_PUBLIC_URL = os.getenv("R2_PUBLIC_URL", "").strip().rstrip("/")
 
