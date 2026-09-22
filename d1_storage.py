@@ -290,6 +290,16 @@ def get_d1_status() -> Dict[str, Any]:
             "account_id": CLOUDFLARE_ACCOUNT_ID,
             "message": f"Kết nối Cloudflare D1 thành công (Database ID: {D1_DATABASE_ID[:8]}...)"
         }
+    else:
+        return {
+            "configured": True,
+            "connected": False,
+            "database_id": D1_DATABASE_ID,
+            "account_id": CLOUDFLARE_ACCOUNT_ID,
+            "message": res.get("error", "Không thể kết nối Cloudflare D1.")
+        }
+
+
 def delete_document_from_d1(doc_id: int) -> Dict[str, Any]:
     """Xóa một phiếu xẻ khỏi Cloudflare D1."""
     if not is_d1_configured():
@@ -383,5 +393,41 @@ def sync_local_sqlite_to_d1(db_session) -> Dict[str, Any]:
         "total": len(docs),
         "errors": errors,
         "message": f"Đã đồng bộ {synced_count}/{len(docs)} phiếu lên Cloudflare D1 thành công!"
+    }
+
+
+def sync_d1_to_local_sqlite(db_session) -> Dict[str, Any]:
+    """Kéo dữ liệu từ Cloudflare D1 về nạp vào SQLite cục bộ (dùng khi server mới khởi động lại)."""
+    from crud import create_or_update_document
+    if not is_d1_configured():
+        return {"success": False, "error": "Chưa cấu hình Cloudflare D1"}
+
+    d1_docs = get_documents_from_d1(limit=1000)
+    pulled_count = 0
+    for d in d1_docs:
+        file_name = d.get("file_name", "")
+        if not file_name:
+            continue
+        data = {
+            "document_type": d.get("document_type", "Nhật ký xẻ gỗ"),
+            "header": {
+                "ngay_nhap": d.get("ngay_nhap", ""),
+                "ngay_xe": d.get("ngay_xe", ""),
+                "so_xe": d.get("so_xe", ""),
+                "kich_thuoc_go_tron": d.get("kich_thuoc_go_tron", ""),
+                "khoi_luong_go_tron": d.get("khoi_luong_go_tron", ""),
+                "kich_thuoc_xe": d.get("kich_thuoc_xe", "")
+            },
+            "source": {"file": d.get("image_path", "")},
+            "items": d.get("items", []),
+            "date_events": []
+        }
+        create_or_update_document(db_session, data, file_name, d.get("image_path", ""))
+        pulled_count += 1
+
+    return {
+        "success": True,
+        "pulled_count": pulled_count,
+        "message": f"Đã tự động kéo {pulled_count} phiếu từ Cloudflare D1 về SQLite cục bộ thành công!"
     }
 

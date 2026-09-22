@@ -84,6 +84,21 @@ def startup_event():
         try:
             init_database()
             sync_output_json_to_db()
+
+            # Tự động kéo dữ liệu từ Cloudflare D1 về nếu SQLite chưa có phiếu nào (trường hợp chạy trên container như Hugging Face)
+            import d1_storage
+            if d1_storage.is_d1_configured():
+                db_check = SessionLocal()
+                try:
+                    from models import Document
+                    count = db_check.query(Document).count()
+                    if count == 0:
+                        print("[Cloudflare D1] Database cục bộ rỗng, đang tự động khôi phục từ Cloudflare D1...")
+                        res_pull = d1_storage.sync_d1_to_local_sqlite(db_check)
+                        print(f"[Cloudflare D1] {res_pull.get('message')}")
+                finally:
+                    db_check.close()
+
             print(f"[DB] Khởi tạo kết nối CSDL {DB_TYPE.upper()} thành công! ({DATABASE_URL})")
         except Exception as e:
             print(f"[DB Warning] Không thể khởi tạo database {DB_TYPE.upper()}: {e}")
