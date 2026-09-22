@@ -5,8 +5,7 @@
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PORT=7860
+    PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
@@ -31,6 +30,6 @@ RUN mkdir -p output web_uploads excel_exports images \
 
 USER user
 
-EXPOSE 7860
+EXPOSE 10000 8000
 
-CMD ["sh", "-c", "uvicorn web_app:app --host 0.0.0.0 --port ${PORT:-7860}"]
+CMD ["sh", "-c", "uvicorn web_app:app --host 0.0.0.0 --port ${PORT:-10000}"]
