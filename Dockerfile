@@ -1,16 +1,15 @@
 # ============================================================
-# Dockerfile cho OCR_Project
+# Dockerfile cho OCR_Project (Tương thích Hugging Face Spaces & Cloud)
 # ============================================================
 
 FROM python:3.12-slim
 
-# Thiết lập biến môi trường
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=7860
 
 WORKDIR /app
 
-# Cài đặt các thư viện hệ thống cần thiết cho OpenCV, Pillow và PostgreSQL
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
@@ -18,18 +17,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Cài đặt Python packages
+# Tạo user 1000 theo chuẩn Hugging Face Spaces
+RUN useradd -m -u 1000 user
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir sqlalchemy psycopg2-binary python-dotenv
+    && pip install --no-cache-dir sqlalchemy psycopg2-binary python-dotenv requests
 
-# Copy mã nguồn dự án
-COPY . .
+COPY --chown=user:user . .
 
-# Khởi tạo các thư mục lưu trữ dữ liệu
-RUN mkdir -p output web_uploads excel_exports images
+RUN mkdir -p output web_uploads excel_exports images \
+    && chown -R user:user /app
 
-EXPOSE 8000
+USER user
 
-# Khởi động ứng dụng
-CMD ["sh", "-c", "uvicorn web_app:app --host 0.0.0.0 --port ${PORT:-8000}"]
+EXPOSE 7860
+
+CMD ["sh", "-c", "uvicorn web_app:app --host 0.0.0.0 --port ${PORT:-7860}"]
