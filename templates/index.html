@@ -2071,12 +2071,50 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="filter-quick-chips" style="padding-top: 8px;">
-                                <span class="filter-label" style="margin-right: 8px;">📁 Phân loại:</span>
-                                <button type="button" class="chip-btn active" id="chipR2All" onclick="setR2FilterType('all', this)">Tất cả (<span id="r2ChipCountAll">0</span>)</button>
-                                <button type="button" class="chip-btn" id="chipR2Excel" onclick="setR2FilterType('excel', this)">📊 File Excel (<span id="r2ChipCountExcel">0</span>)</button>
-                                <button type="button" class="chip-btn" id="chipR2Json" onclick="setR2FilterType('json', this)">📄 JSON kết quả OCR (<span id="r2ChipCountJson">0</span>)</button>
-                                <button type="button" class="chip-btn" id="chipR2Image" onclick="setR2FilterType('image', this)">🖼️ Ảnh gốc (<span id="r2ChipCountImage">0</span>)</button>
+                            <!-- Hàng 2: Bộ lọc chi tiết R2 -->
+                            <div class="history-filter-controls">
+                                <!-- Nhóm lọc Phân loại -->
+                                <div class="filter-group">
+                                    <span class="filter-label">📁 Phân loại:</span>
+                                    <div class="filter-quick-chips">
+                                        <button type="button" class="chip-btn active" id="chipR2All" onclick="setR2FilterType('all', this)">Tất cả (<span id="r2ChipCountAll">0</span>)</button>
+                                        <button type="button" class="chip-btn" id="chipR2Excel" onclick="setR2FilterType('excel', this)">📊 File Excel (<span id="r2ChipCountExcel">0</span>)</button>
+                                        <button type="button" class="chip-btn" id="chipR2Json" onclick="setR2FilterType('json', this)">📄 JSON (<span id="r2ChipCountJson">0</span>)</button>
+                                        <button type="button" class="chip-btn" id="chipR2Image" onclick="setR2FilterType('image', this)">🖼️ Ảnh gốc (<span id="r2ChipCountImage">0</span>)</button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Nhóm lọc ngày tháng -->
+                                <div class="filter-group">
+                                    <span class="filter-label">📅 Ngày tải lên:</span>
+                                    <div class="filter-date-inputs">
+                                        <input type="date" id="r2FilterFromDate" class="filter-input-date" onchange="filterR2FilesHistory()">
+                                        <span class="filter-separator">→</span>
+                                        <input type="date" id="r2FilterToDate" class="filter-input-date" onchange="filterR2FilesHistory()">
+                                    </div>
+                                </div>
+
+                                <!-- Nhóm Sắp xếp -->
+                                <div class="filter-group">
+                                    <span class="filter-label">⚡ Sắp xếp:</span>
+                                    <select id="r2SortBy" class="filter-select" onchange="filterR2FilesHistory()">
+                                        <option value="newest">Mới nhất ↓</option>
+                                        <option value="oldest">Cũ nhất ↑</option>
+                                        <option value="largest">Dung lượng lớn nhất ↓</option>
+                                        <option value="smallest">Dung lượng nhỏ nhất ↑</option>
+                                        <option value="name_asc">Tên file A → Z</option>
+                                    </select>
+                                </div>
+
+                                <!-- Nhóm thống kê & Xóa lọc -->
+                                <div class="filter-summary-group">
+                                    <button type="button" class="btn-reset-filter" onclick="resetR2Filters()" title="Đặt lại điều kiện lọc">
+                                        <span>🔄 Xóa lọc</span>
+                                    </button>
+                                    <div class="filter-results-badge" id="r2FilterSummary">
+                                        Hiển thị <strong>0</strong> / <strong>0</strong> file
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -4020,6 +4058,10 @@
             }
 
             const searchVal = (document.getElementById("r2SearchInput")?.value || "").toLowerCase().trim();
+            const fromDateVal = document.getElementById("r2FilterFromDate")?.value;
+            const toDateVal = document.getElementById("r2FilterToDate")?.value;
+            const sortVal = document.getElementById("r2SortBy")?.value || "newest";
+
             let filtered = cachedR2Files.filter(file => {
                 // 1. Lọc theo Phân loại (all, excel, json, image)
                 if (currentR2FilterType !== "all" && file.file_type !== currentR2FilterType) {
@@ -4030,10 +4072,82 @@
                     const searchStr = `${file.name} ${file.key} ${file.folder}`.toLowerCase();
                     if (!searchStr.includes(searchVal)) return false;
                 }
+                // 3. Lọc theo ngày tải lên
+                if (fromDateVal || toDateVal) {
+                    let uploadDate;
+                    if (file.uploaded) {
+                        uploadDate = new Date(file.uploaded);
+                    } else if (file.last_modified) {
+                        uploadDate = new Date(file.last_modified);
+                    } else if (file.uploaded_at) {
+                        // fallback parse from string like "HH:MM DD/MM/YYYY" or "DD/MM/YYYY"
+                        const parts = file.uploaded_at.split(" ");
+                        const dateStr = parts.length > 1 ? parts[1] : parts[0];
+                        const dateParts = dateStr.split("/");
+                        if (dateParts.length === 3) {
+                            uploadDate = new Date(`${dateParts[2]}-${dateParts[1]}-${dateParts[0]}`);
+                        }
+                    }
+
+                    if (uploadDate && !isNaN(uploadDate.getTime())) {
+                        uploadDate.setHours(0,0,0,0);
+                        if (fromDateVal) {
+                            const fDate = new Date(fromDateVal);
+                            fDate.setHours(0,0,0,0);
+                            if (uploadDate < fDate) return false;
+                        }
+                        if (toDateVal) {
+                            const tDate = new Date(toDateVal);
+                            tDate.setHours(0,0,0,0);
+                            if (uploadDate > tDate) return false;
+                        }
+                    }
+                }
+
                 return true;
             });
 
+            // 4. Sắp xếp
+            filtered.sort((a, b) => {
+                let dateA = 0;
+                let dateB = 0;
+                
+                if (a.uploaded) dateA = new Date(a.uploaded).getTime();
+                else if (a.last_modified) dateA = new Date(a.last_modified).getTime();
+                
+                if (b.uploaded) dateB = new Date(b.uploaded).getTime();
+                else if (b.last_modified) dateB = new Date(b.last_modified).getTime();
+
+                let sizeA = a.size || 0;
+                let sizeB = b.size || 0;
+                
+                switch (sortVal) {
+                    case "newest": return dateB - dateA;
+                    case "oldest": return dateA - dateB;
+                    case "largest": return sizeB - sizeA;
+                    case "smallest": return sizeA - sizeB;
+                    case "name_asc": return (a.name || "").localeCompare(b.name || "");
+                    default: return dateB - dateA;
+                }
+            });
+
+            // Cập nhật thống kê
+            const summaryBadge = document.getElementById("r2FilterSummary");
+            if (summaryBadge) {
+                summaryBadge.innerHTML = `Hiển thị <strong>${filtered.length}</strong> / <strong>${cachedR2Files.length}</strong> file`;
+            }
+
             renderR2FilesHistoryTable(filtered);
+        }
+
+        function resetR2Filters() {
+            document.getElementById("r2SearchInput").value = "";
+            document.getElementById("r2FilterFromDate").value = "";
+            document.getElementById("r2FilterToDate").value = "";
+            document.getElementById("r2SortBy").value = "newest";
+            
+            setR2FilterType('all', document.getElementById("chipR2All"));
+            // filterR2FilesHistory() is called inside setR2FilterType
         }
 
         function renderR2FilesHistoryTable(files) {
