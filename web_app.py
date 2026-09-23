@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional, List, Dict, Any, Union
 
 from fastapi import FastAPI, UploadFile, File, HTTPException, Query
-from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from abbreviation_manager import abbreviation_mgr
@@ -49,6 +49,38 @@ app.mount(
     StaticFiles(directory=STATIC_DIR),
     name="static"
 )
+
+SAW_BLADE_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">'
+    '<defs>'
+    '<linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">'
+    '<stop offset="0%" stop-color="#fbbf24"/><stop offset="50%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#d97706"/>'
+    '</linearGradient>'
+    '<linearGradient id="m" x1="0%" y1="0%" x2="100%" y2="100%">'
+    '<stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#cbd5e1"/>'
+    '</linearGradient>'
+    '</defs>'
+    '<path d="M 32 4 L 36 12.4 L 43 7.9 L 46 7.8 L 45.2 17 L 53.6 16.6 L 56.2 18 L 51 25.6 L 58.4 29.5 L 60 32 L 51.6 36 L 56.1 43 L 56.2 46 L 47 45.2 L 47.4 53.6 L 46 56.2 L 38.4 51 L 34.5 58.4 L 32 60 L 28 51.6 L 21 56.1 L 18 56.2 L 18.8 47 L 10.4 47.4 L 7.8 46 L 13 38.4 L 5.6 34.5 L 4 32 L 12.4 28 L 7.9 21 L 7.8 18 L 17 18.8 L 16.6 10.4 L 18 7.8 L 25.6 13 L 29.5 5.6 Z" fill="url(#g)" stroke="#78350f" stroke-width="1.5" stroke-linejoin="round"/>'
+    '<circle cx="32" cy="32" r="15" fill="none" stroke="#fef3c7" stroke-width="1.2" opacity="0.9" stroke-dasharray="3.5 2"/>'
+    '<circle cx="32" cy="32" r="7.5" fill="url(#m)" stroke="#78350f" stroke-width="1.2"/>'
+    '<circle cx="32" cy="32" r="3.5" fill="#0f172a"/>'
+    '<circle cx="32" cy="18" r="1.6" fill="#78350f"/>'
+    '<circle cx="32" cy="46" r="1.6" fill="#78350f"/>'
+    '<circle cx="18" cy="32" r="1.6" fill="#78350f"/>'
+    '<circle cx="46" cy="32" r="1.6" fill="#78350f"/>'
+    '</svg>'
+)
+
+
+@app.get("/favicon.ico")
+@app.get("/favicon.svg")
+def get_favicon():
+    return Response(
+        content=SAW_BLADE_SVG,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=604800, immutable"}
+    )
+
 
 
 def ensure_json_file_exists(filename: str) -> Optional[Path]:
