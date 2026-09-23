@@ -16,7 +16,7 @@ Hệ thống nhận diện và trích xuất dữ liệu từ hình ảnh/tài l
 
 ## 🛠 Công nghệ sử dụng
 * **Ngôn ngữ:** Python 3.x
-* **AI Engine:** Google Gemini API (Model: `gemini-3.6-flash`)
+* **AI Engine:** Google Gemini API (Model: `gemini-3.8-flash`)
 * **Thư viện chính:** `google-generativeai` (hoặc SDK tương ứng), `python-dotenv` (quản lý biến môi trường)
 
 ---
