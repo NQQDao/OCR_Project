@@ -360,6 +360,7 @@
             overflow: hidden;
             position: relative;
             user-select: none;
+            touch-action: none;
             cursor: default;
         }
 
@@ -672,6 +673,7 @@
             background: #0a131e;
             cursor: grab;
             user-select: none;
+            touch-action: none;
         }
 
         .lightbox-body.is-panning {
@@ -684,14 +686,32 @@
             object-fit: contain;
             transition: transform 0.1s ease-out;
             user-select: none;
+            -webkit-user-select: none;
             -webkit-user-drag: none;
             will-change: transform;
             pointer-events: auto;
             cursor: inherit;
+            touch-action: none;
+            transform-origin: center center;
+            display: block;
         }
 
         #lightboxImage.panning {
             transition: none !important;
+        }
+
+        .pan-hint-pill.lightbox-pan-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px dashed rgba(255, 255, 255, 0.28);
+            padding: 4px 9px;
+            border-radius: 6px;
+            user-select: none;
         }
 
         .mini-btn {
@@ -2474,97 +2494,96 @@
         let imageInteractionsInitialized = false;
 
         function setupImageInteractions() {
+            const container = document.getElementById("imageContainer");
+            const magnifier = document.getElementById("imageMagnifier");
+            if (!container) return;
             if (imageInteractionsInitialized) return;
             imageInteractionsInitialized = true;
 
-            const container = document.getElementById("imageContainer");
-            const magnifier = document.getElementById("imageMagnifier");
+            // 1. Phóng to / Thu nhỏ bằng con lăn chuột (Mouse Wheel)
+            container.addEventListener("wheel", function (e) {
+                const img = document.getElementById("previewImage");
+                if (!img) return;
+                e.preventDefault();
+                const delta = e.deltaY < 0 ? 0.12 : -0.12;
+                zoomStep(delta);
+            }, { passive: false });
 
-            if (container) {
-                // 1. Phóng to / Thu nhỏ bằng con lăn chuột (Mouse Wheel)
-                container.addEventListener("wheel", function (e) {
-                    const img = document.getElementById("previewImage");
-                    if (!img) return;
-                    e.preventDefault();
-                    const delta = e.deltaY < 0 ? 0.12 : -0.12;
-                    zoomStep(delta);
-                }, { passive: false });
+            // 2. Kéo (Pan) ảnh trong khung xem trước bằng chuột
+            container.addEventListener("mousedown", function (e) {
+                if (e.button !== 0 || isMagnifierActive) return;
+                const stage = document.getElementById("previewImageStage");
+                if (!stage) return;
+                isImagePanning = true;
+                panStartX = e.clientX - imagePanX;
+                panStartY = e.clientY - imagePanY;
+                container.classList.add("is-panning");
+                e.preventDefault();
+            });
 
-                // 2. Kéo (Pan) ảnh trong khung xem trước bằng chuột
-                container.addEventListener("mousedown", function (e) {
-                    if (e.button !== 0 || isMagnifierActive) return;
-                    const stage = document.getElementById("previewImageStage");
-                    if (!stage) return;
-                    isImagePanning = true;
-                    panStartX = e.clientX - imagePanX;
-                    panStartY = e.clientY - imagePanY;
-                    container.classList.add("is-panning");
-                });
+            // Hỗ trợ kéo cảm ứng trên thiết bị di động / màn hình cảm ứng
+            container.addEventListener("touchstart", function (e) {
+                if (isMagnifierActive || e.touches.length !== 1) return;
+                const stage = document.getElementById("previewImageStage");
+                if (!stage) return;
+                isImagePanning = true;
+                panStartX = e.touches[0].clientX - imagePanX;
+                panStartY = e.touches[0].clientY - imagePanY;
+                container.classList.add("is-panning");
+            }, { passive: true });
 
-                // Hỗ trợ kéo cảm ứng trên thiết bị di động / màn hình cảm ứng
-                container.addEventListener("touchstart", function (e) {
-                    if (isMagnifierActive || e.touches.length !== 1) return;
-                    const stage = document.getElementById("previewImageStage");
-                    if (!stage) return;
-                    isImagePanning = true;
-                    panStartX = e.touches[0].clientX - imagePanX;
-                    panStartY = e.touches[0].clientY - imagePanY;
-                    container.classList.add("is-panning");
-                }, { passive: true });
+            // 3. Kính lúp thông minh soi chi tiết chữ viết tay khi rê chuột
+            container.addEventListener("mousemove", function (e) {
+                const img = document.getElementById("previewImage");
+                if (!img || !magnifier) return;
 
-                // 3. Kính lúp thông minh soi chi tiết chữ viết tay khi rê chuột
-                container.addEventListener("mousemove", function (e) {
-                    const img = document.getElementById("previewImage");
-                    if (!img || !magnifier) return;
+                if (!isMagnifierActive) {
+                    magnifier.style.display = "none";
+                    return;
+                }
 
-                    if (!isMagnifierActive) {
-                        magnifier.style.display = "none";
-                        return;
-                    }
+                const imgRect = img.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
 
-                    const imgRect = img.getBoundingClientRect();
-                    const containerRect = container.getBoundingClientRect();
+                // Kiểm tra xem chuột có nằm trong vùng ảnh hay không
+                if (
+                    e.clientX < imgRect.left ||
+                    e.clientX > imgRect.right ||
+                    e.clientY < imgRect.top ||
+                    e.clientY > imgRect.bottom
+                ) {
+                    magnifier.style.display = "none";
+                    return;
+                }
 
-                    // Kiểm tra xem chuột có nằm trong vùng ảnh hay không
-                    if (
-                        e.clientX < imgRect.left ||
-                        e.clientX > imgRect.right ||
-                        e.clientY < imgRect.top ||
-                        e.clientY > imgRect.bottom
-                    ) {
-                        magnifier.style.display = "none";
-                        return;
-                    }
+                magnifier.style.display = "block";
 
-                    magnifier.style.display = "block";
+                // Vị trí kính lúp tương đối so với container
+                const mouseXInContainer = e.clientX - containerRect.left;
+                const mouseYInContainer = e.clientY - containerRect.top;
+                magnifier.style.left = `${mouseXInContainer}px`;
+                magnifier.style.top = `${mouseYInContainer}px`;
 
-                    // Vị trí kính lúp tương đối so với container
-                    const mouseXInContainer = e.clientX - containerRect.left;
-                    const mouseYInContainer = e.clientY - containerRect.top;
-                    magnifier.style.left = `${mouseXInContainer}px`;
-                    magnifier.style.top = `${mouseYInContainer}px`;
+                // Tỉ lệ vị trí trên ảnh gốc
+                const mouseXInImg = e.clientX - imgRect.left;
+                const mouseYInImg = e.clientY - imgRect.top;
 
-                    // Tỉ lệ vị trí trên ảnh gốc
-                    const mouseXInImg = e.clientX - imgRect.left;
-                    const mouseYInImg = e.clientY - imgRect.top;
+                const zoomRatio = 2.6; // Mức phóng đại kính lúp
+                const bgWidth = imgRect.width * zoomRatio;
+                const bgHeight = imgRect.height * zoomRatio;
+                const bgX = (mouseXInImg * zoomRatio) - (magnifier.offsetWidth / 2);
+                const bgY = (mouseYInImg * zoomRatio) - (magnifier.offsetHeight / 2);
 
-                    const zoomRatio = 2.6; // Mức phóng đại kính lúp
-                    const bgWidth = imgRect.width * zoomRatio;
-                    const bgHeight = imgRect.height * zoomRatio;
-                    const bgX = (mouseXInImg * zoomRatio) - (magnifier.offsetWidth / 2);
-                    const bgY = (mouseYInImg * zoomRatio) - (magnifier.offsetHeight / 2);
+                if (currentImageUrl) {
+                    magnifier.style.backgroundImage = `url("${currentImageUrl}")`;
+                }
+                magnifier.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
+                magnifier.style.backgroundPosition = `-${bgX}px -${bgY}px`;
+            });
 
-                    if (currentImageUrl) {
-                        magnifier.style.backgroundImage = `url("${currentImageUrl}")`;
-                    }
-                    magnifier.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
-                    magnifier.style.backgroundPosition = `-${bgX}px -${bgY}px`;
-                });
-
-                container.addEventListener("mouseleave", function () {
-                    if (magnifier) magnifier.style.display = "none";
-                });
-            }
+            container.addEventListener("mouseleave", function () {
+                if (magnifier) magnifier.style.display = "none";
+            });
 
             // Window mousemove & mouseup cho Preview Image Pan
             window.addEventListener("mousemove", function (e) {
@@ -2577,8 +2596,7 @@
             window.addEventListener("mouseup", function () {
                 if (isImagePanning) {
                     isImagePanning = false;
-                    const container = document.getElementById("imageContainer");
-                    if (container) container.classList.remove("is-panning");
+                    container.classList.remove("is-panning");
                     applyImageTransform(false);
                 }
             });
@@ -2593,8 +2611,7 @@
             window.addEventListener("touchend", function () {
                 if (isImagePanning) {
                     isImagePanning = false;
-                    const container = document.getElementById("imageContainer");
-                    if (container) container.classList.remove("is-panning");
+                    container.classList.remove("is-panning");
                     applyImageTransform(false);
                 }
             });
@@ -2605,37 +2622,66 @@
                     e.preventDefault();
                 }
             });
+        }
 
-            // 4. Sự kiện cho Lightbox toàn màn hình
+        // ===== BỘ ĐIỀU KHIỂN & KÉO THẢ (PAN) CHO LIGHTBOX TOÀN MÀN HÌNH =====
+        let lightboxInteractionsInitialized = false;
+
+        function setupLightboxInteractions() {
             const lightboxBody = document.getElementById("lightboxBody");
-            if (lightboxBody) {
-                lightboxBody.addEventListener("wheel", function (e) {
-                    e.preventDefault();
-                    const delta = e.deltaY < 0 ? 0.15 : -0.15;
-                    lightboxZoom(delta);
-                }, { passive: false });
+            const lightboxImage = document.getElementById("lightboxImage");
+            if (!lightboxBody) return;
+            if (lightboxInteractionsInitialized) return;
+            lightboxInteractionsInitialized = true;
 
-                lightboxBody.addEventListener("mousedown", function (e) {
+            // 1. Phóng to / Thu nhỏ trong Lightbox bằng con lăn chuột (Mouse Wheel)
+            lightboxBody.addEventListener("wheel", function (e) {
+                e.preventDefault();
+                const delta = e.deltaY < 0 ? 0.15 : -0.15;
+                lightboxZoom(delta);
+            }, { passive: false });
+
+            // Hàm kích hoạt kéo Pan
+            function startLightboxPan(clientX, clientY) {
+                isLightboxPanning = true;
+                lightboxStartX = clientX - lightboxPanX;
+                lightboxStartY = clientY - lightboxPanY;
+                lightboxBody.classList.add("is-panning");
+            }
+
+            // 2. Kéo bằng chuột trái
+            lightboxBody.addEventListener("mousedown", function (e) {
+                if (e.button !== 0) return;
+                const img = document.getElementById("lightboxImage");
+                if (!img || !img.src) return;
+                e.preventDefault();
+                startLightboxPan(e.clientX, e.clientY);
+            });
+
+            if (lightboxImage) {
+                lightboxImage.addEventListener("mousedown", function (e) {
                     if (e.button !== 0) return;
-                    const img = document.getElementById("lightboxImage");
-                    if (!img || !img.src) return;
-                    isLightboxPanning = true;
-                    lightboxStartX = e.clientX - lightboxPanX;
-                    lightboxStartY = e.clientY - lightboxPanY;
-                    lightboxBody.classList.add("is-panning");
+                    e.preventDefault();
+                    startLightboxPan(e.clientX, e.clientY);
                 });
+            }
 
-                lightboxBody.addEventListener("touchstart", function (e) {
+            // 3. Kéo bằng cảm ứng (Touch)
+            lightboxBody.addEventListener("touchstart", function (e) {
+                if (e.touches.length !== 1) return;
+                const img = document.getElementById("lightboxImage");
+                if (!img || !img.src) return;
+                startLightboxPan(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: true });
+
+            if (lightboxImage) {
+                lightboxImage.addEventListener("touchstart", function (e) {
                     if (e.touches.length !== 1) return;
-                    const img = document.getElementById("lightboxImage");
-                    if (!img || !img.src) return;
-                    isLightboxPanning = true;
-                    lightboxStartX = e.touches[0].clientX - lightboxPanX;
-                    lightboxStartY = e.touches[0].clientY - lightboxPanY;
-                    lightboxBody.classList.add("is-panning");
+                    startLightboxPan(e.touches[0].clientX, e.touches[0].clientY);
                 }, { passive: true });
             }
 
+            // Sự kiện toàn cục cho chuyển động chuột và thả chuột
             window.addEventListener("mousemove", function (e) {
                 if (!isLightboxPanning) return;
                 lightboxPanX = e.clientX - lightboxStartX;
@@ -2671,6 +2717,7 @@
 
         // ===== XEM ẢNH TOÀN MÀN HÌNH (LIGHTBOX) =====
         function openFullscreenModal(src = null) {
+            setupLightboxInteractions();
             const targetSrc = src || currentImageUrl;
             if (!targetSrc) {
                 alert("Hãy chọn ảnh trước khi xem toàn màn hình.");
@@ -2682,7 +2729,7 @@
 
             img.src = targetSrc;
             lightboxScale = 1;
-            lightboxRotation = imageRotation;
+            lightboxRotation = imageRotation || 0;
             lightboxPanX = 0;
             lightboxPanY = 0;
             applyLightboxTransform();
@@ -2697,6 +2744,9 @@
                 modal.style.display = "none";
                 document.body.style.overflow = "";
             }
+            isLightboxPanning = false;
+            const lb = document.getElementById("lightboxBody");
+            if (lb) lb.classList.remove("is-panning");
         }
 
         function lightboxZoom(delta) {
@@ -2737,8 +2787,12 @@
         });
 
         // Khởi tạo tương tác ảnh khi nạp trang
-        window.addEventListener("DOMContentLoaded", setupImageInteractions);
+        window.addEventListener("DOMContentLoaded", function () {
+            setupImageInteractions();
+            setupLightboxInteractions();
+        });
         setupImageInteractions();
+        setupLightboxInteractions();
 
         // ===== QUẢN LÝ BỘ TỪ ĐIỂN CHỮ VIẾT TẮT =====
         let allAbbreviations = [];
@@ -3970,6 +4024,7 @@
             <div class="lightbox-header">
                 <div class="lightbox-title"><span>🔍</span> Chi tiết ảnh phiếu gốc (Toàn màn hình)</div>
                 <div class="lightbox-tools">
+                    <span class="pan-hint-pill lightbox-pan-hint" title="Giữ chuột trái hoặc chạm màn hình và kéo để di chuyển ảnh tự do">✋ Kéo để pan</span>
                     <button class="lightbox-btn" type="button" onclick="lightboxZoom(-0.2)" title="Thu nhỏ">− Thu nhỏ</button>
                     <span id="lightboxZoomBadge" class="lightbox-badge">100%</span>
                     <button class="lightbox-btn" type="button" onclick="lightboxZoom(0.2)" title="Phóng to">+ Phóng to</button>
@@ -3979,7 +4034,7 @@
                 </div>
             </div>
             <div class="lightbox-body" id="lightboxBody">
-                <img id="lightboxImage" src="" alt="Ảnh phóng to chi tiết">
+                <img id="lightboxImage" src="" alt="Ảnh phóng to chi tiết" draggable="false">
             </div>
         </div>
     </div>
