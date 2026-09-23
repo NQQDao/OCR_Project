@@ -432,17 +432,24 @@
         /* Magnifier Lens */
         .image-magnifier {
             position: absolute;
-            width: 190px;
-            height: 190px;
+            width: 210px;
+            height: 210px;
             border-radius: 50%;
             border: 3px solid var(--primary);
-            box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35), inset 0 0 10px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 12px rgba(0, 0, 0, 0.2);
             pointer-events: none;
-            background-repeat: no-repeat;
-            background-color: white;
+            background-color: #0f172a;
             z-index: 20;
             display: none;
             transform: translate(-50%, -50%);
+            overflow: hidden;
+        }
+
+        .image-magnifier canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 50%;
         }
 
         .image-magnifier::after {
@@ -450,12 +457,13 @@
             position: absolute;
             top: 50%;
             left: 50%;
-            width: 18px;
-            height: 18px;
+            width: 22px;
+            height: 22px;
             transform: translate(-50%, -50%);
-            border: 1px dashed rgba(11, 114, 217, 0.6);
+            border: 1.5px dashed rgba(11, 114, 217, 0.95);
             border-radius: 50%;
             pointer-events: none;
+            box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.65);
         }
 
         /* Modern Image Toolbar */
@@ -1640,7 +1648,9 @@
                                 <div class="hint">Chọn ảnh phiếu để bắt đầu OCR</div>
                             </div>
                         </div>
-                        <div id="imageMagnifier" class="image-magnifier" style="display: none;"></div>
+                        <div id="imageMagnifier" class="image-magnifier" style="display: none;">
+                            <canvas id="magnifierCanvas" width="300" height="300"></canvas>
+                        </div>
                     </div>
 
                     <div class="image-toolbar">
@@ -2018,7 +2028,6 @@
 
             const magnifier = document.getElementById("imageMagnifier");
             if (magnifier) {
-                magnifier.style.backgroundImage = `url("${currentImageUrl}")`;
                 magnifier.style.display = "none";
             }
 
@@ -2532,12 +2541,19 @@
                 container.classList.add("is-panning");
             }, { passive: true });
 
-            // 3. Kính lúp thông minh soi chi tiết chữ viết tay khi rê chuột
+            // 3. Kính lúp thông minh soi chi tiết chữ viết tay khi rê chuột (hỗ trợ ảnh chụp dọc, nghiêng và xoay mọi góc)
             container.addEventListener("mousemove", function (e) {
                 const img = document.getElementById("previewImage");
-                if (!img || !magnifier) return;
+                const canvas = document.getElementById("magnifierCanvas");
+                if (!img || !magnifier || !canvas) return;
 
                 if (!isMagnifierActive) {
+                    magnifier.style.display = "none";
+                    return;
+                }
+
+                // Chờ ảnh nạp xong kích thước gốc
+                if (!img.naturalWidth || !img.naturalHeight) {
                     magnifier.style.display = "none";
                     return;
                 }
@@ -2545,40 +2561,72 @@
                 const imgRect = img.getBoundingClientRect();
                 const containerRect = container.getBoundingClientRect();
 
-                // Kiểm tra xem chuột có nằm trong vùng ảnh hay không
-                if (
-                    e.clientX < imgRect.left ||
-                    e.clientX > imgRect.right ||
-                    e.clientY < imgRect.top ||
-                    e.clientY > imgRect.bottom
-                ) {
+                // Tâm của ảnh trên màn hình (viewport coordinates)
+                const centerX = (imgRect.left + imgRect.right) / 2;
+                const centerY = (imgRect.top + imgRect.bottom) / 2;
+
+                const dx = e.clientX - centerX;
+                const dy = e.clientY - centerY;
+
+                // Nghịch đảo góc xoay và tỉ lệ để tìm tọa độ trên ảnh gốc chưa xoay
+                const rad = -(imageRotation * Math.PI) / 180;
+                const cos = Math.cos(rad);
+                const sin = Math.sin(rad);
+
+                const u = (dx * cos - dy * sin) / imageScale;
+                const v = (dx * sin + dy * cos) / imageScale;
+
+                const unscaledW = img.offsetWidth;
+                const unscaledH = img.offsetHeight;
+
+                const posImgX = unscaledW / 2 + u;
+                const posImgY = unscaledH / 2 + v;
+
+                // Kiểm tra xem chuột có nằm trong vùng hiển thị thực tế của ảnh hay không
+                if (posImgX < 0 || posImgX > unscaledW || posImgY < 0 || posImgY > unscaledH) {
                     magnifier.style.display = "none";
                     return;
                 }
 
                 magnifier.style.display = "block";
 
-                // Vị trí kính lúp tương đối so với container
+                // Vị trí tâm kính lúp tương đối so với container
                 const mouseXInContainer = e.clientX - containerRect.left;
                 const mouseYInContainer = e.clientY - containerRect.top;
                 magnifier.style.left = `${mouseXInContainer}px`;
                 magnifier.style.top = `${mouseYInContainer}px`;
 
-                // Tỉ lệ vị trí trên ảnh gốc
-                const mouseXInImg = e.clientX - imgRect.left;
-                const mouseYInImg = e.clientY - imgRect.top;
+                // Tọa độ trên ảnh gốc độ phân giải đầy đủ
+                const ratioX = img.naturalWidth / unscaledW;
+                const ratioY = img.naturalHeight / unscaledH;
+                const origX = posImgX * ratioX;
+                const origY = posImgY * ratioY;
 
-                const zoomRatio = 2.6; // Mức phóng đại kính lúp
-                const bgWidth = imgRect.width * zoomRatio;
-                const bgHeight = imgRect.height * zoomRatio;
-                const bgX = (mouseXInImg * zoomRatio) - (magnifier.offsetWidth / 2);
-                const bgY = (mouseYInImg * zoomRatio) - (magnifier.offsetHeight / 2);
+                // Vẽ ảnh phóng to lên Canvas theo đúng góc xoay và tỉ lệ
+                const ctx = canvas.getContext("2d");
+                if (ctx) {
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = "high";
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.save();
 
-                if (currentImageUrl) {
-                    magnifier.style.backgroundImage = `url("${currentImageUrl}")`;
+                    // Di chuyển gốc tọa độ về tâm kính lúp
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+
+                    // Xoay theo đúng góc xoay hiện tại của ảnh trên màn hình (để chữ luôn xuôi chiều đọc)
+                    ctx.rotate((imageRotation * Math.PI) / 180);
+
+                    // Mức phóng đại kính lúp (phóng to chi tiết gấp 2.6 lần)
+                    const zoomRatio = 2.6;
+                    const dpiScale = canvas.width / (magnifier.offsetWidth || 210);
+                    const renderScale = (unscaledW / img.naturalWidth) * imageScale * zoomRatio * dpiScale;
+                    ctx.scale(renderScale, renderScale);
+
+                    // Vẽ ảnh với điểm (origX, origY) nằm chính xác tại tâm kính lúp
+                    ctx.drawImage(img, -origX, -origY);
+
+                    ctx.restore();
                 }
-                magnifier.style.backgroundSize = `${bgWidth}px ${bgHeight}px`;
-                magnifier.style.backgroundPosition = `-${bgX}px -${bgY}px`;
             });
 
             container.addEventListener("mouseleave", function () {
