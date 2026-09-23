@@ -245,3 +245,4 @@ export async function setSystemSetting(db, key, value, description = "") {
 export async function deleteSystemSetting(db, key) {
   await db.prepare("DELETE FROM system_settings WHERE key = ?").bind(key).run();
 }
+

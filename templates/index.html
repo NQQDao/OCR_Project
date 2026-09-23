@@ -2840,7 +2840,7 @@
                 const mBadge = document.getElementById("r2ModalStatusBadge");
                 if (mBadge) {
                     if (data.connected) {
-                        mBadge.textContent = "● ĐÃ KẾT NỐI S3";
+                        mBadge.textContent = "● ĐÃ KẾT NỐI (R2 NATIVE)";
                         mBadge.style.background = "#dcfce7";
                         mBadge.style.color = "#15803d";
                     } else if (data.configured) {
@@ -2855,7 +2855,7 @@
                 }
 
                 const bName = document.getElementById("r2BucketName");
-                if (bName) bName.textContent = data.bucket || "ocr-wood-storage";
+                if (bName) bName.textContent = data.bucket || data.bucket_name || "ocr-vn01";
 
                 const pubUrl = document.getElementById("r2PublicUrlDisplay");
                 if (pubUrl) {
@@ -3153,7 +3153,7 @@
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; font-size: 13px;">
                         <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
                             <strong style="color: #64748b;">R2 Bucket:</strong>
-                            <div id="r2BucketName" style="font-family: monospace; font-weight: 600; color: #0f172a; margin-top: 2px;">ocr-wood-storage</div>
+                            <div id="r2BucketName" style="font-family: monospace; font-weight: 600; color: #0f172a; margin-top: 2px;">ocr-vn01</div>
                         </div>
                         <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
                             <strong style="color: #64748b;">Worker CDN Public URL:</strong>

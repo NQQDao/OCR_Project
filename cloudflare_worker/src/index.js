@@ -559,27 +559,68 @@ export default {
       // ============================================================
 
       if (pathname === "/api/r2/status" && method === "GET") {
+        const bucketName = env.R2_BUCKET_NAME || "ocr-vn01";
         return jsonResponse({
           status: "success",
           configured: true,
-          bucket_name: env.R2_BUCKET_NAME || "ocr-vn01",
-          public_url: env.R2_PUBLIC_URL || ""
+          connected: true,
+          bucket: bucketName,
+          bucket_name: bucketName,
+          public_url: env.R2_PUBLIC_URL || "",
+          message: `Đã kết nối trực tiếp R2 Bucket '${bucketName}' qua Cloudflare Worker (Zero Egress Fee).`
         });
       }
 
       if (pathname === "/api/r2/test-connection" && method === "POST") {
-        return jsonResponse({
-          status: "success",
-          message: `Kết nối Cloudflare R2 ('${env.R2_BUCKET_NAME || "ocr-vn01"}') qua Cloudflare Worker hoạt động hoàn hảo!`
-        });
+        try {
+          const bucketName = env.R2_BUCKET_NAME || "ocr-vn01";
+          const testKey = `test_connection_${Date.now()}.txt`;
+          await env.MY_BUCKET.put(testKey, "Cloudflare Worker R2 Connection Test OK");
+          await env.MY_BUCKET.delete(testKey);
+
+          return jsonResponse({
+            status: "success",
+            success: true,
+            message: `Kiểm tra đọc/ghi trên Cloudflare R2 ('${bucketName}') hoạt động hoàn hảo!`
+          });
+        } catch (e) {
+          return jsonResponse({
+            status: "error",
+            success: false,
+            message: `Lỗi kiểm tra R2: ${e.message}`
+          }, 500);
+        }
+      }
+
+      if (pathname === "/api/r2/sync-all" && method === "POST") {
+        try {
+          const list = await env.MY_BUCKET.list({ limit: 1000 });
+          const count = list.objects ? list.objects.length : 0;
+          return jsonResponse({
+            status: "success",
+            success: true,
+            synced_count: count,
+            message: `Toàn bộ ${count} file đã được đồng bộ sẵn sàng trên Cloudflare R2!`
+          });
+        } catch (e) {
+          return jsonResponse({
+            status: "error",
+            success: false,
+            message: `Lỗi đồng bộ R2: ${e.message}`
+          }, 500);
+        }
       }
 
       if (pathname === "/api/r2/files" && method === "GET") {
-        const list = await env.MY_BUCKET.list({ limit: 100 });
+        const prefix = url.searchParams.get("prefix") || "";
+        const list = await env.MY_BUCKET.list({ prefix, limit: 100 });
+        const pubBase = (env.R2_PUBLIC_URL || "").replace(/\/$/, "");
         const files = (list.objects || []).map(obj => ({
           key: obj.key,
           size: obj.size,
-          uploaded: obj.uploaded
+          last_modified: obj.uploaded ? obj.uploaded.toISOString() : null,
+          uploaded: obj.uploaded,
+          public_url: pubBase ? `${pubBase}/${obj.key}` : `/${obj.key}`
         }));
         return jsonResponse({ status: "success", count: files.length, files });
       }

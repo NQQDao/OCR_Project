@@ -752,3 +752,4 @@ export async function createBatchExcel(recordsData) {
 
   return await wb.xlsx.writeBuffer();
 }
+
