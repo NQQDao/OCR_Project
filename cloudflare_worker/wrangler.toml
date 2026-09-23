@@ -1,11 +1,31 @@
 name = "ocr-r2-worker"
 main = "src/index.js"
 compatibility_date = "2024-09-01"
+compatibility_flags = ["nodejs_compat"]
 
-# Gắn kết Cloudflare R2 Bucket vào Worker
-# Thay thế "ocr-wood-storage" bằng tên Bucket bạn đã đặt trên Cloudflare Dashboard
+# Cloudflare R2 Bucket
 [[r2_buckets]]
 binding = "MY_BUCKET"
 bucket_name = "ocr-vn01"
 
+# Cloudflare D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "ocr"
+database_id = "00c15f36-f7cb-40e4-b0a8-a5b9b862bd3c"
 
+# Rules for importing HTML as text
+[[rules]]
+type = "Text"
+globs = ["**/*.html"]
+fallthrough = true
+
+[placement]
+mode = "targeted"
+region = "aws:us-east-1"
+
+[vars]
+GEMINI_MODEL = "gemini-3.6-flash"
+GEMINI_FALLBACK_MODELS = "gemini-3.6-flash,gemini-3.8-flash,gemini-3.5-flash,gemini-flash-latest"
+R2_BUCKET_NAME = "ocr-vn01"
+R2_PUBLIC_URL = "https://pub-db7f3da023764b6497ffdcf644d4e7e5.r2.dev"

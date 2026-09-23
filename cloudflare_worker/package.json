@@ -1,8 +1,9 @@
 {
   "name": "ocr-r2-worker",
   "version": "1.0.0",
-  "description": "Cloudflare Worker R2 CDN Gateway for Wood OCR Project",
+  "description": "Cloudflare Worker Fullstack Serverless for Wood OCR Project",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "login": "wrangler login",
     "dev": "wrangler dev",
@@ -10,6 +11,8 @@
   },
   "devDependencies": {
     "wrangler": "^4.136.1"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0"
   }
 }
-

@@ -1,138 +1,616 @@
 /**
- * Cloudflare Worker: Gateway phân phối file và ảnh từ R2 Bucket (Zero Egress Fee)
- * Tự động gắn Content-Type, Cache Control và CORS cho Web UI
+ * Cloudflare Worker: Fullstack Serverless OCR Wood Project
+ * - Compute: Cloudflare Workers (0ms cold start, globally distributed)
+ * - Storage: Cloudflare R2 (images, output JSON, Excel exports)
+ * - Database: Cloudflare D1 (Serverless SQLite database)
+ * - AI Vision: Google Gemini API (v1beta REST with multi-model fallback)
+ * - Excel: ExcelJS generating 5 specialized logbook sheets
  */
+
+import htmlContent from "./html.js";
+import { createBatchExcel } from "./excel.js";
+import {
+  buildOcrPrompt,
+  callGeminiVision,
+  parseAndValidateOcrResponse,
+  BASE_OCR_PROMPT
+} from "./ocr.js";
+import {
+  countDocuments,
+  getDocuments,
+  getDocumentById,
+  getDocumentByFileName,
+  deleteDocument,
+  saveOrUpdateDocument,
+  getAbbreviations,
+  saveAbbreviation,
+  deleteAbbreviation,
+  getSystemSetting,
+  setSystemSetting,
+  deleteSystemSetting
+} from "./db.js";
+
+const DEFAULT_CATEGORIES = {
+  cong_trinh: "Mã / Tên công trình",
+  cau_kien: "Tên cấu kiện mộc",
+  de_nham: "Từ dễ nhầm (Cấu kiện vs Công trình)",
+  go_tron_quy_cach: "Quy cách & Gỗ tròn",
+  ghi_chu: "Ghi chú & Đơn vị"
+};
+
+function jsonResponse(data, status = 200, extraHeaders = {}) {
+  return new Response(JSON.stringify(data, null, 2), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD",
+      "Access-Control-Allow-Headers": "*",
+      ...extraHeaders
+    }
+  });
+}
+
+function corsPreflightResponse() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, HEAD",
+      "Access-Control-Allow-Headers": "*",
+      "Access-Control-Max-Age": "86400"
+    }
+  });
+}
 
 export default {
   async fetch(request, env) {
-    // Xử lý tiền kiểm CORS (Preflight request)
-    if (request.method === "OPTIONS") {
-      return new Response(null, {
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, PUT, HEAD, OPTIONS",
-          "Access-Control-Allow-Headers": "*",
-          "Access-Control-Max-Age": "86400",
-        },
-      });
+    const url = new URL(request.url);
+    const method = request.method;
+    const pathname = url.pathname;
+
+    // 1. OPTIONS Preflight CORS
+    if (method === "OPTIONS") {
+      return corsPreflightResponse();
     }
 
-    const url = new URL(request.url);
-    // Lấy r2 key bỏ dấu '/' đầu tiên
-    const key = decodeURIComponent(url.pathname.slice(1));
-
-    // Trang chủ Worker
-    if (!key) {
-      return new Response(
-        JSON.stringify({
-          status: "online",
-          service: "OCR Wood Storage CDN (Cloudflare R2 + Worker)",
-          usage: "GET /{file_path} để tải ảnh hoặc file Excel",
-        }, null, 2),
-        {
+    try {
+      // 2. GET / : Trả về Web UI Dashboard
+      if ((pathname === "/" || pathname === "/index.html") && method === "GET") {
+        return new Response(htmlContent, {
           status: 200,
           headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-          },
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "public, max-age=3600"
+          }
+        });
+      }
+
+      // 3. GET /images/*, /web_uploads/*, /api/image/* : Phục vụ ảnh từ R2
+      if (
+        (pathname.startsWith("/images/") ||
+          pathname.startsWith("/web_uploads/") ||
+          pathname.startsWith("/api/image/")) &&
+        (method === "GET" || method === "HEAD")
+      ) {
+        let filename = decodeURIComponent(pathname.replace(/^\/(images|web_uploads|api\/image)\//, ""));
+        filename = filename.replace(/^(\.\.[\/\\])+/, ""); // ngăn chặn path traversal
+
+        let obj = await env.MY_BUCKET.get(`images/${filename}`);
+        if (!obj) {
+          obj = await env.MY_BUCKET.get(`web_uploads/${filename}`);
         }
-      );
-    }
+        if (!obj) {
+          obj = await env.MY_BUCKET.get(filename);
+        }
 
-    // 1. GET / HEAD: Phục vụ xem/tải ảnh, file Excel, JSON
-    if (request.method === "GET" || request.method === "HEAD") {
-      const object = await env.MY_BUCKET.get(key, {
-        range: request.headers.get("range"),
-        onlyIf: request.headers,
-      });
+        if (!obj) {
+          return jsonResponse({ error: "Không tìm thấy ảnh trên Cloudflare R2", file: filename }, 404);
+        }
 
-      if (!object) {
-        return new Response(
-          JSON.stringify({ error: "File không tồn tại trên Cloudflare R2", key }),
-          {
-            status: 404,
+        const headers = new Headers();
+        obj.writeHttpMetadata(headers);
+        headers.set("etag", obj.httpEtag);
+        headers.set("Access-Control-Allow-Origin", "*");
+        headers.set("Cache-Control", "public, max-age=604800, immutable");
+
+        if (!headers.has("content-type")) {
+          const lower = filename.toLowerCase();
+          if (lower.endsWith(".png")) headers.set("content-type", "image/png");
+          else headers.set("content-type", "image/jpeg");
+        }
+
+        if (method === "HEAD") return new Response(null, { headers });
+        return new Response(obj.body, { headers, status: 200 });
+      }
+
+      // ============================================================
+      // 4. API TÀI LIỆU (DOCUMENTS & D1)
+      // ============================================================
+
+      // GET /api/documents : Danh sách phiếu xẻ
+      if (pathname === "/api/documents" && method === "GET") {
+        const skip = Math.max(0, parseInt(url.searchParams.get("skip") || "0", 10));
+        const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") || "50", 10)));
+        const search = url.searchParams.get("search");
+
+        const total = await countDocuments(env.DB, search);
+        const docs = await getDocuments(env.DB, { skip, limit, search });
+
+        return jsonResponse({
+          status: "success",
+          total,
+          count: docs.length,
+          documents: docs
+        });
+      }
+
+      // GET /api/documents/:id : Chi tiết 1 phiếu xẻ kèm dòng vật tư
+      if (pathname.startsWith("/api/documents/") && method === "GET") {
+        const id = parseInt(pathname.slice("/api/documents/".length), 10);
+        if (isNaN(id)) return jsonResponse({ error: "ID không hợp lệ" }, 400);
+
+        const doc = await getDocumentById(env.DB, id);
+        if (!doc) return jsonResponse({ error: "Không tìm thấy phiếu trong CSDL D1" }, 404);
+
+        return jsonResponse({
+          status: "success",
+          document: {
+            id: doc.id,
+            file_name: doc.file_name,
+            image_path: doc.image_path,
+            so_xe: doc.so_xe,
+            ngay_xe: doc.ngay_xe,
+            kich_thuoc_go_tron: doc.kich_thuoc_go_tron,
+            khoi_luong_go_tron: doc.khoi_luong_go_tron,
+            kich_thuoc_xe: doc.kich_thuoc_xe,
+            raw_json: doc.raw_json,
+            items: (doc.items || []).map(it => ({
+              dong: it.dong,
+              ngay: it.ngay,
+              kich_thuoc_so_luong: it.kich_thuoc_so_luong,
+              khoi_luong: it.khoi_luong,
+              cong_trinh: it.cong_trinh,
+              ten_cau_kien: it.ten_cau_kien,
+              ghi_chu: it.ghi_chu
+            }))
+          }
+        });
+      }
+
+      // DELETE /api/documents/:id : Xóa phiếu
+      if (pathname.startsWith("/api/documents/") && method === "DELETE") {
+        const id = parseInt(pathname.slice("/api/documents/".length), 10);
+        if (isNaN(id)) return jsonResponse({ error: "ID không hợp lệ" }, 400);
+
+        const doc = await getDocumentById(env.DB, id);
+        if (!doc) return jsonResponse({ error: "Không tìm thấy phiếu để xóa" }, 404);
+
+        await deleteDocument(env.DB, id);
+
+        // Xóa file JSON trên R2 nếu có
+        try {
+          await env.MY_BUCKET.delete(`output/${doc.file_name}`);
+        } catch {}
+
+        return jsonResponse({
+          status: "success",
+          message: `Đã xóa phiếu '${doc.file_name}' khỏi Cloudflare D1 & R2 thành công.`
+        });
+      }
+
+      // ============================================================
+      // 5. API JSON (R2 & D1)
+      // ============================================================
+
+      // GET /api/json/:filename : Lấy nội dung file JSON
+      if (pathname.startsWith("/api/json/") && method === "GET") {
+        let filename = decodeURIComponent(pathname.slice("/api/json/".length));
+        if (!filename.toLowerCase().endsWith(".json")) filename += ".json";
+
+        // Thử tìm trên R2 trước
+        let obj = await env.MY_BUCKET.get(`output/${filename}`);
+        if (!obj) obj = await env.MY_BUCKET.get(filename);
+
+        if (obj) {
+          const content = await obj.text();
+          return new Response(content, {
+            status: 200,
             headers: {
               "Content-Type": "application/json; charset=utf-8",
               "Access-Control-Allow-Origin": "*",
-            },
-          }
-        );
-      }
-
-      const headers = new Headers();
-      object.writeHttpMetadata(headers);
-      headers.set("etag", object.httpEtag);
-      headers.set("Access-Control-Allow-Origin", "*");
-
-      // Cache trình duyệt 7 ngày cho ảnh, 1 giờ cho các file khác
-      if (key.match(/\.(jpe?g|png|webp|gif)$/i)) {
-        headers.set("Cache-Control", "public, max-age=604800, immutable");
-      } else {
-        headers.set("Cache-Control", "public, max-age=3600");
-      }
-
-      // Tự động gán MIME Type nếu chưa có
-      if (!headers.has("content-type")) {
-        if (key.endsWith(".jpg") || key.endsWith(".jpeg")) {
-          headers.set("content-type", "image/jpeg");
-        } else if (key.endsWith(".png")) {
-          headers.set("content-type", "image/png");
-        } else if (key.endsWith(".xlsx")) {
-          headers.set("content-type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        } else if (key.endsWith(".json")) {
-          headers.set("content-type", "application/json; charset=utf-8");
+              "Cache-Control": "public, max-age=60"
+            }
+          });
         }
+
+        // Nếu R2 chưa có, thử tìm trong D1
+        const doc = await getDocumentByFileName(env.DB, filename);
+        if (doc && doc.raw_json) {
+          return new Response(
+            typeof doc.raw_json === "string" ? doc.raw_json : JSON.stringify(doc.raw_json),
+            {
+              status: 200,
+              headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "Access-Control-Allow-Origin": "*"
+              }
+            }
+          );
+        }
+
+        return jsonResponse({ error: "Không tìm thấy file JSON", file: filename }, 404);
       }
 
-      if (request.method === "HEAD") {
-        return new Response(null, { headers });
-      }
+      // PUT /api/json/:filename : Lưu chỉnh sửa JSON & cập nhật D1
+      if (pathname.startsWith("/api/json/") && method === "PUT") {
+        let filename = decodeURIComponent(pathname.slice("/api/json/".length));
+        if (!filename.toLowerCase().endsWith(".json")) filename += ".json";
 
-      return new Response(object.body, {
-        headers,
-        status: object.body ? 200 : 304,
-      });
-    }
+        const jsonData = await request.json();
+        const jsonStr = JSON.stringify(jsonData, null, 2);
 
-    // 2. PUT: Cho phép Backend hoặc Client upload file lên R2
-    if (request.method === "PUT") {
-      const contentType = request.headers.get("content-type") || "application/octet-stream";
-      await env.MY_BUCKET.put(key, request.body, {
-        httpMetadata: { contentType },
-      });
+        // 1. Lưu lên Cloudflare R2
+        await env.MY_BUCKET.put(`output/${filename}`, jsonStr, {
+          httpMetadata: { contentType: "application/json; charset=utf-8" }
+        });
 
-      return new Response(
-        JSON.stringify({
+        // 2. Cập nhật Cloudflare D1
+        const imageFile = filename.replace(/_v51\.json$/i, ".jpg").replace(/\.json$/i, ".jpg");
+        await saveOrUpdateDocument(env.DB, jsonData, filename, imageFile);
+
+        return jsonResponse({
           status: "success",
-          message: `Đã lưu file '${key}' lên Cloudflare R2 thành công!`,
-          key,
-        }),
-        {
+          message: `Đã lưu chỉnh sửa JSON '${filename}' và đồng bộ lên D1 & R2 thành công!`
+        });
+      }
+
+      // ============================================================
+      // 6. API OCR & BATCH OCR (GEMINI VISION + R2 + D1)
+      // ============================================================
+
+      if ((pathname === "/api/ocr" || pathname === "/api/ocr/batch") && method === "POST") {
+        const contentType = request.headers.get("content-type") || "";
+        if (!contentType.includes("multipart/form-data")) {
+          return jsonResponse({ error: "Yêu cầu định dạng multipart/form-data" }, 400);
+        }
+
+        const formData = await request.formData();
+        const files = [];
+
+        for (const [key, value] of formData.entries()) {
+          if (value && typeof value === "object" && typeof value.arrayBuffer === "function") {
+            files.push(value);
+          }
+        }
+
+        if (files.length === 0) {
+          return jsonResponse({ error: "Chưa chọn file ảnh nào để nhận diện." }, 400);
+        }
+
+        const prompt = await buildOcrPrompt(env);
+        const results = [];
+
+        for (const file of files) {
+          const originalName = file.name || "upload.jpg";
+          const lower = originalName.toLowerCase();
+          if (!lower.endsWith(".jpg") && !lower.endsWith(".jpeg") && !lower.endsWith(".png")) {
+            results.push({
+              status: "error",
+              file: originalName,
+              error: "Chỉ hỗ trợ file ảnh định dạng JPG, JPEG, PNG."
+            });
+            continue;
+          }
+
+          try {
+            const arrayBuf = await file.arrayBuffer();
+            const bytes = new Uint8Array(arrayBuf);
+
+            // Chuyển binary sang base64
+            let binaryStr = "";
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i += 8192) {
+              binaryStr += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+            }
+            const base64Data = btoa(binaryStr);
+            const mimeType = lower.endsWith(".png") ? "image/png" : "image/jpeg";
+
+            // 1. Lưu ảnh gốc lên R2
+            await env.MY_BUCKET.put(`images/${originalName}`, arrayBuf, {
+              httpMetadata: { contentType: mimeType }
+            });
+            await env.MY_BUCKET.put(`web_uploads/${originalName}`, arrayBuf, {
+              httpMetadata: { contentType: mimeType }
+            });
+
+            // 2. Gọi Google Gemini Vision với Fallback
+            const aiResp = await callGeminiVision({
+              imageBase64: base64Data,
+              mimeType,
+              prompt,
+              env
+            });
+
+            // 3. Parse và kiểm tra đối chiếu khối lượng
+            const finalDoc = parseAndValidateOcrResponse(aiResp.text, originalName, aiResp.modelUsed);
+
+            // 4. Tạo tên file JSON và lưu vào R2
+            const stem = originalName.replace(/\.[^/.]+$/, "");
+            const jsonFileName = `${stem}_v51.json`;
+            const jsonText = JSON.stringify(finalDoc, null, 2);
+
+            await env.MY_BUCKET.put(`output/${jsonFileName}`, jsonText, {
+              httpMetadata: { contentType: "application/json; charset=utf-8" }
+            });
+
+            // 5. Lưu kết quả vào Cloudflare D1
+            await saveOrUpdateDocument(env.DB, finalDoc, jsonFileName, originalName);
+
+            results.push({
+              status: "success",
+              file: originalName,
+              json_file: jsonFileName,
+              model_used: aiResp.modelUsed
+            });
+          } catch (ocrErr) {
+            results.push({
+              status: "error",
+              file: originalName,
+              error: ocrErr.message || String(ocrErr)
+            });
+          }
+        }
+
+        return jsonResponse(pathname === "/api/ocr" && results.length === 1 ? results[0] : results);
+      }
+
+      // ============================================================
+      // 7. API XUẤT EXCEL (EXCELJS STREAMING TỪ R2/D1)
+      // ============================================================
+
+      if (pathname === "/api/excel/batch" && method === "POST") {
+        let reqData = {};
+        try {
+          reqData = await request.json();
+        } catch {}
+
+        let jsonFiles = reqData.json_files || [];
+
+        // Nếu không gửi danh sách file, tự động lấy toàn bộ từ D1
+        if (!Array.isArray(jsonFiles) || jsonFiles.length === 0) {
+          const { results: allDocs } = await env.DB.prepare(
+            "SELECT file_name, raw_json FROM documents ORDER BY id DESC"
+          ).all();
+          if (!allDocs || allDocs.length === 0) {
+            return jsonResponse({ error: "Chưa có dữ liệu nào trong CSDL để xuất Excel." }, 400);
+          }
+          jsonFiles = allDocs.map(d => d.file_name);
+        }
+
+        const recordsData = [];
+        for (const fileName of jsonFiles) {
+          let clean = fileName.trim();
+          if (!clean.endsWith(".json")) clean += ".json";
+
+          // Thử đọc từ R2
+          let obj = await env.MY_BUCKET.get(`output/${clean}`);
+          if (!obj) obj = await env.MY_BUCKET.get(clean);
+
+          if (obj) {
+            try {
+              const d = JSON.parse(await obj.text());
+              recordsData.push({ data: d, filename: clean });
+              continue;
+            } catch {}
+          }
+
+          // Thử đọc từ D1
+          const doc = await getDocumentByFileName(env.DB, clean);
+          if (doc && doc.raw_json) {
+            try {
+              const d = typeof doc.raw_json === "string" ? JSON.parse(doc.raw_json) : doc.raw_json;
+              recordsData.push({ data: d, filename: clean });
+            } catch {}
+          }
+        }
+
+        if (recordsData.length === 0) {
+          return jsonResponse({ error: "Không tìm thấy dữ liệu JSON hợp lệ để xuất Excel." }, 400);
+        }
+
+        // Sinh file Excel bằng ExcelJS
+        const excelBuffer = await createBatchExcel(recordsData);
+        const timestamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+        const excelFileName = `nhat_ky_xe_tong_hop_${timestamp}.xlsx`;
+
+        // Tự động sao lưu file Excel lên Cloudflare R2
+        try {
+          await env.MY_BUCKET.put(`excel_exports/${excelFileName}`, excelBuffer, {
+            httpMetadata: {
+              contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+          });
+        } catch {}
+
+        return new Response(excelBuffer, {
           status: 200,
           headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
-      );
-    }
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition": `attachment; filename="${excelFileName}"`,
+            "Access-Control-Allow-Origin": "*"
+          }
+        });
+      }
 
-    // 3. DELETE: Xóa file nếu cần
-    if (request.method === "DELETE") {
-      await env.MY_BUCKET.delete(key);
-      return new Response(
-        JSON.stringify({ status: "success", message: `Đã xóa file '${key}' khỏi R2.` }),
-        {
+      if (pathname === "/api/excel" && method === "GET") {
+        const jsonFile = url.searchParams.get("json_file");
+        if (!jsonFile) return jsonResponse({ error: "Chưa truyền tham số json_file" }, 400);
+
+        let clean = jsonFile.trim();
+        if (!clean.endsWith(".json")) clean += ".json";
+
+        let jsonData = null;
+        let obj = await env.MY_BUCKET.get(`output/${clean}`);
+        if (!obj) obj = await env.MY_BUCKET.get(clean);
+
+        if (obj) {
+          try {
+            jsonData = JSON.parse(await obj.text());
+          } catch {}
+        }
+
+        if (!jsonData) {
+          const doc = await getDocumentByFileName(env.DB, clean);
+          if (doc && doc.raw_json) {
+            jsonData = typeof doc.raw_json === "string" ? JSON.parse(doc.raw_json) : doc.raw_json;
+          }
+        }
+
+        if (!jsonData) return jsonResponse({ error: "Không tìm thấy file JSON" }, 404);
+
+        const excelBuffer = await createBatchExcel([{ data: jsonData, filename: clean }]);
+        const excelFileName = clean.replace(/\.json$/i, ".xlsx");
+
+        return new Response(excelBuffer, {
           status: 200,
           headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            "Access-Control-Allow-Origin": "*",
-          },
-        }
+            "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "Content-Disposition": `attachment; filename="${excelFileName}"`,
+            "Access-Control-Allow-Origin": "*"
+          }
+        });
+      }
+
+      // ============================================================
+      // 8. TỪ ĐIỂN VIẾT TẮT & HUẤN LUYỆN PROMPT
+      // ============================================================
+
+      if (pathname === "/api/abbreviations" && method === "GET") {
+        const category = url.searchParams.get("category");
+        const search = url.searchParams.get("search");
+        const items = await getAbbreviations(env.DB, { category, search });
+
+        return jsonResponse({
+          status: "success",
+          categories: DEFAULT_CATEGORIES,
+          items,
+          total: items.length
+        });
+      }
+
+      if (pathname === "/api/abbreviations" && method === "POST") {
+        const item = await request.json();
+        if (!item.short) return jsonResponse({ error: "Từ viết tắt không được để trống." }, 400);
+
+        const saved = await saveAbbreviation(env.DB, item);
+        return jsonResponse({
+          status: "success",
+          message: "Đã lưu từ viết tắt thành công vào D1!",
+          item: saved
+        });
+      }
+
+      if (pathname.startsWith("/api/abbreviations/") && method === "DELETE") {
+        const id = decodeURIComponent(pathname.slice("/api/abbreviations/".length));
+        await deleteAbbreviation(env.DB, id);
+        return jsonResponse({ status: "success", message: "Đã xóa từ viết tắt thành công!" });
+      }
+
+      if (pathname === "/api/abbreviations/prompt-preview" && method === "GET") {
+        const customPrompt = await getSystemSetting(env.DB, "custom_prompt");
+        const effectivePrompt = await buildOcrPrompt(env);
+
+        return jsonResponse({
+          status: "success",
+          prompt_text: effectivePrompt,
+          default_prompt: BASE_OCR_PROMPT,
+          custom_prompt: customPrompt,
+          is_custom: customPrompt !== null && customPrompt !== undefined
+        });
+      }
+
+      if (pathname === "/api/prompt/custom" && method === "POST") {
+        const body = await request.json();
+        const text = body.prompt_text || "";
+        if (!text.trim()) return jsonResponse({ error: "Nội dung prompt không được để trống." }, 400);
+
+        await setSystemSetting(env.DB, "custom_prompt", text.trim(), "Custom Gemini OCR prompt");
+        return jsonResponse({
+          status: "success",
+          message: "Đã lưu Prompt tùy chỉnh thành công vào Cloudflare D1!",
+          is_custom: true
+        });
+      }
+
+      if (pathname === "/api/prompt/reset" && method === "POST") {
+        await deleteSystemSetting(env.DB, "custom_prompt");
+        const effectivePrompt = await buildOcrPrompt(env);
+        return jsonResponse({
+          status: "success",
+          message: "Đã khôi phục Prompt về mặc định tự động sinh từ bộ từ điển D1!",
+          prompt_text: effectivePrompt,
+          is_custom: false
+        });
+      }
+
+      // ============================================================
+      // 9. TRẠNG THÁI HỆ THỐNG (R2 & D1 STATUS)
+      // ============================================================
+
+      if (pathname === "/api/r2/status" && method === "GET") {
+        return jsonResponse({
+          status: "success",
+          configured: true,
+          bucket_name: env.R2_BUCKET_NAME || "ocr-vn01",
+          public_url: env.R2_PUBLIC_URL || ""
+        });
+      }
+
+      if (pathname === "/api/r2/test-connection" && method === "POST") {
+        return jsonResponse({
+          status: "success",
+          message: `Kết nối Cloudflare R2 ('${env.R2_BUCKET_NAME || "ocr-vn01"}') qua Cloudflare Worker hoạt động hoàn hảo!`
+        });
+      }
+
+      if (pathname === "/api/r2/files" && method === "GET") {
+        const list = await env.MY_BUCKET.list({ limit: 100 });
+        const files = (list.objects || []).map(obj => ({
+          key: obj.key,
+          size: obj.size,
+          uploaded: obj.uploaded
+        }));
+        return jsonResponse({ status: "success", count: files.length, files });
+      }
+
+      if (
+        (pathname === "/api/d1/status" ||
+          pathname === "/api/database/status" ||
+          pathname === "/api/status") &&
+        method === "GET"
+      ) {
+        const total = await countDocuments(env.DB);
+        return jsonResponse({
+          status: "connected",
+          db_type: "Cloudflare D1 Serverless SQL",
+          database: "ocr",
+          total_documents: total
+        });
+      }
+
+      // 404 cho các đường dẫn khác
+      return jsonResponse({ error: "Endpoint không tồn tại", path: pathname }, 404);
+    } catch (err) {
+      console.error("[Worker Unhandled Error]", err);
+      return jsonResponse(
+        {
+          error: "Lỗi xử lý máy chủ nội bộ (Worker Error)",
+          message: err.message || String(err),
+          stack: err.stack || ""
+        },
+        500
       );
     }
-
-    return new Response("Method not allowed", { status: 405 });
-  },
+  }
 };
-
