@@ -4,7 +4,7 @@ import json
 import re
 import time
 from pathlib import Path
-from typing import List
+from typing import List, Optional, Dict, Any, Union
 
 from PIL import Image, ImageOps, ImageEnhance, ImageFilter
 from pydantic import BaseModel, Field
@@ -16,25 +16,49 @@ from abbreviation_manager import abbreviation_mgr
 
 
 # ============================================================
-# OCR V5.1
+# OCR V5.1 - MULTI-MODEL FALLBACK (GEMINI & OPENAI)
 # ẢNH -> JSON
 #
 # Mục tiêu:
-#   - 1 ảnh chỉ gọi Gemini 1 lần
+#   - Tự động Fallback giữa các model Gemini khi gặp 503 High Demand
+#   - Hỗ trợ OpenAI (gpt-4o-mini/gpt-4o) hoặc OpenRouter nếu có API key
 #   - Không retry khi 429 quota
-#   - Có retry khi lỗi server tạm thời
 #   - Python tự kiểm tra khối lượng
 #   - JSON chuẩn hóa cho bước Excel sau này
 # ============================================================
 
 
 # ============================================================
-# 1. CẤU HÌNH
+# 1. CẤU HÌNH & MÔ HÌNH AI
 # ============================================================
 
-MODEL = "gemini-3.6-flash"
-
 BASE_DIR = Path(__file__).resolve().parent
+
+# Tải biến môi trường từ .env
+ENV_FILE = BASE_DIR / ".env"
+if ENV_FILE.exists():
+    load_dotenv(dotenv_path=ENV_FILE, override=True)
+else:
+    load_dotenv(override=True)
+
+MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+
+# Danh sách các model Gemini dự phòng tự động chuyển khi model chính bận (503 High Demand)
+_default_models = [
+    MODEL,
+    "gemini-3.8-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-pro"
+]
+_env_models = os.getenv("GEMINI_MODELS", "").strip()
+if _env_models:
+    _default_models = [m.strip() for m in _env_models.split(",") if m.strip()]
+
+# Loại bỏ trùng lặp giữ nguyên thứ tự ưu tiên
+GEMINI_MODELS_POOL = []
+for m in _default_models:
+    if m and m not in GEMINI_MODELS_POOL:
+        GEMINI_MODELS_POOL.append(m)
 
 IMAGE_DIR = BASE_DIR / "images"
 OUTPUT_DIR = BASE_DIR / "output"
@@ -46,16 +70,16 @@ OUTPUT_DIR.mkdir(
 
 # Ảnh mẫu của bạn đang nằm ngang.
 # Nếu bộ ảnh sau này đã đúng chiều thì đổi thành 0.
-ROTATE_DEGREES = 90
+ROTATE_DEGREES = int(os.getenv("ROTATE_DEGREES", "90"))
 
-# Chất lượng ảnh gửi Gemini
+# Chất lượng ảnh gửi AI
 JPEG_QUALITY = 95
 
-# Số lần retry cho lỗi server tạm thời
-MAX_RETRIES = 4
+# Số lần retry cho lỗi server tạm thời trên mỗi model
+MAX_RETRIES = 2
 
 # Thời gian chờ cơ bản
-RETRY_DELAY = 3
+RETRY_DELAY = 2
 
 # Nếu True:
 # đã có mau_01_v51.json thì bỏ qua mau_01
@@ -66,27 +90,27 @@ SAVE_DEBUG_IMAGE = True
 
 
 # ============================================================
-# 2. API KEY
+# 2. KHỞI TẠO CLIENT (GEMINI & OPENAI)
 # ============================================================
 
-ENV_FILE = BASE_DIR / ".env"
-if ENV_FILE.exists():
-    load_dotenv(dotenv_path=ENV_FILE, override=True)
-else:
-    load_dotenv(override=True)
-
 API_KEY = os.getenv("GEMINI_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-if not API_KEY:
-    raise RuntimeError(
-        "\n"
-        "KHÔNG TÌM THẤY GEMINI_API_KEY.\n"
-        "Kiểm tra biến môi trường GEMINI_API_KEY trên Windows.\n"
-    )
+client = None
+if API_KEY:
+    try:
+        client = genai.Client(
+            api_key=API_KEY
+        )
+    except Exception as e:
+        print(f"[Gemini Init Warning] Không thể khởi tạo genai.Client: {e}")
 
-client = genai.Client(
-    api_key=API_KEY
-)
+
+class OCRResponse:
+    """Wrapper chứa nội dung text JSON và model AI đã xử lý thành công."""
+    def __init__(self, text: str, model_used: str):
+        self.text = text
+        self.model_used = model_used
 
 
 # ============================================================
@@ -412,119 +436,167 @@ def image_to_bytes(
 
 
 # ============================================================
-# 6. GEMINI
+# 6. GỌI AI VISION (GEMINI MULTI-MODEL FALLBACK & OPENAI)
 # ============================================================
+
+def call_openai_vision(image_bytes: bytes, prompt: str) -> str:
+    """Gọi OpenAI Vision API (hoặc OpenRouter/Groq/Together AI) để nhận diện ảnh."""
+    import base64
+    import requests
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("Chưa cấu hình OPENAI_API_KEY")
+
+    base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1").rstrip("/")
+    model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    b64_image = base64.b64encode(image_bytes).decode("utf-8")
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    if "openrouter" in base_url.lower():
+        headers["HTTP-Referer"] = "https://ocr-wood-project.onrender.com"
+        headers["X-Title"] = "OCR Wood Project"
+
+    payload = {
+        "model": model_name,
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": prompt + "\n\nQUAN TRỌNG: Chỉ trả về duy nhất chuỗi JSON hợp lệ theo đúng cấu trúc schema yêu cầu, tuyệt đối không dùng cú pháp markdown ```json hay văn bản giải thích nào khác."
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{b64_image}"
+                        }
+                    }
+                ]
+            }
+        ],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.0
+    }
+
+    resp = requests.post(f"{base_url}/chat/completions", headers=headers, json=payload, timeout=90)
+    if not resp.ok:
+        raise RuntimeError(f"OpenAI/OpenRouter API Lỗi {resp.status_code}: {resp.text}")
+
+    data = resp.json()
+    content = data["choices"][0]["message"]["content"]
+    return content.strip()
+
 
 def call_gemini(
     image: Image.Image
-):
+) -> OCRResponse:
 
     image_bytes = image_to_bytes(
         image
     )
 
     last_error = None
+    all_errors = []
 
-    for attempt in range(
-        1,
-        MAX_RETRIES + 1
-    ):
-
-        try:
-
-            response = client.models.generate_content(
-                model=MODEL,
-
-                contents=[
-                    get_ocr_prompt(),
-
-                    types.Part.from_bytes(
-                        data=image_bytes,
-                        mime_type="image/jpeg"
+    # 1. Thử lần lượt các model Gemini trong GEMINI_MODELS_POOL
+    if client:
+        for model_idx, model_name in enumerate(GEMINI_MODELS_POOL, 1):
+            print(f"      [AI Engine] Đang gọi Gemini model '{model_name}' ({model_idx}/{len(GEMINI_MODELS_POOL)})...")
+            for attempt in range(1, MAX_RETRIES + 1):
+                try:
+                    response = client.models.generate_content(
+                        model=model_name,
+                        contents=[
+                            get_ocr_prompt(),
+                            types.Part.from_bytes(
+                                data=image_bytes,
+                                mime_type="image/jpeg"
+                            )
+                        ],
+                        config=types.GenerateContentConfig(
+                            response_mime_type="application/json",
+                            response_schema=Document,
+                            temperature=0
+                        )
                     )
-                ],
 
-                config=types.GenerateContentConfig(
+                    if response and response.text:
+                        if model_idx > 1:
+                            print(f"      [AI Fallback Thành Công] Model dự phòng '{model_name}' đã nhận diện xong!")
+                        return OCRResponse(text=response.text, model_used=model_name)
 
-                    response_mime_type="application/json",
+                    raise RuntimeError("Gemini trả về response rỗng.")
 
-                    response_schema=Document,
+                except Exception as e:
+                    last_error = e
+                    error_text = str(e).lower()
+                    all_errors.append(f"{model_name} (lần {attempt}): {e}")
 
-                    temperature=0
-                )
-            )
+                    # 429 = QUOTA
+                    if (
+                        "429" in error_text
+                        or "resource_exhausted" in error_text
+                        or "quota" in error_text
+                    ):
+                        if os.getenv("OPENAI_API_KEY"):
+                            print(f"      [Gemini 429 Quota] Model {model_name} hết hạn mức, chuẩn bị thử OpenAI...")
+                            break
+                        raise RuntimeError(
+                            "QUOTA_429\n"
+                            + str(e)
+                        )
 
-            return response
+                    # 5xx = SERVER TEMPORARY ERROR (503 High Demand, Unavailable, Overloaded)
+                    retryable = any(
+                        x in error_text
+                        for x in [
+                            "500",
+                            "502",
+                            "503",
+                            "504",
+                            "unavailable",
+                            "overloaded",
+                            "deadline",
+                            "high demand"
+                        ]
+                    )
 
-        except Exception as e:
+                    if retryable:
+                        if attempt < MAX_RETRIES:
+                            wait_s = RETRY_DELAY * attempt
+                            print(f"      [Gemini {model_name} bận] Server quá tải tạm thời (503), chờ {wait_s}s...")
+                            time.sleep(wait_s)
+                        else:
+                            print(f"      [Gemini {model_name} quá tải 503] Tự động chuyển sang model tiếp theo trong danh sách dự phòng...")
+                    else:
+                        print(f"      [Gemini {model_name} lỗi] {e}")
+                        break
 
-            last_error = e
+    # 2. Nếu tất cả model Gemini đều nghẽn (hoặc chưa có GEMINI_API_KEY) và có OPENAI_API_KEY
+    if os.getenv("OPENAI_API_KEY"):
+        print("      [AI Fallback] Chuyển hướng sang OpenAI / OpenRouter Vision...")
+        try:
+            openai_text = call_openai_vision(image_bytes, get_ocr_prompt())
+            if openai_text:
+                o_model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+                print(f"      [AI Fallback Thành Công] OpenAI '{o_model}' đã nhận diện xong!")
+                return OCRResponse(text=openai_text, model_used=f"openai/{o_model}")
+        except Exception as oai_err:
+            all_errors.append(f"OpenAI fallback: {oai_err}")
+            print(f"      [OpenAI Fallback Error] {oai_err}")
 
-            error_text = str(e).lower()
-
-            # =================================================
-            # 429 = QUOTA
-            #
-            # KHÔNG retry
-            # =================================================
-
-            if (
-                "429" in error_text
-                or "resource_exhausted" in error_text
-                or "quota" in error_text
-            ):
-
-                raise RuntimeError(
-                    "QUOTA_429\n"
-                    + str(e)
-                )
-
-            # =================================================
-            # 5xx = SERVER TEMPORARY ERROR
-            # =================================================
-
-            retryable = any(
-                x in error_text
-                for x in [
-                    "500",
-                    "502",
-                    "503",
-                    "504",
-                    "unavailable",
-                    "overloaded",
-                    "deadline"
-                ]
-            )
-
-            if not retryable:
-
-                raise
-
-            if attempt >= MAX_RETRIES:
-
-                break
-
-            wait_seconds = (
-                RETRY_DELAY * attempt
-            )
-
-            print(
-                f"      Gemini lỗi tạm thời "
-                f"(lần {attempt}/{MAX_RETRIES})"
-            )
-
-            print(
-                f"      Chờ {wait_seconds}s..."
-            )
-
-            time.sleep(
-                wait_seconds
-            )
-
+    # 3. Nếu toàn bộ model đều không thành công
     raise RuntimeError(
         "GEMINI_TEMP_ERROR\n"
-        f"Sau {MAX_RETRIES} lần thử.\n"
-        f"{last_error}"
+        f"Đã thử qua các model: {', '.join(GEMINI_MODELS_POOL)} nhưng đều gặp sự cố quá tải từ máy chủ AI.\n"
+        f"Lỗi cuối cùng: {last_error}\n"
+        f"Chi tiết lịch sử thử: {'; '.join(all_errors)}"
     )
 
 
@@ -536,13 +608,20 @@ def parse_response(
     response
 ) -> Document:
 
-    text = response.text
+    text = getattr(response, "text", str(response))
 
     if not text:
 
         raise RuntimeError(
-            "Gemini trả về dữ liệu rỗng."
+            "AI trả về dữ liệu rỗng."
         )
+
+    # Nếu text bị bọc trong markdown ```json ... ``` (thường xảy ra với OpenAI)
+    text = text.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        if len(lines) >= 2:
+            text = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
 
     try:
 
@@ -553,8 +632,8 @@ def parse_response(
     except Exception as e:
 
         raise RuntimeError(
-            "Không đọc được JSON từ Gemini.\n"
-            f"Response:\n{text}"
+            "Không đọc được JSON từ AI.\n"
+            f"Response:\n{text[:500]}"
         ) from e
 
     return Document.model_validate(
@@ -1119,7 +1198,8 @@ def build_warnings(
 
 def build_final_json(
     image_path: Path,
-    document: Document
+    document: Document,
+    model_name: Optional[str] = None
 ):
 
     # Áp dụng date_events
@@ -1160,7 +1240,7 @@ def build_final_json(
                 image_path.name,
 
             "model":
-                MODEL,
+                model_name or MODEL,
 
             "rotation_degrees":
                 ROTATE_DEGREES
@@ -1368,7 +1448,8 @@ def process_image(
 
     result = build_final_json(
         image_path,
-        document
+        document,
+        model_name=getattr(response, "model_used", MODEL)
     )
 
     with open(
