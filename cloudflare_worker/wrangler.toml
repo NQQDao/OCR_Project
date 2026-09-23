@@ -25,7 +25,7 @@ mode = "targeted"
 region = "aws:us-east-1"
 
 [vars]
-GEMINI_MODEL = "gemini-3.6-flash"
-GEMINI_FALLBACK_MODELS = "gemini-3.6-flash,gemini-3.8-flash,gemini-3.5-flash,gemini-flash-latest"
+GEMINI_MODEL = "gemini-3.8-flash"
+GEMINI_FALLBACK_MODELS = "gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash,gemini-flash-latest"
 R2_BUCKET_NAME = "ocr-vn01"
 R2_PUBLIC_URL = "https://pub-db7f3da023764b6497ffdcf644d4e7e5.r2.dev"

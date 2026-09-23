@@ -1,7 +1,7 @@
 /**
  * Module OCR AI Vision cho Cloudflare Worker:
  * - Gọi trực tiếp Google Gemini API (v1beta REST) với chế độ Structured JSON Output
- * - Hỗ trợ Multi-model Fallback (gemini-2.5-flash -> gemini-2.0-flash -> gemini-1.5-flash)
+ * - Hỗ trợ Multi-model Fallback (gemini-3.8-flash -> gemini-3.6-flash -> gemini-3.5-flash -> gemini-flash-latest)
  * - Tự động tải từ điển viết tắt từ Cloudflare D1 để huấn luyện Prompt
  * - Xử lý tính toán khối lượng, kiểm tra đối chiếu sai số tự động
  */
@@ -142,8 +142,8 @@ export async function callGeminiVision({ imageBase64, mimeType = "image/jpeg", p
   }
 
   const defaultPool = [
-    env.GEMINI_MODEL || "gemini-3.6-flash",
-    "gemini-3.8-flash",
+    env.GEMINI_MODEL || "gemini-3.8-flash",
+    "gemini-3.6-flash",
     "gemini-3.5-flash",
     "gemini-flash-latest"
   ];
