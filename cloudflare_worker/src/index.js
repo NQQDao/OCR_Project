@@ -376,7 +376,22 @@ export default {
           }
         }
 
-        return jsonResponse(pathname === "/api/ocr" && results.length === 1 ? results[0] : results);
+        const successCount = results.filter(r => r.status === "success").length;
+        const errorCount = results.length - successCount;
+
+        const batchResponse = {
+          status: "completed",
+          total: results.length,
+          success: successCount,
+          error: errorCount,
+          results: results
+        };
+
+        if (pathname === "/api/ocr" && results.length === 1) {
+          return jsonResponse(results[0]);
+        }
+
+        return jsonResponse(batchResponse);
       }
 
       // ============================================================
