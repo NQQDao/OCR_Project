@@ -1268,6 +1268,379 @@
             background: var(--success-bg);
             color: var(--success);
         }
+
+        /* ===== KHU VỰC KÉO THẢ & HÀNG ĐỢI ẢNH HIỆN ĐẠI ===== */
+        .upload-dropzone-section {
+            margin-bottom: 14px;
+        }
+
+        .dropzone-box {
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            border: 2px dashed #94a3b8;
+            border-radius: 14px;
+            padding: 18px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.22s ease-in-out;
+            position: relative;
+            user-select: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .dropzone-box:hover {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+            box-shadow: 0 4px 14px rgba(11, 114, 217, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .dropzone-box.dragover {
+            border-color: #0284c7;
+            background: #e0f2fe !important;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25), 0 8px 24px rgba(14, 165, 233, 0.2);
+            transform: scale(1.008);
+        }
+
+        .dropzone-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .dropzone-icon-wrap {
+            position: relative;
+            width: 54px;
+            height: 54px;
+            border-radius: 14px;
+            background: white;
+            border: 1px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+
+        .dropzone-box:hover .dropzone-icon-wrap {
+            transform: scale(1.08) rotate(-4deg);
+            border-color: var(--primary);
+        }
+
+        .dropzone-main-icon {
+            font-size: 30px;
+        }
+
+        .dropzone-badge-icon {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            font-size: 13px;
+            background: #e0f2fe;
+            border-radius: 50%;
+            padding: 2px;
+            border: 1px solid #7dd3fc;
+            line-height: 1;
+        }
+
+        .dropzone-text-group {
+            text-align: left;
+        }
+
+        .dropzone-title {
+            font-size: 15px;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .dropzone-title strong {
+            color: var(--primary-dark);
+            font-size: 16px;
+        }
+
+        .dropzone-link {
+            color: var(--primary);
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .dropzone-sub {
+            font-size: 12px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .dot-divider {
+            color: #cbd5e1;
+            font-weight: bold;
+        }
+
+        .queue-counter-tag {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .queue-counter-tag.has-files {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #86efac;
+        }
+
+        /* Hàng đợi ảnh chờ xử lý (Queue Bar) */
+        .upload-queue-bar {
+            margin-top: 10px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px 14px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+        }
+
+        .queue-bar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .queue-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #334155;
+        }
+
+        .queue-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-queue-action {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 3px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #475569;
+            transition: all 0.15s;
+        }
+
+        .btn-queue-action:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .btn-queue-action.danger:hover {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: #b91c1c;
+        }
+
+        .queue-chips-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-height: 140px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .queue-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 4px 8px;
+            font-size: 12px;
+            color: #334155;
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+
+        .queue-chip:hover {
+            background: #e2e8f0;
+            border-color: #94a3b8;
+        }
+
+        .queue-chip.active {
+            background: #e0f2fe;
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+            color: #0369a1;
+            font-weight: 600;
+        }
+
+        .chip-thumb {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            object-fit: cover;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        .chip-name {
+            max-width: 140px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chip-size {
+            color: #64748b;
+            font-size: 10px;
+        }
+
+        .chip-remove-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0 2px;
+            line-height: 1;
+            border-radius: 4px;
+            transition: color 0.15s;
+        }
+
+        .chip-remove-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* ===== KHỐI THỐNG KÊ NHANH KPI (DASHBOARD METRIC CARDS) ===== */
+        .kpi-dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+            border-color: #cbd5e1;
+        }
+
+        .kpi-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .kpi-card.wood-round::before { background: #d97706; }
+        .kpi-card.wood-sawn::before { background: #059669; }
+        .kpi-card.wood-yield::before { background: #2563eb; }
+        .kpi-card.wood-validation::before { background: #64748b; }
+        .kpi-card.wood-validation.has-warning::before { background: #ea580c; }
+
+        .kpi-icon-bubble {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .kpi-card.wood-round .kpi-icon-bubble { background: #fef3c7; color: #92400e; }
+        .kpi-card.wood-sawn .kpi-icon-bubble { background: #d1fae5; color: #065f46; }
+        .kpi-card.wood-yield .kpi-icon-bubble { background: #dbeafe; color: #1e40af; }
+        .kpi-card.wood-validation .kpi-icon-bubble { background: #f1f5f9; color: #475569; }
+        .kpi-card.wood-validation.has-warning .kpi-icon-bubble { background: #ffedd5; color: #c2410c; }
+
+        .kpi-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+
+        .kpi-value {
+            font-size: 19px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .kpi-unit {
+            font-size: 12px;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .kpi-sub {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .kpi-progress-track {
+            height: 5px;
+            background: #e2e8f0;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .kpi-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #10b981);
+            border-radius: 3px;
+            transition: width 0.4s ease;
+        }
+
+        /* Highlight dòng đang click trong bảng */
+        tr.active-row-highlight {
+            background-color: #fef9c3 !important;
+            box-shadow: inset 0 0 0 2px #eab308;
+        }
     </style>
 </head>
 
@@ -1300,17 +1673,106 @@
 
         <!-- TAB 1: MÀN HÌNH LÀM VIỆC OCR -->
         <div id="workspaceTabContent">
+            <!-- VÙNG KÉO THẢ & CHỌN ẢNH PHIẾU XẺ CHUYÊN NGHIỆP -->
+            <section class="upload-dropzone-section" id="uploadDropzoneSection">
+                <div class="dropzone-box" id="dropzoneBox" onclick="document.getElementById('imageInput').click()" title="Bấm để chọn ảnh từ máy tính hoặc kéo thả ảnh vào đây">
+                    <input id="imageInput" type="file" accept="image/*" multiple style="display: none;">
+                    <div class="dropzone-content">
+                        <div class="dropzone-icon-wrap">
+                            <span class="dropzone-main-icon">📥</span>
+                            <span class="dropzone-badge-icon">⚡</span>
+                        </div>
+                        <div class="dropzone-text-group">
+                            <div class="dropzone-title">
+                                <strong>Kéo & thả ảnh phiếu xẻ vào đây</strong> hoặc <span class="dropzone-link">Bấm để chọn nhiều ảnh</span>
+                            </div>
+                            <div class="dropzone-sub">
+                                <span>📸 Hỗ trợ: JPG, JPEG, PNG, WEBP</span>
+                                <span class="dot-divider">•</span>
+                                <span>📋 Ấn <strong>Ctrl + V</strong> để dán ảnh chụp màn hình</span>
+                                <span class="dot-divider">•</span>
+                                <span class="queue-counter-tag" id="queueCounterTag">Chưa chọn ảnh nào</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HÀNG ĐỢI ẢNH CHỜ XỬ LÝ (QUEUE CHIPS) -->
+                <div class="upload-queue-bar" id="uploadQueueBar" style="display: none;">
+                    <div class="queue-bar-header">
+                        <div class="queue-title-wrap">
+                            <span class="queue-icon">📁</span>
+                            <strong>Danh sách ảnh trong hàng đợi (<span id="queueCountNum">0</span> ảnh):</strong>
+                        </div>
+                        <div class="queue-actions">
+                            <button type="button" class="btn-queue-action" onclick="document.getElementById('imageInput').click()" title="Thêm ảnh khác vào hàng đợi">➕ Thêm ảnh</button>
+                            <button type="button" class="btn-queue-action danger" onclick="clearQueuedFiles()" title="Xóa toàn bộ ảnh đang chờ">🗑️ Xóa tất cả</button>
+                        </div>
+                    </div>
+                    <div class="queue-chips-list" id="queueChipsList"></div>
+                </div>
+            </section>
+
+            <!-- KHỐI THỐNG KÊ NHANH KPI (TỔNG HỢP TRỰC QUAN PHIẾU XẺ) -->
+            <section class="kpi-dashboard-grid" id="kpiDashboardGrid">
+                <div class="kpi-card wood-round">
+                    <div class="kpi-icon-bubble">🪵</div>
+                    <div class="kpi-info">
+                        <div class="kpi-label">GỖ TRÒN MUA VÀO</div>
+                        <div class="kpi-value" id="kpiRoundWoodVol">0.000 <span class="kpi-unit">m³</span></div>
+                        <div class="kpi-sub" id="kpiRoundWoodSpec">Chưa có số liệu</div>
+                    </div>
+                </div>
+
+                <div class="kpi-card wood-sawn">
+                    <div class="kpi-icon-bubble">📐</div>
+                    <div class="kpi-info">
+                        <div class="kpi-label">THÀNH KHÍ XẺ RA</div>
+                        <div class="kpi-value" id="kpiSawnWoodVol">0.000 <span class="kpi-unit">m³</span></div>
+                        <div class="kpi-sub" id="kpiItemCount">0 dòng chi tiết</div>
+                    </div>
+                </div>
+
+                <div class="kpi-card wood-yield">
+                    <div class="kpi-icon-bubble">📈</div>
+                    <div class="kpi-info">
+                        <div class="kpi-label">TỶ LỆ THU HỒI</div>
+                        <div class="kpi-value" id="kpiYieldRate">0.0%</div>
+                        <div class="kpi-progress-track">
+                            <div class="kpi-progress-bar" id="kpiYieldProgress" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="kpi-card wood-validation" id="kpiWarningCard">
+                    <div class="kpi-icon-bubble" id="kpiValidationIcon">🛡️</div>
+                    <div class="kpi-info">
+                        <div class="kpi-label">KIỂM TRA DỮ LIỆU</div>
+                        <div class="kpi-value" id="kpiWarningCount">0 <span class="kpi-unit">cảnh báo</span></div>
+                        <div class="kpi-sub" id="kpiValidationStatus">Dữ liệu sẵn sàng</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- THANH THAO TÁC CHÍNH -->
             <section class="toolbar">
-            <div class="file-wrap">
-                <input id="imageInput" type="file" accept="image/*" multiple>
-            </div>
-            <button id="ocrButton" class="btn btn-primary" onclick="runOCR()">🔍 Chạy OCR</button>
-            <button class="btn btn-secondary" onclick="saveJSON()">💾 Lưu JSON</button>
-            <button class="btn btn-success" onclick="downloadExcelBatch()">📚 Xuất Excel tổng hợp</button>
-            <button type="button" class="btn btn-dict" onclick="openAbbreviationModal()">📖 Từ điển viết tắt</button>
-            <button type="button" class="btn" style="background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd;" onclick="openR2Modal()">☁️ Cloudflare R2</button>
-            <span id="status" class="status">● Chưa xử lý</span>
-        </section>
+                <button id="ocrButton" class="btn btn-primary" onclick="runOCR()" title="Chạy phân tích OCR AI cho tất cả ảnh trong hàng đợi">
+                    <span>🔍 Bắt đầu OCR</span>
+                </button>
+                <button class="btn btn-secondary" onclick="saveJSON()" title="Lưu dữ liệu vào CSDL và file JSON">
+                    <span>💾 Lưu dữ liệu</span>
+                </button>
+                <button class="btn btn-success" onclick="downloadExcelBatch()" title="Xuất toàn bộ phiếu đã chọn ra file Excel">
+                    <span>📚 Xuất Excel tổng hợp</span>
+                </button>
+                <button type="button" class="btn btn-dict" onclick="openAbbreviationModal()" title="Tra cứu và thêm từ viết tắt xẻ gỗ">
+                    <span>📖 Từ điển viết tắt</span>
+                </button>
+                <button type="button" class="btn" style="background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd;" onclick="openR2Modal()" title="Trạng thái Cloudflare R2 & D1 Database">
+                    <span>☁️ Lưu trữ Cloud</span>
+                </button>
+                <span id="status" class="status">● Sẵn sàng</span>
+            </section>
 
         <main class="workspace">
             <section class="panel image-panel">
@@ -1325,7 +1787,7 @@
                             <div class="image-empty" id="imageEmptyPlaceholder">
                                 <div class="big-icon">📷</div>
                                 <strong>Chưa chọn ảnh</strong>
-                                <div class="hint">Chọn ảnh phiếu để bắt đầu OCR</div>
+                                <div class="hint">Kéo thả ảnh vào khung trên hoặc bấm để bắt đầu</div>
                             </div>
                         </div>
                         <div id="imageMagnifier" class="image-magnifier" style="display: none;"></div>
@@ -1342,17 +1804,23 @@
                         </div>
 
                         <div class="toolbar-group action-group">
-                            <button class="tool-btn" type="button" onclick="resetImageView()" title="Vừa khung nhìn (Fit to screen)">
-                                <span>⛶ Vừa khung</span>
+                            <button class="tool-btn" type="button" onclick="rotateImage(-90)" title="Xoay ngược chiều kim đồng hồ 90°">
+                                <span>↺ Xoay trái</span>
                             </button>
-                            <button class="tool-btn" type="button" onclick="rotateImage()" title="Xoay ảnh 90°">
-                                <span>↻ Xoay</span>
+                            <button class="tool-btn" type="button" onclick="rotateImage(90)" title="Xoay theo chiều kim đồng hồ 90°">
+                                <span>↻ Xoay phải</span>
+                            </button>
+                            <button class="tool-btn" type="button" onclick="resetImageView()" title="Vừa khung nhìn (Fit to screen)">
+                                <span>↔️ Vừa khung</span>
+                            </button>
+                            <button class="tool-btn" type="button" onclick="zoomImageTo(1.0)" title="Kích thước thực 100% (1:1)">
+                                <span>🎯 1:1</span>
                             </button>
                             <button class="tool-btn toggle-btn" id="magnifierToggleBtn" type="button" onclick="toggleMagnifier()" title="Bật/Tắt kính lúp để soi chi tiết chữ viết tay khi rê chuột">
-                                <span>🔍 Kính lúp</span>
+                                <span>🔎 Kính lúp</span>
                             </button>
                             <button class="tool-btn" type="button" onclick="openFullscreenModal()" title="Xem ảnh toàn màn hình">
-                                <span>↗ Toàn màn hình</span>
+                                <span>⛶ Toàn màn hình</span>
                             </button>
                         </div>
                     </div>
@@ -1394,14 +1862,14 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Dòng</th>
-                                    <th>Ngày</th>
-                                    <th>Kích thước & SL</th>
-                                    <th>Khối lượng</th>
-                                    <th>Công trình</th>
-                                    <th>STT</th>
-                                    <th>Tên cấu kiện</th>
-                                    <th>Ghi chú</th>
+                                    <th>🔢 Dòng</th>
+                                    <th>📅 Ngày</th>
+                                    <th>📐 Kích thước & SL</th>
+                                    <th>⚖️ Khối lượng (m³)</th>
+                                    <th>🏗️ Công trình</th>
+                                    <th>🏷️ STT</th>
+                                    <th>🏷️ Tên cấu kiện</th>
+                                    <th>📝 Ghi chú</th>
                                 </tr>
                             </thead>
                             <tbody id="itemsTable"></tbody>
@@ -1452,15 +1920,15 @@
                         <table class="history-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this.checked)"></th>
+                                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this.checked)" title="Chọn tất cả"></th>
                                     <th style="width: 50px; text-align: center;">STT</th>
-                                    <th style="width: 70px; text-align: center;">Ảnh</th>
-                                    <th>Số xẻ</th>
-                                    <th>Ngày xẻ</th>
-                                    <th>Quy cách gỗ tròn</th>
-                                    <th style="text-align: center;">Số dòng</th>
-                                    <th>Thời gian lưu</th>
-                                    <th style="width: 230px; text-align: center;">Thao tác</th>
+                                    <th style="width: 70px; text-align: center;">🖼️ Ảnh</th>
+                                    <th>🏷️ Số xẻ</th>
+                                    <th>📅 Ngày xẻ</th>
+                                    <th>🪵 Quy cách gỗ tròn</th>
+                                    <th style="text-align: center;">📋 Số dòng</th>
+                                    <th>🕒 Thời gian lưu</th>
+                                    <th style="width: 230px; text-align: center;">⚙️ Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTableBody">
@@ -1503,99 +1971,240 @@
         let selectedImageIndex = 0;
         let selectedImageFiles = [];
 
-        function renderImageGallery(files) {
+        function formatBytes(bytes, decimals = 1) {
+            if (!bytes || bytes === 0) return "0 B";
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ["B", "KB", "MB", "GB"];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+        }
 
-            const gallery = document.getElementById("imageGallery");
+        function updateQueueUI() {
+            const queueBar = document.getElementById("uploadQueueBar");
+            const countTag = document.getElementById("queueCounterTag");
+            const countNum = document.getElementById("queueCountNum");
+            const chipsList = document.getElementById("queueChipsList");
 
-            gallery.innerHTML = "";
+            const count = selectedImageFiles.length;
 
-            selectedImageFiles = Array.from(files);
+            if (countTag) {
+                if (count === 0) {
+                    countTag.textContent = "Chưa chọn ảnh nào";
+                    countTag.classList.remove("has-files");
+                } else {
+                    countTag.textContent = `⚡ Đã chọn ${count} ảnh`;
+                    countTag.classList.add("has-files");
+                }
+            }
+
+            if (queueBar) {
+                queueBar.style.display = count > 0 ? "block" : "none";
+            }
+
+            if (countNum) {
+                countNum.textContent = count;
+            }
+
+            if (!chipsList) return;
+            chipsList.innerHTML = "";
 
             selectedImageFiles.forEach((file, index) => {
+                const chip = document.createElement("div");
+                chip.className = "queue-chip" + (index === selectedImageIndex ? " active" : "");
+                chip.title = `${file.name} (${formatBytes(file.size)}) - Bấm để xem ảnh này`;
 
+                const thumbUrl = URL.createObjectURL(file);
+                chip.innerHTML = `
+                    <img src="${thumbUrl}" class="chip-thumb" alt="thumb">
+                    <span class="chip-name">${escapeHtml(file.name)}</span>
+                    <span class="chip-size">(${formatBytes(file.size)})</span>
+                    <button type="button" class="chip-remove-btn" title="Xóa ảnh này khỏi hàng đợi" onclick="removeQueuedFile(${index}, event)">✕</button>
+                `;
+
+                chip.addEventListener("click", (e) => {
+                    if (e.target.classList.contains("chip-remove-btn")) return;
+                    selectQueueImage(index);
+                });
+
+                chipsList.appendChild(chip);
+            });
+        }
+
+        function addFilesToQueue(newFiles) {
+            if (!newFiles || !newFiles.length) return;
+
+            let addedCount = 0;
+            Array.from(newFiles).forEach(file => {
+                const isImage = (file.type && file.type.startsWith("image/")) || file.name.match(/\.(jpg|jpeg|png|webp|bmp)$/i);
+                if (!isImage) return;
+
+                const exists = selectedImageFiles.some(f => f.name === file.name && f.size === file.size);
+                if (!exists) {
+                    selectedImageFiles.push(file);
+                    addedCount++;
+                }
+            });
+
+            if (addedCount === 0 && newFiles.length > 0) {
+                setStatus("● Các ảnh đã có sẵn trong hàng đợi.");
+                return;
+            }
+
+            updateQueueUI();
+            renderImageGallery(selectedImageFiles);
+
+            if (selectedImageFiles.length > 0 && (selectedImageIndex >= selectedImageFiles.length || !currentImageUrl)) {
+                selectedImageIndex = 0;
+                showImage(selectedImageFiles[0]);
+            }
+
+            setStatus(`● Hàng đợi: ${selectedImageFiles.length} ảnh (${addedCount} ảnh mới vừa thêm)`);
+        }
+
+        function removeQueuedFile(index, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            if (index < 0 || index >= selectedImageFiles.length) return;
+
+            const removedName = selectedImageFiles[index].name;
+            selectedImageFiles.splice(index, 1);
+            if (ocrResults && ocrResults[index]) {
+                ocrResults.splice(index, 1);
+            }
+
+            if (selectedImageIndex >= selectedImageFiles.length) {
+                selectedImageIndex = Math.max(0, selectedImageFiles.length - 1);
+            }
+
+            updateQueueUI();
+            renderImageGallery(selectedImageFiles);
+
+            if (selectedImageFiles.length > 0) {
+                showImage(selectedImageFiles[selectedImageIndex]);
+            } else {
+                currentImageUrl = "";
+                const container = document.getElementById("imageContainer");
+                if (container) {
+                    container.innerHTML = `
+                        <div class="image-empty" id="imageEmptyPlaceholder">
+                            <div class="big-icon">📷</div>
+                            <strong>Chưa chọn ảnh</strong>
+                            <div class="hint">Kéo thả ảnh vào khung trên hoặc bấm để bắt đầu</div>
+                        </div>
+                    `;
+                }
+                currentData = null;
+                updateKPISummary();
+            }
+
+            setStatus(`● Đã xóa ảnh: ${removedName} (Còn ${selectedImageFiles.length} ảnh)`);
+        }
+
+        function clearQueuedFiles() {
+            if (!selectedImageFiles.length) return;
+            if (!confirm(`Bạn có chắc chắn muốn xóa toàn bộ ${selectedImageFiles.length} ảnh trong hàng đợi?`)) {
+                return;
+            }
+            selectedImageFiles = [];
+            ocrResults = [];
+            selectedImageIndex = 0;
+            currentImageUrl = "";
+            currentJsonFile = null;
+            currentData = null;
+
+            updateQueueUI();
+            renderImageGallery([]);
+
+            const container = document.getElementById("imageContainer");
+            if (container) {
+                container.innerHTML = `
+                    <div class="image-empty" id="imageEmptyPlaceholder">
+                        <div class="big-icon">📷</div>
+                        <strong>Chưa chọn ảnh</strong>
+                        <div class="hint">Kéo thả ảnh vào khung trên hoặc bấm để bắt đầu</div>
+                    </div>
+                `;
+            }
+            updateKPISummary();
+            setStatus("● Đã xóa sạch hàng đợi ảnh.");
+        }
+
+        async function selectQueueImage(index) {
+            if (index < 0 || index >= selectedImageFiles.length) return;
+            selectedImageIndex = index;
+
+            document.querySelectorAll(".queue-chip").forEach((c, idx) => c.classList.toggle("active", idx === index));
+            document.querySelectorAll(".image-thumb").forEach((t, idx) => t.classList.toggle("active", idx === index));
+
+            const file = selectedImageFiles[index];
+            showImage(file);
+
+            const result = ocrResults[index];
+            if (!result || result.status !== "success" || !result.json_file) {
+                setStatus(`● Đang xem: ${file.name}`);
+                return;
+            }
+
+            try {
+                currentJsonFile = result.json_file;
+                setStatus(`⏳ Đang tải dữ liệu: ${file.name}`);
+                await loadJSON(currentJsonFile);
+                setStatus(`✓ Đang xem: ${file.name}`);
+            } catch (error) {
+                console.error(error);
+                setStatus(`⚠ Không đọc được dữ liệu: ${file.name}`);
+            }
+        }
+
+        function renderImageGallery(files) {
+            const gallery = document.getElementById("imageGallery");
+            if (!gallery) return;
+
+            gallery.innerHTML = "";
+            const list = Array.from(files || []);
+
+            list.forEach((file, index) => {
                 const wrapper = document.createElement("div");
                 wrapper.className = "image-thumb-wrapper";
 
                 const url = URL.createObjectURL(file);
-
                 const img = document.createElement("img");
-
                 img.src = url;
-                img.className = "image-thumb";
-
-                if (index === selectedImageIndex) {
-                    img.classList.add("active");
-                }
-
+                img.className = "image-thumb" + (index === selectedImageIndex ? " active" : "");
                 img.title = file.name;
 
                 const status = document.createElement("div");
-
                 status.className = "image-status";
-                status.textContent = "○";
                 status.dataset.index = index;
 
-                img.addEventListener("click", async function () {
-
-                    // Ảnh đang chọn
-                    selectedImageIndex = index;
-
-                    document.querySelectorAll(".image-thumb")
-                        .forEach(el => el.classList.remove("active"));
-
-                    img.classList.add("active");
-
-                    // Hiển thị ảnh
-                    showImage(selectedImageFiles[index]);
-
-                    // Lấy kết quả OCR tương ứng
-                    const result = ocrResults[index];
-
-                    // Nếu ảnh chưa OCR thành công
-                    if (
-                        !result ||
-                        result.status !== "success" ||
-                        !result.json_file
-                    ) {
-                        setStatus(`● Đang xem: ${file.name}`);
-                        return;
+                if (ocrResults && ocrResults[index]) {
+                    if (ocrResults[index].status === "success") {
+                        status.textContent = "✓";
+                        status.className = "image-status success";
+                    } else if (ocrResults[index].status === "error") {
+                        status.textContent = "⚠";
+                        status.className = "image-status error";
+                    } else {
+                        status.textContent = "⏳";
+                        status.className = "image-status processing";
                     }
+                } else {
+                    status.textContent = "○";
+                }
 
-                    // Đọc JSON tương ứng
-                    try {
-
-                        currentJsonFile = result.json_file;
-
-                        setStatus(
-                            `⏳ Đang tải dữ liệu: ${file.name}`
-                        );
-
-                        await loadJSON(currentJsonFile);
-
-                        setStatus(
-                            `✓ Đang xem: ${file.name}`
-                        );
-
-                    } catch (error) {
-
-                        console.error(error);
-
-                        setStatus(
-                            `⚠ Không đọc được dữ liệu: ${file.name}`
-                        );
-
-                        alert(
-                            `Không đọc được JSON của ảnh:\n${file.name}`
-                        );
-                    }
+                img.addEventListener("click", () => {
+                    selectQueueImage(index);
                 });
 
                 wrapper.appendChild(img);
                 wrapper.appendChild(status);
-
                 gallery.appendChild(wrapper);
             });
         }
+
         function showImage(file) {
             if (!file) return;
             if (typeof file === "string") {
@@ -1648,10 +2257,18 @@
             applyImageTransform();
         }
 
-        function rotateImage() {
+        function zoomImageTo(scale = 1.0) {
             const img = document.getElementById("previewImage");
             if (!img) return;
-            imageRotation = (imageRotation + 90) % 360;
+            imageScale = Math.min(3, Math.max(0.4, scale));
+            applyImageTransform();
+        }
+
+        function rotateImage(delta = 90) {
+            const img = document.getElementById("previewImage");
+            if (!img) return;
+            imageRotation = (imageRotation + delta) % 360;
+            if (imageRotation < 0) imageRotation += 360;
             applyImageTransform();
         }
 
@@ -1678,90 +2295,156 @@
             }
         }
 
-        async function runOCR() {
+        function updateKPISummary() {
+            const kpiRoundWoodVol = document.getElementById("kpiRoundWoodVol");
+            const kpiRoundWoodSpec = document.getElementById("kpiRoundWoodSpec");
+            const kpiSawnWoodVol = document.getElementById("kpiSawnWoodVol");
+            const kpiItemCount = document.getElementById("kpiItemCount");
+            const kpiYieldRate = document.getElementById("kpiYieldRate");
+            const kpiYieldProgress = document.getElementById("kpiYieldProgress");
+            const kpiWarningCard = document.getElementById("kpiWarningCard");
+            const kpiValidationIcon = document.getElementById("kpiValidationIcon");
+            const kpiWarningCount = document.getElementById("kpiWarningCount");
+            const kpiValidationStatus = document.getElementById("kpiValidationStatus");
 
-            const input = document.getElementById("imageInput");
-            const button = document.getElementById("ocrButton");
-
-            if (!input.files.length) {
-                alert("Hãy chọn ảnh trước.");
+            if (!currentData) {
+                if (kpiRoundWoodVol) kpiRoundWoodVol.innerHTML = '0.000 <span class="kpi-unit">m³</span>';
+                if (kpiRoundWoodSpec) kpiRoundWoodSpec.textContent = 'Chưa có số liệu';
+                if (kpiSawnWoodVol) kpiSawnWoodVol.innerHTML = '0.000 <span class="kpi-unit">m³</span>';
+                if (kpiItemCount) kpiItemCount.textContent = '0 dòng chi tiết';
+                if (kpiYieldRate) kpiYieldRate.textContent = '0.0%';
+                if (kpiYieldProgress) kpiYieldProgress.style.width = '0%';
+                if (kpiWarningCount) kpiWarningCount.innerHTML = '0 <span class="kpi-unit">cảnh báo</span>';
+                if (kpiValidationStatus) kpiValidationStatus.textContent = 'Dữ liệu sẵn sàng';
+                if (kpiWarningCard) kpiWarningCard.classList.remove("has-warning");
+                if (kpiValidationIcon) kpiValidationIcon.textContent = "🛡️";
                 return;
             }
 
-            const files = Array.from(input.files);
+            const header = currentData.header || {};
+            const items = currentData.items || [];
+            const validation = currentData.validation || {};
 
-            selectedImageFiles = files;
+            // 1. Khối lượng gỗ tròn
+            let roundVol = 0;
+            if (header.khoi_luong_go_tron) {
+                const parsed = parseFloat(String(header.khoi_luong_go_tron).replace(/,/g, '.'));
+                if (!isNaN(parsed)) roundVol = parsed;
+            }
+            const roundSpec = header.kich_thuoc_go_tron || (header.so_xe ? `Số xẻ: ${header.so_xe}` : 'Chưa nhập quy cách');
 
+            if (kpiRoundWoodVol) kpiRoundWoodVol.innerHTML = `${roundVol.toFixed(3)} <span class="kpi-unit">m³</span>`;
+            if (kpiRoundWoodSpec) kpiRoundWoodSpec.textContent = roundSpec;
+
+            // 2. Khối lượng thành khí
+            let sawnVol = 0;
+            items.forEach(it => {
+                if (it.khoi_luong) {
+                    const v = parseFloat(String(it.khoi_luong).replace(/,/g, '.'));
+                    if (!isNaN(v)) sawnVol += v;
+                }
+            });
+            if (sawnVol === 0 && validation.tong_khoi_luong_tinh_lai) {
+                const v = parseFloat(String(validation.tong_khoi_luong_tinh_lai).replace(/,/g, '.'));
+                if (!isNaN(v)) sawnVol = v;
+            }
+
+            if (kpiSawnWoodVol) kpiSawnWoodVol.innerHTML = `${sawnVol.toFixed(3)} <span class="kpi-unit">m³</span>`;
+            if (kpiItemCount) kpiItemCount.textContent = `${items.length} dòng cấu kiện`;
+
+            // 3. Tỷ lệ thu hồi
+            let yieldRate = 0;
+            if (roundVol > 0) {
+                yieldRate = (sawnVol / roundVol) * 100;
+            } else if (validation.ty_le_thu_hoi_tinh_lai) {
+                const y = parseFloat(String(validation.ty_le_thu_hoi_tinh_lai).replace(/,/g, '.'));
+                if (!isNaN(y)) yieldRate = y;
+            }
+
+            if (kpiYieldRate) kpiYieldRate.textContent = `${yieldRate.toFixed(1)}%`;
+            if (kpiYieldProgress) {
+                const progressWidth = Math.min(100, Math.max(0, yieldRate));
+                kpiYieldProgress.style.width = `${progressWidth}%`;
+                if (yieldRate >= 70) {
+                    kpiYieldProgress.style.background = "linear-gradient(90deg, #10b981, #059669)";
+                } else if (yieldRate >= 45) {
+                    kpiYieldProgress.style.background = "linear-gradient(90deg, #3b82f6, #10b981)";
+                } else {
+                    kpiYieldProgress.style.background = "linear-gradient(90deg, #f59e0b, #ef4444)";
+                }
+            }
+
+            // 4. Cảnh báo đối chiếu
+            const lineVolume = validation.line_volume || [];
+            const warnings = lineVolume.filter(x => x.trang_thai && x.trang_thai !== "OK");
+            const warningCount = warnings.length;
+
+            if (kpiWarningCount) {
+                kpiWarningCount.innerHTML = `${warningCount} <span class="kpi-unit">cảnh báo</span>`;
+            }
+            if (warningCount > 0) {
+                if (kpiWarningCard) kpiWarningCard.classList.add("has-warning");
+                if (kpiValidationIcon) kpiValidationIcon.textContent = "⚠️";
+                if (kpiValidationStatus) kpiValidationStatus.textContent = `${warningCount} dòng cần kiểm tra lại`;
+            } else {
+                if (kpiWarningCard) kpiWarningCard.classList.remove("has-warning");
+                if (kpiValidationIcon) kpiValidationIcon.textContent = "✅";
+                if (kpiValidationStatus) kpiValidationStatus.textContent = items.length > 0 ? "Khớp hoàn toàn" : "Dữ liệu sẵn sàng";
+            }
+        }
+
+        async function runOCR() {
+            const button = document.getElementById("ocrButton");
+
+            if (!selectedImageFiles || !selectedImageFiles.length) {
+                alert("Hãy chọn, kéo thả hoặc dán (Ctrl+V) ảnh phiếu xẻ trước khi bắt đầu OCR.");
+                return;
+            }
+
+            const files = selectedImageFiles;
             ocrResults = [];
 
             renderImageGallery(files);
-
-            showImage(files[0]);
+            showImage(files[selectedImageIndex || 0]);
 
             const formData = new FormData();
-
             files.forEach(file => {
                 formData.append("files", file);
             });
 
             setStatus(`⏳ Đang OCR ${files.length} ảnh...`);
-
             button.disabled = true;
             button.style.opacity = ".65";
 
-            // Hiển thị trạng thái đang xử lý
-            document.querySelectorAll(".image-status")
-                .forEach(status => {
-                    status.textContent = "⏳";
-                    status.className = "image-status processing";
-                });
+            document.querySelectorAll(".image-status").forEach(status => {
+                status.textContent = "⏳";
+                status.className = "image-status processing";
+            });
 
             try {
-
-                const response = await fetch(
-                    "/api/ocr/batch",
-                    {
-                        method: "POST",
-                        body: formData
-                    }
-                );
+                const response = await fetch("/api/ocr/batch", {
+                    method: "POST",
+                    body: formData
+                });
 
                 const result = await response.json();
-
                 if (!response.ok) {
-                    throw new Error(
-                        result.detail || "OCR thất bại"
-                    );
+                    throw new Error(result.detail || "OCR thất bại");
                 }
 
                 console.log("Kết quả Batch OCR:", result);
-
                 ocrResults = result.results || [];
-                console.log("===== KIỂM TRA JSON BATCH =====");
-                console.log("Số lượng kết quả:", ocrResults.length);
-                console.log("Danh sách JSON:", ocrResults.map(item => item.json_file));
 
-                // Cập nhật trạng thái từng ảnh
                 ocrResults.forEach((item, index) => {
-
-                    const status =
-                        document.querySelector(
-                            `.image-status[data-index="${index}"]`
-                        );
-
+                    const status = document.querySelector(`.image-status[data-index="${index}"]`);
                     if (!status) return;
 
                     if (item.status === "success") {
-
                         status.textContent = "✓";
-                        status.className =
-                            "image-status success";
-
+                        status.className = "image-status success";
                     } else {
-
                         status.textContent = "⚠";
-                        status.className =
-                            "image-status error";
+                        status.className = "image-status error";
                     }
                 });
 
@@ -1769,57 +2452,32 @@
                 const error = result.error || 0;
                 const total = result.total || files.length;
 
-                setStatus(
-                    `✓ OCR hoàn thành: ${success}/${total} ảnh`
-                );
+                setStatus(`✓ OCR hoàn thành: ${success}/${total} ảnh`);
 
-                // Hiển thị JSON của các ảnh tải lên
-                const firstSuccessIndex = ocrResults.findIndex(
-                    item => item.status === "success"
-                );
-
+                const firstSuccessIndex = ocrResults.findIndex(item => item.status === "success");
                 if (firstSuccessIndex !== -1) {
-
                     selectedImageIndex = firstSuccessIndex;
-
-                    currentJsonFile =
-                        ocrResults[firstSuccessIndex].json_file;
-
+                    currentJsonFile = ocrResults[firstSuccessIndex].json_file;
                     await loadJSON(currentJsonFile);
+                    updateQueueUI();
                 }
 
                 if (error > 0) {
-
                     const errorList = ocrResults
                         .filter(item => item.status === "error")
-                        .map(item =>
-                            `${item.file}: ${item.error}`
-                        )
+                        .map(item => `${item.file}: ${item.error}`)
                         .join("\n");
-
-                    alert(
-                        `Batch OCR hoàn thành nhưng có ${error} ảnh lỗi:\n\n${errorList}`
-                    );
+                    alert(`Batch OCR hoàn thành nhưng có ${error} ảnh lỗi:\n\n${errorList}`);
                 }
-
             } catch (error) {
-
                 console.error(error);
-
-                setStatus("⚠ Lỗi OCR");
-
-                // Nếu toàn bộ request lỗi
-                document.querySelectorAll(".image-status")
-                    .forEach(status => {
-                        status.textContent = "⚠";
-                        status.className =
-                            "image-status error";
-                    });
-
+                setStatus("⚠ Lỗi OCR: " + error.message);
+                document.querySelectorAll(".image-status").forEach(status => {
+                    status.textContent = "⚠";
+                    status.className = "image-status error";
+                });
                 alert(error.message);
-
             } finally {
-
                 button.disabled = false;
                 button.style.opacity = "1";
             }
@@ -1856,6 +2514,10 @@
             <td><input data-field="ten_cau_kien" value="${escapeHtml(item.ten_cau_kien || "")}"></td>
             <td><input data-field="ghi_chu" value="${escapeHtml(item.ghi_chu || "")}"></td>
         `;
+                tr.addEventListener("click", () => {
+                    document.querySelectorAll("#itemsTable tr").forEach(r => r.classList.remove("active-row-highlight"));
+                    tr.classList.add("active-row-highlight");
+                });
                 tr.querySelectorAll("input").forEach(input => {
                     input.addEventListener("input", () => {
                         item[input.dataset.field] = input.value;
@@ -1866,6 +2528,7 @@
             });
             updateJSONFromForm();
             renderValidation();
+            updateKPISummary();
         }
 
         function renderValidation() {
@@ -1909,8 +2572,9 @@
             document.getElementById("jsonViewer").value =
                 JSON.stringify(currentData, null, 2);
 
-            // Cập nhật cảnh báo
+            // Cập nhật cảnh báo & khối thống kê KPI
             renderValidation();
+            updateKPISummary();
         }
 
         async function saveJSON() {
@@ -2021,18 +2685,9 @@
         }
 
         document.getElementById("imageInput").addEventListener("change", function () {
-
-            if (!this.files.length) {
-                return;
-            }
-
-            selectedImageIndex = 0;
-
-            renderImageGallery(this.files);
-
-            showImage(this.files[0]);
-
-            setStatus(`● Đã chọn ${this.files.length} ảnh`);
+            if (!this.files.length) return;
+            addFilesToQueue(Array.from(this.files));
+            this.value = "";
         });
 
         ["so_xe", "ngay_xe", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe"].forEach(id => {
@@ -2048,7 +2703,88 @@
                 // Cho phép người dùng đang nhập JSON chưa hoàn chỉnh.
             }
 
-        });
+        // ===== KÉO THẢ ẢNH & DÁN CLIPBOARD (CTRL + V) =====
+        function setupDragAndDrop() {
+            const dropzone = document.getElementById("dropzoneBox");
+            if (!dropzone) return;
+
+            ["dragenter", "dragover"].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.add("dragover");
+                }, false);
+            });
+
+            ["dragleave", "dragend"].forEach(eventName => {
+                dropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropzone.classList.remove("dragover");
+                }, false);
+            });
+
+            dropzone.addEventListener("drop", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove("dragover");
+                const dt = e.dataTransfer;
+                if (dt && dt.files && dt.files.length > 0) {
+                    addFilesToQueue(Array.from(dt.files));
+                }
+            }, false);
+
+            // Cho phép thả ảnh vào bất kỳ đâu trên cửa sổ trình duyệt
+            window.addEventListener("dragover", (e) => {
+                e.preventDefault();
+            }, false);
+
+            window.addEventListener("drop", (e) => {
+                if (!dropzone.contains(e.target)) {
+                    e.preventDefault();
+                    const dt = e.dataTransfer;
+                    if (dt && dt.files && dt.files.length > 0) {
+                        const imageFiles = Array.from(dt.files).filter(f => (f.type && f.type.startsWith("image/")) || f.name.match(/\.(jpg|jpeg|png|webp|bmp)$/i));
+                        if (imageFiles.length > 0) {
+                            addFilesToQueue(imageFiles);
+                        }
+                    }
+                }
+            }, false);
+
+            // Dán ảnh từ Clipboard bằng phím tắt Ctrl + V
+            window.addEventListener("paste", (e) => {
+                const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+                if (tag === "input" || tag === "textarea") {
+                    return;
+                }
+
+                const clipboardData = e.clipboardData || window.clipboardData;
+                if (!clipboardData || !clipboardData.items) return;
+
+                const pastedFiles = [];
+                for (let i = 0; i < clipboardData.items.length; i++) {
+                    const item = clipboardData.items[i];
+                    if (item.type && item.type.indexOf("image") !== -1) {
+                        const blob = item.getAsFile();
+                        if (blob) {
+                            const ext = item.type.split("/")[1] || "png";
+                            const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+                            const filename = `paste_${timestamp}.${ext}`;
+                            const file = new File([blob], filename, { type: item.type });
+                            pastedFiles.push(file);
+                        }
+                    }
+                }
+
+                if (pastedFiles.length > 0) {
+                    e.preventDefault();
+                    addFilesToQueue(pastedFiles);
+                    setStatus(`📋 Đã dán ${pastedFiles.length} ảnh từ Clipboard (Ctrl + V)`);
+                }
+            });
+        }
+
         // ===== BỘ ĐIỀU KHIỂN THU PHÓNG & KÍNH LÚP THÔNG MINH =====
         function toggleMagnifier() {
             isMagnifierActive = !isMagnifierActive;
@@ -2209,9 +2945,15 @@
             }
         });
 
-        // Khởi tạo tương tác ảnh khi nạp trang
-        window.addEventListener("DOMContentLoaded", setupImageInteractions);
+        // Khởi tạo tương tác ảnh, kéo thả và bảng thống kê khi nạp trang
+        window.addEventListener("DOMContentLoaded", () => {
+            setupImageInteractions();
+            setupDragAndDrop();
+            updateKPISummary();
+        });
         setupImageInteractions();
+        setupDragAndDrop();
+        updateKPISummary();
 
         // ===== QUẢN LÝ BỘ TỪ ĐIỂN CHỮ VIẾT TẮT =====
         let allAbbreviations = [];
