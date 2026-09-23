@@ -1773,7 +1773,7 @@
             </div>
             <button id="ocrButton" class="btn btn-primary" onclick="runOCR()">🔍 Chạy OCR</button>
             <button class="btn btn-secondary" onclick="saveJSON()">💾 Lưu JSON</button>
-            <button class="btn btn-success" onclick="downloadExcelBatch()">📚 Xuất Excel tổng hợp</button>
+            <button class="btn btn-success" onclick="downloadExcelSingle()">📊 Xuất Excel (từng phiếu)</button>
             <button type="button" class="btn btn-dict" onclick="openAbbreviationModal()">📖 Từ điển viết tắt</button>
             <button type="button" class="btn" style="background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd;" onclick="openR2Modal()">☁️ Cloudflare R2</button>
             <span id="status" class="status">● Chưa xử lý</span>
@@ -1881,7 +1881,7 @@
                     <div id="validation" class="validation"></div>
                     <div class="footer-actions">
                         <button class="btn btn-secondary" onclick="saveJSON()">💾 Lưu dữ liệu</button>
-                        <button class="btn btn-info" onclick="downloadExcelBatch()">📚 Xuất Excel tổng hợp</button>
+                        <button class="btn btn-info" onclick="downloadExcelSingle()">📊 Xuất Excel (từng phiếu)</button>
                     </div>
                 </div>
             </section>
@@ -2589,10 +2589,10 @@
             renderValidation();
         }
 
-        async function saveJSON() {
+        async function saveJSON(silent = false) {
             if (!currentData || !currentJsonFile) {
-                alert("Chưa có JSON.");
-                return;
+                if (!silent) alert("Chưa có JSON.");
+                return false;
             }
             updateJSONFromForm();
             try {
@@ -2603,7 +2603,7 @@
                 });
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.detail || "Không lưu được JSON");
-                setStatus("✓ Đã lưu JSON & CSDL");
+                if (!silent) setStatus("✓ Đã lưu JSON & CSDL");
                 fetch("/api/documents?limit=1")
                     .then(r => r.json())
                     .then(d => {
@@ -2611,88 +2611,58 @@
                         if (b && d.total !== undefined) b.textContent = d.total;
                     })
                     .catch(() => {});
+                return true;
             } catch (error) {
-                alert(error.message);
+                if (!silent) alert(error.message);
+                return false;
             }
         }
 
-        async function downloadExcelBatch() {
-
-            // Lấy danh sách JSON từ kết quả OCR batch
-            const jsonFiles = (ocrResults || [])
+        async function downloadExcelSingle() {
+            // Lấy danh sách JSON từ kết quả OCR batch hoặc JSON hiện tại
+            let jsonFiles = (ocrResults || [])
                 .filter(item => item.status === "success" && item.json_file)
                 .map(item => item.json_file);
-            console.log("===== EXCEL BATCH =====");
-            console.log("ocrResults:", ocrResults);
-            console.log("Số JSON gửi lên:", jsonFiles.length);
-            console.log("Danh sách JSON:", jsonFiles); 
+
+            if (jsonFiles.length === 0 && currentJsonFile) {
+                jsonFiles = [currentJsonFile];
+            }
 
             if (jsonFiles.length === 0) {
-                alert("Chưa có JSON nào để xuất Excel.");
+                alert("Chưa có dữ liệu OCR nào để xuất Excel.");
                 return;
             }
 
+            // Tự động lưu nếu có JSON hiện tại
+            if (currentJsonFile && jsonFiles.includes(currentJsonFile)) {
+                await saveJSON(true);
+            }
+
+            setStatus(`⏳ Đang tải ${jsonFiles.length} file Excel...`);
+
             try {
-
-                setStatus(`⏳ Đang tạo Excel từ ${jsonFiles.length} JSON...`);
-
-                const response = await fetch("/api/excel/batch", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        json_files: jsonFiles
-                    })
-                });
-
-                if (!response.ok) {
-
-                    const errorData =
-                        await response.json().catch(() => ({}));
-
-                    throw new Error(
-                        errorData.detail ||
-                        "Không thể tạo Excel hàng loạt."
-                    );
+                for (let i = 0; i < jsonFiles.length; i++) {
+                    const jFile = jsonFiles[i];
+                    const url = `/api/excel?json_file=${encodeURIComponent(jFile)}`;
+                    
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.target = "_blank";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    
+                    // Delay để trình duyệt không block nhiều file download
+                    if (i < jsonFiles.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 800));
+                    }
                 }
 
-                const blob = await response.blob();
-
-                const url = window.URL.createObjectURL(blob);
-
-                const a = document.createElement("a");
-
-                a.href = url;
-                a.download = "NHAT_KY_XE_GO_BATCH_v5.xlsx";
-
-                document.body.appendChild(a);
-
-                a.click();
-
-                a.remove();
-
-                window.URL.revokeObjectURL(url);
-
-                setStatus(
-                    `✓ Đã xuất Excel từ ${jsonFiles.length} JSON`
-                );
-
-                alert(
-                    `✅ Đã xuất Excel hàng loạt thành công.\n\n` +
-                    `Số JSON: ${jsonFiles.length}`
-                );
-
+                setStatus(`✓ Đã xuất Excel thành công!`);
             } catch (error) {
-
-                console.error("Lỗi xuất Excel hàng loạt:", error);
-
+                console.error("Lỗi xuất Excel:", error);
                 setStatus("⚠ Lỗi xuất Excel");
-
-                alert(
-                    "❌ Lỗi xuất Excel hàng loạt:\n\n" +
-                    error.message
-                );
+                alert("❌ Lỗi xuất Excel:\n\n" + error.message);
             }
         }
 
