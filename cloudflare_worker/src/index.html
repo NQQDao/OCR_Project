@@ -1148,6 +1148,187 @@
             margin-bottom: 25px;
         }
 
+        /* History Filter Panel Styles */
+        .history-filter-panel {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .history-filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 12px 18px;
+            padding-top: 12px;
+            border-top: 1px dashed #e2e8f0;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        .filter-select {
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            color: #1e293b;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .filter-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(11, 114, 217, 0.12);
+        }
+
+        .filter-date-inputs, .filter-line-inputs {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-input-date {
+            padding: 5px 8px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 12.5px;
+            background: white;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.15s;
+        }
+
+        .filter-input-date:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(11, 114, 217, 0.12);
+        }
+
+        .filter-input-num {
+            width: 65px;
+            padding: 5px 8px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            text-align: center;
+            background: white;
+            outline: none;
+        }
+
+        .filter-input-num:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(11, 114, 217, 0.12);
+        }
+
+        .filter-separator {
+            color: #94a3b8;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .filter-quick-chips {
+            display: inline-flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .chip-btn {
+            padding: 4px 10px;
+            font-size: 11.5px;
+            font-weight: 600;
+            border-radius: 999px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #475569;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .chip-btn:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+
+        .chip-btn.active {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #93c5fd;
+            font-weight: 700;
+        }
+
+        .filter-summary-group {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-reset-filter {
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-reset-filter:hover {
+            background: #fee2e2;
+            color: #b91c1c;
+            border-color: #fca5a5;
+        }
+
+        .filter-results-badge {
+            font-size: 12.5px;
+            color: #475569;
+            padding: 5px 12px;
+            border-radius: 8px;
+            background: #e2e8f0;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .filter-results-badge strong {
+            color: #0f172a;
+            font-weight: 700;
+        }
+
         .history-toolbar {
             display: flex;
             flex-wrap: wrap;
@@ -1502,15 +1683,81 @@
                     <span class="panel-sub">Tra cứu, xem lại ảnh gốc, đối chiếu và xuất báo cáo</span>
                 </div>
                 <div class="panel-body">
-                    <!-- Toolbar for search and actions -->
-                    <div class="history-toolbar">
-                        <div class="history-search-box">
-                            <span class="search-icon">🔍</span>
-                            <input type="text" id="historySearchInput" placeholder="Tìm theo số xẻ, ngày xẻ, công trình, quy cách gỗ..." oninput="debounceHistorySearch()">
+                    <!-- BỘ LỌC THÔNG MINH (NGÀY THÁNG, SỐ DÒNG, TÌM KIẾM, SẮP XẾP) -->
+                    <div class="history-filter-panel">
+                        <!-- Hàng 1: Tìm kiếm & Nút hành động -->
+                        <div class="history-filter-row">
+                            <div class="history-search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="historySearchInput" placeholder="Tìm theo số xẻ, ngày xẻ, công trình, quy cách gỗ..." oninput="debounceHistorySearch()">
+                            </div>
+                            <div class="history-actions">
+                                <button type="button" class="btn btn-secondary" onclick="loadHistoryDocuments()">🔄 Tải lại</button>
+                                <button type="button" class="btn btn-info" id="btnExportBatchHistory" onclick="exportSelectedHistoryExcel()" disabled>📚 Xuất Excel các phiếu đã chọn (<span id="selectedCountBadge">0</span>)</button>
+                            </div>
                         </div>
-                        <div class="history-actions">
-                            <button type="button" class="btn btn-secondary" onclick="loadHistoryDocuments()">🔄 Làm mới</button>
-                            <button type="button" class="btn btn-info" id="btnExportBatchHistory" onclick="exportSelectedHistoryExcel()" disabled>📚 Xuất Excel các phiếu đã chọn (<span id="selectedCountBadge">0</span>)</button>
+
+                        <!-- Hàng 2: Bộ lọc chi tiết -->
+                        <div class="history-filter-controls">
+                            <!-- Nhóm lọc Ngày tháng năm -->
+                            <div class="filter-group">
+                                <span class="filter-label">📅 Lọc ngày:</span>
+                                <select id="historyFilterDateType" class="filter-select" onchange="applyHistoryFilters()">
+                                    <option value="ngay_xe">Ngày xẻ trên phiếu</option>
+                                    <option value="created_at">Ngày lưu hệ thống</option>
+                                </select>
+                                <div class="filter-date-inputs">
+                                    <input type="date" id="historyFilterFromDate" class="filter-input-date" title="Từ ngày" onchange="applyHistoryFilters()">
+                                    <span class="filter-separator">→</span>
+                                    <input type="date" id="historyFilterToDate" class="filter-input-date" title="Đến ngày" onchange="applyHistoryFilters()">
+                                </div>
+                                <div class="filter-quick-chips">
+                                    <button type="button" class="chip-btn active" onclick="setQuickDateFilter('all', this)">Tất cả</button>
+                                    <button type="button" class="chip-btn" onclick="setQuickDateFilter('today', this)">Hôm nay</button>
+                                    <button type="button" class="chip-btn" onclick="setQuickDateFilter('7days', this)">7 ngày</button>
+                                    <button type="button" class="chip-btn" onclick="setQuickDateFilter('thisMonth', this)">Tháng này</button>
+                                </div>
+                            </div>
+
+                            <!-- Nhóm lọc Số lượng dòng -->
+                            <div class="filter-group">
+                                <span class="filter-label">📊 Số lượng dòng:</span>
+                                <select id="historyFilterLinePreset" class="filter-select" onchange="onLinePresetChange(this.value)">
+                                    <option value="all">Tất cả số dòng</option>
+                                    <option value="1-5">Ít dòng (1 - 5 dòng)</option>
+                                    <option value="6-15">Trung bình (6 - 15 dòng)</option>
+                                    <option value="16-999">Nhiều dòng (≥ 16 dòng)</option>
+                                    <option value="custom">Tùy chỉnh...</option>
+                                </select>
+                                <div class="filter-line-inputs" id="customLineInputs" style="display: none;">
+                                    <input type="number" id="historyFilterMinLines" class="filter-input-num" min="0" placeholder="Từ" oninput="applyHistoryFilters()">
+                                    <span class="filter-separator">→</span>
+                                    <input type="number" id="historyFilterMaxLines" class="filter-input-num" min="0" placeholder="Đến" oninput="applyHistoryFilters()">
+                                </div>
+                            </div>
+
+                            <!-- Nhóm Sắp xếp -->
+                            <div class="filter-group">
+                                <span class="filter-label">⚡ Sắp xếp:</span>
+                                <select id="historySortBy" class="filter-select" onchange="applyHistoryFilters()">
+                                    <option value="newest_created">Mới lưu nhất ↓</option>
+                                    <option value="oldest_created">Cũ nhất ↑</option>
+                                    <option value="lines_desc">Số dòng: Nhiều nhất ↓</option>
+                                    <option value="lines_asc">Số dòng: Ít nhất ↑</option>
+                                    <option value="so_xe_asc">Số xẻ: A → Z</option>
+                                    <option value="ngay_xe_desc">Ngày xẻ: Mới nhất ↓</option>
+                                </select>
+                            </div>
+
+                            <!-- Nhóm Thống kê & Xóa lọc -->
+                            <div class="filter-summary-group">
+                                <button type="button" class="btn-reset-filter" onclick="resetHistoryFilters()" title="Đặt lại toàn bộ điều kiện lọc">
+                                    <span>🔄 Xóa lọc</span>
+                                </button>
+                                <div class="filter-results-badge" id="historyFilterSummary">
+                                    Hiển thị <strong>0</strong> / <strong>0</strong> phiếu
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -2673,12 +2920,229 @@
             }
         }
 
+        let currentFilteredDocs = [];
+
+        function parseViDate(str) {
+            if (!str) return null;
+            str = String(str).trim();
+            if (!str) return null;
+
+            // ISO format: YYYY-MM-DD...
+            if (/^\d{4}-\d{1,2}-\d{1,2}/.test(str)) {
+                const parts = str.split(/[-T :]/);
+                const y = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10) - 1;
+                const d = parseInt(parts[2], 10);
+                return new Date(y, m, d);
+            }
+
+            // Vietnamese format: DD/MM/YYYY or D/M/YYYY or DD-MM-YYYY
+            const parts = str.split(/[/.-]/);
+            if (parts.length >= 3) {
+                const d = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10) - 1;
+                let y = parseInt(parts[2], 10);
+                if (y < 100) y += 2000;
+                if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+                    return new Date(y, m, d);
+                }
+            }
+
+            const ts = Date.parse(str);
+            return isNaN(ts) ? null : new Date(ts);
+        }
+
+        function onLinePresetChange(val) {
+            const customDiv = document.getElementById("customLineInputs");
+            const minInput = document.getElementById("historyFilterMinLines");
+            const maxInput = document.getElementById("historyFilterMaxLines");
+
+            if (val === "custom") {
+                if (customDiv) customDiv.style.display = "inline-flex";
+            } else {
+                if (customDiv) customDiv.style.display = "none";
+                if (minInput && maxInput) {
+                    if (val === "1-5") {
+                        minInput.value = 1;
+                        maxInput.value = 5;
+                    } else if (val === "6-15") {
+                        minInput.value = 6;
+                        maxInput.value = 15;
+                    } else if (val === "16-999") {
+                        minInput.value = 16;
+                        maxInput.value = "";
+                    } else {
+                        // all
+                        minInput.value = "";
+                        maxInput.value = "";
+                    }
+                }
+            }
+            applyHistoryFilters();
+        }
+
+        function setQuickDateFilter(type, btnElement) {
+            document.querySelectorAll(".filter-quick-chips .chip-btn").forEach(el => el.classList.remove("active"));
+            if (btnElement) btnElement.classList.add("active");
+
+            const fromInput = document.getElementById("historyFilterFromDate");
+            const toInput = document.getElementById("historyFilterToDate");
+
+            const now = new Date();
+            const formatDate = (d) => {
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const day = String(d.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+
+            if (type === "today") {
+                if (fromInput) fromInput.value = formatDate(now);
+                if (toInput) toInput.value = formatDate(now);
+            } else if (type === "7days") {
+                const past = new Date();
+                past.setDate(past.getDate() - 7);
+                if (fromInput) fromInput.value = formatDate(past);
+                if (toInput) toInput.value = formatDate(now);
+            } else if (type === "thisMonth") {
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                if (fromInput) fromInput.value = formatDate(firstDay);
+                if (toInput) toInput.value = formatDate(now);
+            } else {
+                // all
+                if (fromInput) fromInput.value = "";
+                if (toInput) toInput.value = "";
+            }
+
+            applyHistoryFilters();
+        }
+
+        function applyHistoryFilters() {
+            if (!cachedHistoryDocs || cachedHistoryDocs.length === 0) {
+                renderHistoryTable([]);
+                updateHistoryFilterSummary(0, 0);
+                return;
+            }
+
+            const keyword = (document.getElementById("historySearchInput")?.value || "").toLowerCase().trim();
+            const dateType = document.getElementById("historyFilterDateType")?.value || "ngay_xe";
+            const fromDateStr = document.getElementById("historyFilterFromDate")?.value;
+            const toDateStr = document.getElementById("historyFilterToDate")?.value;
+
+            const fromDate = fromDateStr ? new Date(fromDateStr + "T00:00:00") : null;
+            const toDate = toDateStr ? new Date(toDateStr + "T23:59:59") : null;
+
+            const minLinesStr = document.getElementById("historyFilterMinLines")?.value;
+            const maxLinesStr = document.getElementById("historyFilterMaxLines")?.value;
+            const minLines = minLinesStr !== "" && !isNaN(parseInt(minLinesStr, 10)) ? parseInt(minLinesStr, 10) : null;
+            const maxLines = maxLinesStr !== "" && !isNaN(parseInt(maxLinesStr, 10)) ? parseInt(maxLinesStr, 10) : null;
+
+            const sortBy = document.getElementById("historySortBy")?.value || "newest_created";
+
+            let filtered = cachedHistoryDocs.filter(doc => {
+                // 1. Lọc theo từ khóa tìm kiếm
+                if (keyword) {
+                    const searchField = [
+                        doc.so_xe || "",
+                        doc.ngay_xe || "",
+                        doc.kich_thuoc_go_tron || "",
+                        doc.file_name || ""
+                    ].join(" ").toLowerCase();
+                    if (!searchField.includes(keyword)) return false;
+                }
+
+                // 2. Lọc theo ngày
+                if (fromDate || toDate) {
+                    const rawDateStr = dateType === "created_at" ? doc.created_at : doc.ngay_xe;
+                    const docDate = parseViDate(rawDateStr);
+                    if (!docDate) {
+                        return false;
+                    }
+                    if (fromDate && docDate < fromDate) return false;
+                    if (toDate && docDate > toDate) return false;
+                }
+
+                // 3. Lọc theo số dòng
+                const lines = typeof doc.total_items === "number" ? doc.total_items : (parseInt(doc.total_items, 10) || 0);
+                if (minLines != null && lines < minLines) return false;
+                if (maxLines != null && lines > maxLines) return false;
+
+                return true;
+            });
+
+            // 4. Sắp xếp danh sách
+            filtered.sort((a, b) => {
+                if (sortBy === "newest_created") {
+                    return (new Date(b.created_at || 0)) - (new Date(a.created_at || 0));
+                } else if (sortBy === "oldest_created") {
+                    return (new Date(a.created_at || 0)) - (new Date(b.created_at || 0));
+                } else if (sortBy === "lines_desc") {
+                    return (b.total_items || 0) - (a.total_items || 0);
+                } else if (sortBy === "lines_asc") {
+                    return (a.total_items || 0) - (b.total_items || 0);
+                } else if (sortBy === "so_xe_asc") {
+                    return String(a.so_xe || "").localeCompare(String(b.so_xe || ""), "vi", { numeric: true });
+                } else if (sortBy === "ngay_xe_desc") {
+                    const da = parseViDate(a.ngay_xe) || new Date(0);
+                    const db = parseViDate(b.ngay_xe) || new Date(0);
+                    return db - da;
+                }
+                return 0;
+            });
+
+            currentFilteredDocs = filtered;
+            renderHistoryTable(filtered);
+            updateHistoryFilterSummary(filtered.length, cachedHistoryDocs.length);
+        }
+
+        function updateHistoryFilterSummary(visibleCount, totalCount) {
+            const summaryEl = document.getElementById("historyFilterSummary");
+            if (summaryEl) {
+                summaryEl.innerHTML = `Hiển thị <strong>${visibleCount}</strong> / <strong>${totalCount}</strong> phiếu`;
+            }
+        }
+
+        function resetHistoryFilters() {
+            const searchInput = document.getElementById("historySearchInput");
+            if (searchInput) searchInput.value = "";
+
+            const dateType = document.getElementById("historyFilterDateType");
+            if (dateType) dateType.value = "ngay_xe";
+
+            const fromInput = document.getElementById("historyFilterFromDate");
+            if (fromInput) fromInput.value = "";
+
+            const toInput = document.getElementById("historyFilterToDate");
+            if (toInput) toInput.value = "";
+
+            document.querySelectorAll(".filter-quick-chips .chip-btn").forEach(el => el.classList.remove("active"));
+            const allChip = document.querySelector(".filter-quick-chips .chip-btn:first-child");
+            if (allChip) allChip.classList.add("active");
+
+            const linePreset = document.getElementById("historyFilterLinePreset");
+            if (linePreset) linePreset.value = "all";
+
+            const customLineDiv = document.getElementById("customLineInputs");
+            if (customLineDiv) customLineDiv.style.display = "none";
+
+            const minLines = document.getElementById("historyFilterMinLines");
+            if (minLines) minLines.value = "";
+
+            const maxLines = document.getElementById("historyFilterMaxLines");
+            if (maxLines) maxLines.value = "";
+
+            const sortBy = document.getElementById("historySortBy");
+            if (sortBy) sortBy.value = "newest_created";
+
+            applyHistoryFilters();
+        }
+
         async function loadHistoryDocuments(searchQuery = "") {
             const tbody = document.getElementById("historyTableBody");
             const badgeCount = document.getElementById("historyBadgeCount");
 
             try {
-                let url = "/api/documents?limit=100";
+                let url = "/api/documents?limit=300";
                 if (searchQuery) {
                     url += `&search=${encodeURIComponent(searchQuery)}`;
                 }
@@ -2694,7 +3158,7 @@
                     badgeCount.textContent = data.total !== undefined ? data.total : cachedHistoryDocs.length;
                 }
 
-                renderHistoryTable(cachedHistoryDocs);
+                applyHistoryFilters();
             } catch (err) {
                 tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 30px; color: var(--danger);">Lỗi tải danh sách phiếu: ${err.message}</td></tr>`;
             }
@@ -2709,8 +3173,8 @@
             if (!docs || docs.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; padding: 40px 20px; color: var(--muted);">
                     <div style="font-size: 36px; margin-bottom: 8px;">📭</div>
-                    <strong>Chưa có phiếu xẻ nào trong cơ sở dữ liệu</strong>
-                    <div style="font-size: 12px; margin-top: 4px;">Các phiếu sau khi OCR và bấm "Lưu dữ liệu" sẽ tự động xuất hiện tại đây.</div>
+                    <strong>Không tìm thấy phiếu nào phù hợp với bộ lọc</strong>
+                    <div style="font-size: 12px; margin-top: 4px;">Hãy thử nới lỏng khoảng ngày, số lượng dòng hoặc bấm "Xóa lọc" để xem toàn bộ.</div>
                 </td></tr>`;
                 return;
             }
@@ -2757,9 +3221,8 @@
         function debounceHistorySearch() {
             clearTimeout(historySearchTimeout);
             historySearchTimeout = setTimeout(() => {
-                const query = document.getElementById("historySearchInput").value.trim();
-                loadHistoryDocuments(query);
-            }, 300);
+                applyHistoryFilters();
+            }, 150);
         }
 
         async function reloadDocumentToWorkspace(docId, fileName) {
