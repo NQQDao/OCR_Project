@@ -145,8 +145,9 @@ def get_documents(
 ) -> List[Document]:
     """Lấy danh sách các phiếu có tìm kiếm và phân trang."""
     query = db.query(Document)
-    if search:
-        s = f"%{search}%"
+    clean_search = str(search).strip() if (search and not str(search).startswith("Query(")) else ""
+    if clean_search:
+        s = f"%{clean_search}%"
         query = query.filter(
             or_(
                 Document.file_name.ilike(s),
@@ -156,6 +157,26 @@ def get_documents(
             )
         )
     return query.order_by(desc(Document.created_at)).offset(skip).limit(limit).all()
+
+
+def count_documents(
+    db: Session,
+    search: Optional[str] = None
+) -> int:
+    """Đếm tổng số phiếu trong CSDL có áp dụng điều kiện tìm kiếm."""
+    query = db.query(Document)
+    clean_search = str(search).strip() if (search and not str(search).startswith("Query(")) else ""
+    if clean_search:
+        s = f"%{clean_search}%"
+        query = query.filter(
+            or_(
+                Document.file_name.ilike(s),
+                Document.so_xe.ilike(s),
+                Document.ngay_xe.ilike(s),
+                Document.kich_thuoc_go_tron.ilike(s)
+            )
+        )
+    return query.count()
 
 
 def get_document_by_id(db: Session, doc_id: int) -> Optional[Document]:

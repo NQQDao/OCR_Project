@@ -15,7 +15,8 @@ from crud import (
     get_documents,
     get_document_by_id,
     get_document_by_file_name,
-    delete_document
+    delete_document,
+    count_documents
 )
 from init_db import init_database
 
@@ -175,22 +176,58 @@ def get_api_image(filename: str):
 
 
 def sync_output_json_to_db():
-    """Tự động đồng bộ các file JSON trong output/ vào CSDL SQLite/PostgreSQL nếu chưa có."""
+    """Tự động đồng bộ các file JSON trong output/ và Cloudflare R2 vào CSDL SQLite/PostgreSQL nếu chưa có."""
     if not is_db_connected():
         return
     db = SessionLocal()
     try:
         from models import Document
-        existing_filenames = {d.file_name for d in db.query(Document.file_name).all()}
+        existing_filenames = set()
+        for row in db.query(Document.file_name).all():
+            fn = row[0] if isinstance(row, (tuple, list)) else getattr(row, "file_name", str(row))
+            if fn:
+                existing_filenames.add(fn)
+
+        # 1. Đồng bộ file JSON trong output/ cục bộ
         for json_path in OUTPUT_DIR.glob("*.json"):
             if json_path.name not in existing_filenames:
                 try:
                     data = json.loads(json_path.read_text(encoding="utf-8"))
                     img_name = (data.get("source", {}) or {}).get("file", "")
                     create_or_update_document(db, data, json_path.name, img_name)
-                    print(f"[DB Auto-sync] Đã nạp file {json_path.name} vào CSDL.")
+                    existing_filenames.add(json_path.name)
+                    print(f"[DB Auto-sync] Đã nạp file cục bộ {json_path.name} vào CSDL.")
                 except Exception as e:
                     print(f"[DB Auto-sync Error] {json_path.name}: {e}")
+
+        # 2. Đồng bộ các file JSON có sẵn trên Cloudflare R2 về CSDL nếu CSDL còn thiếu
+        try:
+            import r2_storage
+            if r2_storage.is_r2_configured():
+                r2_files = r2_storage.list_r2_files(prefix="output/")
+                for item in r2_files:
+                    key = item.get("key", "")
+                    if not key.endswith(".json"):
+                        continue
+                    fn = Path(key).name
+                    if fn not in existing_filenames:
+                        raw_bytes = r2_storage.download_file_bytes(key)
+                        if raw_bytes:
+                            # Lưu bản sao vào output/ cục bộ
+                            local_dest = OUTPUT_DIR / fn
+                            local_dest.parent.mkdir(parents=True, exist_ok=True)
+                            local_dest.write_bytes(raw_bytes)
+                            try:
+                                data = json.loads(raw_bytes.decode("utf-8"))
+                                img_name = (data.get("source", {}) or {}).get("file", "")
+                                create_or_update_document(db, data, fn, img_name)
+                                existing_filenames.add(fn)
+                                print(f"[R2 Auto-sync] Đã tải và nạp file {fn} từ Cloudflare R2 vào CSDL.")
+                            except Exception as parse_e:
+                                print(f"[R2 Auto-sync Parse Error] {fn}: {parse_e}")
+        except Exception as r2_err:
+            print(f"[R2 Auto-sync Warning] {r2_err}")
+
     except Exception as err:
         print(f"[DB Auto-sync Error] {err}")
     finally:
@@ -1063,15 +1100,17 @@ def get_database_status():
 def list_documents(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    search: str = Query(None)
+    search: Optional[str] = Query(None)
 ):
     if not is_db_connected():
         raise HTTPException(status_code=503, detail=f"Chưa kết nối tới cơ sở dữ liệu {DB_TYPE.upper()}.")
-    if skip == 0 and not search:
+    clean_search = None if (search is None or not isinstance(search, str) or not search.strip()) else search.strip()
+    if skip == 0 and not clean_search:
         sync_output_json_to_db()
     db = SessionLocal()
     try:
-        docs = get_documents(db, skip=skip, limit=limit, search=search)
+        total_count = count_documents(db, search=clean_search)
+        docs = get_documents(db, skip=skip, limit=limit, search=clean_search)
         results = []
         for d in docs:
             results.append({
@@ -1086,7 +1125,8 @@ def list_documents(
             })
         return {
             "status": "success",
-            "total": len(results),
+            "total": total_count,
+            "count": len(results),
             "documents": results
         }
     finally:
