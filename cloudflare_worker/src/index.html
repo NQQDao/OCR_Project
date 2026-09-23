@@ -1218,6 +1218,153 @@
             border: 1px solid var(--border);
             box-shadow: 0 4px 18px rgba(18, 50, 74, 0.04);
             margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        /* History View Switcher (Sub-tabs) */
+        .history-view-switcher {
+            display: flex;
+            gap: 10px;
+            padding: 12px 18px;
+            background: #f1f5f9;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .history-view-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #475569;
+            font-size: 13.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .history-view-tab-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: #f8fafc;
+        }
+
+        .history-view-tab-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(11, 114, 217, 0.25);
+        }
+
+        .view-tab-badge {
+            background: #e2e8f0;
+            color: #334155;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .history-view-tab-btn.active .view-tab-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        /* R2 Stats Grid in History */
+        .r2-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .r2-stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .r2-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+
+        .r2-stat-icon {
+            font-size: 26px;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .r2-stat-icon.excel { background: #ecfdf5; color: #059669; }
+        .r2-stat-icon.json { background: #fffbeb; color: #d97706; }
+        .r2-stat-icon.image { background: #eff6ff; color: #2563eb; }
+        .r2-stat-icon.total { background: #f5f3ff; color: #7c3aed; }
+
+        .r2-stat-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .r2-stat-num {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .r2-stat-label {
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        /* File Type Badges in R2 Table */
+        .r2-badge-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .r2-badge-type.excel {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .r2-badge-type.json {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+
+        .r2-badge-type.image {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
+        .r2-badge-type.other {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
         }
 
         /* History Filter Panel Styles */
@@ -1754,110 +1901,205 @@
         <div id="historyTabContent" style="display: none;">
             <section class="panel history-panel">
                 <div class="panel-head">
-                    <div class="panel-title"><span class="panel-icon">📂</span> LỊCH SỬ PHIẾU XẺ GỖ ĐÃ LƯU</div>
-                    <span class="panel-sub">Tra cứu, xem lại ảnh gốc, đối chiếu và xuất báo cáo</span>
+                    <div class="panel-title"><span class="panel-icon">📂</span> LỊCH SỬ PHIẾU XẺ GỖ & KHO FILE CLOUDFLARE R2</div>
+                    <span class="panel-sub">Tra cứu phiếu đã lưu, xem file kết quả JSON, ảnh gốc và quản lý file Excel trên R2</span>
                 </div>
+
+                <!-- THANH CHUYỂN ĐỔI CHẾ ĐỘ XEM TRONG TAB LỊCH SỬ -->
+                <div class="history-view-switcher">
+                    <button type="button" class="history-view-tab-btn active" id="viewBtnD1Docs" onclick="switchHistorySubTab('d1')">
+                        <span>📋 Danh sách phiếu đã lưu (D1 Database)</span>
+                        <span class="view-tab-badge" id="d1DocsCountBadge">0</span>
+                    </button>
+                    <button type="button" class="history-view-tab-btn" id="viewBtnR2Files" onclick="switchHistorySubTab('r2')">
+                        <span>☁️ Kho lưu trữ Cloudflare R2 (Ảnh, JSON & Excel)</span>
+                        <span class="view-tab-badge" id="r2FilesCountBadge">...</span>
+                    </button>
+                </div>
+
                 <div class="panel-body">
-                    <!-- BỘ LỌC THÔNG MINH (NGÀY THÁNG, SỐ DÒNG, TÌM KIẾM, SẮP XẾP) -->
-                    <div class="history-filter-panel">
-                        <!-- Hàng 1: Tìm kiếm & Nút hành động -->
-                        <div class="history-filter-row">
-                            <div class="history-search-box">
-                                <span class="search-icon">🔍</span>
-                                <input type="text" id="historySearchInput" placeholder="Tìm theo số xẻ, ngày xẻ, công trình, quy cách gỗ..." oninput="debounceHistorySearch()">
+                    <!-- PHẦN 1: BẢNG PHIẾU XẺ TRÊN D1 DATABASE -->
+                    <div id="historyD1Section">
+                        <!-- BỘ LỌC THÔNG MINH (NGÀY THÁNG, SỐ DÒNG, TÌM KIẾM, SẮP XẾP) -->
+                        <div class="history-filter-panel">
+                            <!-- Hàng 1: Tìm kiếm & Nút hành động -->
+                            <div class="history-filter-row">
+                                <div class="history-search-box">
+                                    <span class="search-icon">🔍</span>
+                                    <input type="text" id="historySearchInput" placeholder="Tìm theo số xẻ, ngày xẻ, công trình, quy cách gỗ..." oninput="debounceHistorySearch()">
+                                </div>
+                                <div class="history-actions">
+                                    <button type="button" class="btn btn-secondary" onclick="loadHistoryDocuments()">🔄 Tải lại</button>
+                                    <button type="button" class="btn btn-info" id="btnExportBatchHistory" onclick="exportSelectedHistoryExcel()" disabled>📚 Xuất Excel các phiếu đã chọn (<span id="selectedCountBadge">0</span>)</button>
+                                </div>
                             </div>
-                            <div class="history-actions">
-                                <button type="button" class="btn btn-secondary" onclick="loadHistoryDocuments()">🔄 Tải lại</button>
-                                <button type="button" class="btn btn-info" id="btnExportBatchHistory" onclick="exportSelectedHistoryExcel()" disabled>📚 Xuất Excel các phiếu đã chọn (<span id="selectedCountBadge">0</span>)</button>
+
+                            <!-- Hàng 2: Bộ lọc chi tiết -->
+                            <div class="history-filter-controls">
+                                <!-- Nhóm lọc Ngày tháng năm -->
+                                <div class="filter-group">
+                                    <span class="filter-label">📅 Lọc ngày:</span>
+                                    <select id="historyFilterDateType" class="filter-select" onchange="applyHistoryFilters()">
+                                        <option value="ngay_xe">Ngày xẻ trên phiếu</option>
+                                        <option value="created_at">Ngày lưu hệ thống</option>
+                                    </select>
+                                    <div class="filter-date-inputs">
+                                        <input type="date" id="historyFilterFromDate" class="filter-input-date" title="Từ ngày" onchange="applyHistoryFilters()">
+                                        <span class="filter-separator">→</span>
+                                        <input type="date" id="historyFilterToDate" class="filter-input-date" title="Đến ngày" onchange="applyHistoryFilters()">
+                                    </div>
+                                    <div class="filter-quick-chips">
+                                        <button type="button" class="chip-btn active" onclick="setQuickDateFilter('all', this)">Tất cả</button>
+                                        <button type="button" class="chip-btn" onclick="setQuickDateFilter('today', this)">Hôm nay</button>
+                                        <button type="button" class="chip-btn" onclick="setQuickDateFilter('7days', this)">7 ngày</button>
+                                        <button type="button" class="chip-btn" onclick="setQuickDateFilter('thisMonth', this)">Tháng này</button>
+                                    </div>
+                                </div>
+
+                                <!-- Nhóm lọc Số lượng dòng -->
+                                <div class="filter-group">
+                                    <span class="filter-label">📊 Số lượng dòng:</span>
+                                    <select id="historyFilterLinePreset" class="filter-select" onchange="onLinePresetChange(this.value)">
+                                        <option value="all">Tất cả số dòng</option>
+                                        <option value="1-5">Ít dòng (1 - 5 dòng)</option>
+                                        <option value="6-15">Trung bình (6 - 15 dòng)</option>
+                                        <option value="16-999">Nhiều dòng (≥ 16 dòng)</option>
+                                        <option value="custom">Tùy chỉnh...</option>
+                                    </select>
+                                    <div class="filter-line-inputs" id="customLineInputs" style="display: none;">
+                                        <input type="number" id="historyFilterMinLines" class="filter-input-num" min="0" placeholder="Từ" oninput="applyHistoryFilters()">
+                                        <span class="filter-separator">→</span>
+                                        <input type="number" id="historyFilterMaxLines" class="filter-input-num" min="0" placeholder="Đến" oninput="applyHistoryFilters()">
+                                    </div>
+                                </div>
+
+                                <!-- Nhóm Sắp xếp -->
+                                <div class="filter-group">
+                                    <span class="filter-label">⚡ Sắp xếp:</span>
+                                    <select id="historySortBy" class="filter-select" onchange="applyHistoryFilters()">
+                                        <option value="newest_created">Mới lưu nhất ↓</option>
+                                        <option value="oldest_created">Cũ nhất ↑</option>
+                                        <option value="lines_desc">Số dòng: Nhiều nhất ↓</option>
+                                        <option value="lines_asc">Số dòng: Ít nhất ↑</option>
+                                        <option value="so_xe_asc">Số xẻ: A → Z</option>
+                                        <option value="ngay_xe_desc">Ngày xẻ: Mới nhất ↓</option>
+                                    </select>
+                                </div>
+
+                                <!-- Nhóm Thống kê & Xóa lọc -->
+                                <div class="filter-summary-group">
+                                    <button type="button" class="btn-reset-filter" onclick="resetHistoryFilters()" title="Đặt lại toàn bộ điều kiện lọc">
+                                        <span>🔄 Xóa lọc</span>
+                                    </button>
+                                    <div class="filter-results-badge" id="historyFilterSummary">
+                                        Hiển thị <strong>0</strong> / <strong>0</strong> phiếu
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Hàng 2: Bộ lọc chi tiết -->
-                        <div class="history-filter-controls">
-                            <!-- Nhóm lọc Ngày tháng năm -->
-                            <div class="filter-group">
-                                <span class="filter-label">📅 Lọc ngày:</span>
-                                <select id="historyFilterDateType" class="filter-select" onchange="applyHistoryFilters()">
-                                    <option value="ngay_xe">Ngày xẻ trên phiếu</option>
-                                    <option value="created_at">Ngày lưu hệ thống</option>
-                                </select>
-                                <div class="filter-date-inputs">
-                                    <input type="date" id="historyFilterFromDate" class="filter-input-date" title="Từ ngày" onchange="applyHistoryFilters()">
-                                    <span class="filter-separator">→</span>
-                                    <input type="date" id="historyFilterToDate" class="filter-input-date" title="Đến ngày" onchange="applyHistoryFilters()">
-                                </div>
-                                <div class="filter-quick-chips">
-                                    <button type="button" class="chip-btn active" onclick="setQuickDateFilter('all', this)">Tất cả</button>
-                                    <button type="button" class="chip-btn" onclick="setQuickDateFilter('today', this)">Hôm nay</button>
-                                    <button type="button" class="chip-btn" onclick="setQuickDateFilter('7days', this)">7 ngày</button>
-                                    <button type="button" class="chip-btn" onclick="setQuickDateFilter('thisMonth', this)">Tháng này</button>
-                                </div>
-                            </div>
-
-                            <!-- Nhóm lọc Số lượng dòng -->
-                            <div class="filter-group">
-                                <span class="filter-label">📊 Số lượng dòng:</span>
-                                <select id="historyFilterLinePreset" class="filter-select" onchange="onLinePresetChange(this.value)">
-                                    <option value="all">Tất cả số dòng</option>
-                                    <option value="1-5">Ít dòng (1 - 5 dòng)</option>
-                                    <option value="6-15">Trung bình (6 - 15 dòng)</option>
-                                    <option value="16-999">Nhiều dòng (≥ 16 dòng)</option>
-                                    <option value="custom">Tùy chỉnh...</option>
-                                </select>
-                                <div class="filter-line-inputs" id="customLineInputs" style="display: none;">
-                                    <input type="number" id="historyFilterMinLines" class="filter-input-num" min="0" placeholder="Từ" oninput="applyHistoryFilters()">
-                                    <span class="filter-separator">→</span>
-                                    <input type="number" id="historyFilterMaxLines" class="filter-input-num" min="0" placeholder="Đến" oninput="applyHistoryFilters()">
-                                </div>
-                            </div>
-
-                            <!-- Nhóm Sắp xếp -->
-                            <div class="filter-group">
-                                <span class="filter-label">⚡ Sắp xếp:</span>
-                                <select id="historySortBy" class="filter-select" onchange="applyHistoryFilters()">
-                                    <option value="newest_created">Mới lưu nhất ↓</option>
-                                    <option value="oldest_created">Cũ nhất ↑</option>
-                                    <option value="lines_desc">Số dòng: Nhiều nhất ↓</option>
-                                    <option value="lines_asc">Số dòng: Ít nhất ↑</option>
-                                    <option value="so_xe_asc">Số xẻ: A → Z</option>
-                                    <option value="ngay_xe_desc">Ngày xẻ: Mới nhất ↓</option>
-                                </select>
-                            </div>
-
-                            <!-- Nhóm Thống kê & Xóa lọc -->
-                            <div class="filter-summary-group">
-                                <button type="button" class="btn-reset-filter" onclick="resetHistoryFilters()" title="Đặt lại toàn bộ điều kiện lọc">
-                                    <span>🔄 Xóa lọc</span>
-                                </button>
-                                <div class="filter-results-badge" id="historyFilterSummary">
-                                    Hiển thị <strong>0</strong> / <strong>0</strong> phiếu
-                                </div>
-                            </div>
+                        <!-- Table of documents -->
+                        <div class="history-table-wrap">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this.checked)"></th>
+                                        <th style="width: 45px; text-align: center;">STT</th>
+                                        <th style="width: 65px; text-align: center;">Ảnh</th>
+                                        <th>Số xẻ</th>
+                                        <th>Ngày xẻ</th>
+                                        <th>Quy cách gỗ tròn</th>
+                                        <th style="text-align: center; width: 95px;">Số dòng</th>
+                                        <th style="width: 130px;">Thời gian lưu</th>
+                                        <th style="width: 290px; text-align: center;">Thao tác & File R2</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historyTableBody">
+                                    <tr>
+                                        <td colspan="9" style="text-align: center; padding: 30px; color: var(--muted);">Đang tải danh sách phiếu...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <!-- Table of documents -->
-                    <div class="history-table-wrap">
-                        <table class="history-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this.checked)"></th>
-                                    <th style="width: 50px; text-align: center;">STT</th>
-                                    <th style="width: 70px; text-align: center;">Ảnh</th>
-                                    <th>Số xẻ</th>
-                                    <th>Ngày xẻ</th>
-                                    <th>Quy cách gỗ tròn</th>
-                                    <th style="text-align: center;">Số dòng</th>
-                                    <th>Thời gian lưu</th>
-                                    <th style="width: 230px; text-align: center;">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historyTableBody">
-                                <tr>
-                                    <td colspan="9" style="text-align: center; padding: 30px; color: var(--muted);">Đang tải danh sách phiếu...</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <!-- PHẦN 2: KHO FILE LƯU TRỮ TRÊN CLOUDFLARE R2 -->
+                    <div id="historyR2Section" style="display: none;">
+                        <!-- Thống kê nhanh kho file R2 -->
+                        <div class="r2-stats-grid">
+                            <div class="r2-stat-card">
+                                <div class="r2-stat-icon total">☁️</div>
+                                <div class="r2-stat-info">
+                                    <span class="r2-stat-num" id="r2StatTotal">0</span>
+                                    <span class="r2-stat-label">Tổng số file trên R2</span>
+                                </div>
+                            </div>
+                            <div class="r2-stat-card">
+                                <div class="r2-stat-icon excel">📊</div>
+                                <div class="r2-stat-info">
+                                    <span class="r2-stat-num" id="r2StatExcel">0</span>
+                                    <span class="r2-stat-label">File Excel (.xlsx)</span>
+                                </div>
+                            </div>
+                            <div class="r2-stat-card">
+                                <div class="r2-stat-icon json">📄</div>
+                                <div class="r2-stat-info">
+                                    <span class="r2-stat-num" id="r2StatJson">0</span>
+                                    <span class="r2-stat-label">File JSON kết quả OCR</span>
+                                </div>
+                            </div>
+                            <div class="r2-stat-card">
+                                <div class="r2-stat-icon image">🖼️</div>
+                                <div class="r2-stat-info">
+                                    <span class="r2-stat-num" id="r2StatImage">0</span>
+                                    <span class="r2-stat-label">Ảnh phiếu gốc</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thanh công cụ tìm kiếm và lọc file R2 -->
+                        <div class="history-filter-panel" style="margin-bottom: 16px;">
+                            <div class="history-filter-row">
+                                <div class="history-search-box" style="flex: 1; max-width: 450px;">
+                                    <span class="search-icon">🔍</span>
+                                    <input type="text" id="r2SearchInput" placeholder="Tìm kiếm file Excel, JSON hoặc ảnh trên R2..." oninput="filterR2FilesHistory()">
+                                </div>
+                                <div class="history-actions">
+                                    <button type="button" class="btn btn-secondary" onclick="loadR2FilesHistoryTab()">🔄 Tải lại R2</button>
+                                    <button type="button" class="btn btn-success" id="btnExportAllR2" onclick="exportAllExcelToR2()" title="Tạo file Excel tổng hợp tất cả các phiếu và lưu ngay lên R2">
+                                        📊 Xuất toàn bộ phiếu ra Excel & Lưu R2
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="filter-quick-chips" style="padding-top: 8px;">
+                                <span class="filter-label" style="margin-right: 8px;">📁 Phân loại:</span>
+                                <button type="button" class="chip-btn active" id="chipR2All" onclick="setR2FilterType('all', this)">Tất cả (<span id="r2ChipCountAll">0</span>)</button>
+                                <button type="button" class="chip-btn" id="chipR2Excel" onclick="setR2FilterType('excel', this)">📊 File Excel (<span id="r2ChipCountExcel">0</span>)</button>
+                                <button type="button" class="chip-btn" id="chipR2Json" onclick="setR2FilterType('json', this)">📄 JSON kết quả OCR (<span id="r2ChipCountJson">0</span>)</button>
+                                <button type="button" class="chip-btn" id="chipR2Image" onclick="setR2FilterType('image', this)">🖼️ Ảnh gốc (<span id="r2ChipCountImage">0</span>)</button>
+                            </div>
+                        </div>
+
+                        <!-- Bảng danh sách file R2 -->
+                        <div class="history-table-wrap">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 45px; text-align: center;">STT</th>
+                                        <th style="width: 120px; text-align: center;">Phân loại</th>
+                                        <th>Tên file & Đường dẫn trên Cloudflare R2</th>
+                                        <th style="width: 110px;">Dung lượng</th>
+                                        <th style="width: 160px;">Thời gian tải lên</th>
+                                        <th style="width: 260px; text-align: center;">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="r2FilesHistoryTableBody">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--muted);">Đang tải danh sách file từ Cloudflare R2...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -3445,6 +3687,10 @@
                 if (badgeCount) {
                     badgeCount.textContent = data.total !== undefined ? data.total : cachedHistoryDocs.length;
                 }
+                const d1Badge = document.getElementById("d1DocsCountBadge");
+                if (d1Badge) {
+                    d1Badge.textContent = data.total !== undefined ? data.total : cachedHistoryDocs.length;
+                }
 
                 applyHistoryFilters();
             } catch (err) {
@@ -3493,8 +3739,11 @@
                                 <button type="button" class="btn-action-sm" onclick="reloadDocumentToWorkspace(${doc.id}, '${escapeHtml(doc.file_name)}')" title="Nạp toàn bộ ảnh và dữ liệu vào bàn làm việc">
                                     <span>👁️ Mở lại</span>
                                 </button>
-                                <a class="btn-action-sm" href="/api/excel?json_file=${encodeURIComponent(doc.file_name)}" target="_blank" title="Tải file Excel phiếu này">
+                                <a class="btn-action-sm" href="/api/excel?json_file=${encodeURIComponent(doc.file_name)}" target="_blank" title="Tải file Excel phiếu này (tự động sao lưu lên R2)">
                                     <span>📥 Excel</span>
+                                </a>
+                                <a class="btn-action-sm" href="/output/${encodeURIComponent(doc.file_name)}" target="_blank" style="background: #fffbeb; color: #b45309; border-color: #fde68a;" title="Xem file JSON kết quả OCR trên Cloudflare R2">
+                                    <span>📄 JSON</span>
                                 </a>
                                 <button type="button" class="btn-action-sm danger" onclick="deleteHistoryDocument(${doc.id}, '${escapeHtml(doc.so_xe || ('ID #' + doc.id))}')" title="Xóa phiếu">
                                     <span>🗑️</span>
@@ -3649,6 +3898,268 @@
             } catch (err) {
                 alert("Lỗi xuất Excel: " + err.message);
                 setStatus("● Lỗi xuất Excel");
+            }
+        }
+
+        // ===== QUẢN LÝ KHO LƯU TRỮ CLOUDFLARE R2 TRONG TAB LỊCH SỬ =====
+        let cachedR2Files = [];
+        let currentR2FilterType = "all";
+
+        function switchHistorySubTab(subTab) {
+            const btnD1 = document.getElementById("viewBtnD1Docs");
+            const btnR2 = document.getElementById("viewBtnR2Files");
+            const secD1 = document.getElementById("historyD1Section");
+            const secR2 = document.getElementById("historyR2Section");
+
+            if (subTab === "r2") {
+                if (btnD1) btnD1.classList.remove("active");
+                if (btnR2) btnR2.classList.add("active");
+                if (secD1) secD1.style.display = "none";
+                if (secR2) secR2.style.display = "block";
+                loadR2FilesHistoryTab();
+            } else {
+                if (btnD1) btnD1.classList.add("active");
+                if (btnR2) btnR2.classList.remove("active");
+                if (secD1) secD1.style.display = "block";
+                if (secR2) secR2.style.display = "none";
+            }
+        }
+
+        async function loadR2FilesHistoryTab() {
+            const tbody = document.getElementById("r2FilesHistoryTableBody");
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--muted);">⏳ Đang kết nối Cloudflare R2 để tải danh sách file...</td></tr>';
+            }
+
+            try {
+                const res = await fetch("/api/r2/files?limit=1000");
+                const data = await res.json();
+
+                if (data.status !== "success") {
+                    throw new Error(data.message || data.error || "Không thể lấy danh sách file từ R2");
+                }
+
+                cachedR2Files = data.files || [];
+                const stats = data.stats || {
+                    total: cachedR2Files.length,
+                    excel_count: cachedR2Files.filter(f => f.file_type === "excel").length,
+                    json_count: cachedR2Files.filter(f => f.file_type === "json").length,
+                    image_count: cachedR2Files.filter(f => f.file_type === "image").length
+                };
+
+                // Cập nhật thẻ thống kê
+                const elTot = document.getElementById("r2StatTotal");
+                const elXls = document.getElementById("r2StatExcel");
+                const elJsn = document.getElementById("r2StatJson");
+                const elImg = document.getElementById("r2StatImage");
+                if (elTot) elTot.textContent = stats.total;
+                if (elXls) elXls.textContent = stats.excel_count;
+                if (elJsn) elJsn.textContent = stats.json_count;
+                if (elImg) elImg.textContent = stats.image_count;
+
+                // Cập nhật số lượng trên chip lọc
+                const chipAll = document.getElementById("r2ChipCountAll");
+                const chipXls = document.getElementById("r2ChipCountExcel");
+                const chipJsn = document.getElementById("r2ChipCountJson");
+                const chipImg = document.getElementById("r2ChipCountImage");
+                if (chipAll) chipAll.textContent = stats.total;
+                if (chipXls) chipXls.textContent = stats.excel_count;
+                if (chipJsn) chipJsn.textContent = stats.json_count;
+                if (chipImg) chipImg.textContent = stats.image_count;
+
+                // Cập nhật badge trên sub-tab switcher
+                const r2Badge = document.getElementById("r2FilesCountBadge");
+                if (r2Badge) r2Badge.textContent = stats.total;
+
+                filterR2FilesHistory();
+            } catch (err) {
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: var(--danger);">Lỗi tải file Cloudflare R2: ${escapeHtml(err.message)}</td></tr>`;
+                }
+            }
+        }
+
+        function setR2FilterType(type, btn) {
+            currentR2FilterType = type;
+            document.querySelectorAll("#historyR2Section .chip-btn").forEach(el => el.classList.remove("active"));
+            if (btn) btn.classList.add("active");
+            filterR2FilesHistory();
+        }
+
+        function filterR2FilesHistory() {
+            if (!cachedR2Files) {
+                renderR2FilesHistoryTable([]);
+                return;
+            }
+
+            const searchVal = (document.getElementById("r2SearchInput")?.value || "").toLowerCase().trim();
+            let filtered = cachedR2Files.filter(file => {
+                // 1. Lọc theo Phân loại (all, excel, json, image)
+                if (currentR2FilterType !== "all" && file.file_type !== currentR2FilterType) {
+                    return false;
+                }
+                // 2. Lọc theo từ khóa tìm kiếm
+                if (searchVal) {
+                    const searchStr = `${file.name} ${file.key} ${file.folder}`.toLowerCase();
+                    if (!searchStr.includes(searchVal)) return false;
+                }
+                return true;
+            });
+
+            renderR2FilesHistoryTable(filtered);
+        }
+
+        function renderR2FilesHistoryTable(files) {
+            const tbody = document.getElementById("r2FilesHistoryTableBody");
+            if (!tbody) return;
+
+            if (!files || files.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px 20px; color: var(--muted);">
+                    <div style="font-size: 32px; margin-bottom: 8px;">📭</div>
+                    <strong>Không tìm thấy file nào trên Cloudflare R2 phù hợp</strong>
+                    <div style="font-size: 12px; margin-top: 4px;">Hãy thử tìm kiếm với từ khóa khác hoặc bấm nút "Tất cả".</div>
+                </td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = files.map((f, idx) => {
+                let typeBadge = '';
+                if (f.file_type === 'excel') {
+                    typeBadge = '<span class="r2-badge-type excel">📊 Excel (.xlsx)</span>';
+                } else if (f.file_type === 'json') {
+                    typeBadge = '<span class="r2-badge-type json">📄 JSON OCR</span>';
+                } else if (f.file_type === 'image') {
+                    typeBadge = '<span class="r2-badge-type image">🖼️ Ảnh gốc</span>';
+                } else {
+                    typeBadge = '<span class="r2-badge-type other">📁 Khác</span>';
+                }
+
+                const timeStr = f.last_modified
+                    ? new Date(f.last_modified).toLocaleString("vi-VN", { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : "-";
+
+                let actionBtns = '';
+                if (f.file_type === 'excel') {
+                    actionBtns = `
+                        <a class="btn-action-sm" href="${escapeHtml(f.public_url)}" target="_blank" download style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;" title="Tải trực tiếp file Excel từ Cloudflare R2">
+                            <span>📥 Tải Excel</span>
+                        </a>
+                    `;
+                } else if (f.file_type === 'json') {
+                    actionBtns = `
+                        <button type="button" class="btn-action-sm" onclick="reloadJsonFileToWorkspace('${escapeHtml(f.name)}')" title="Nạp dữ liệu JSON này vào bàn làm việc Tab 1">
+                            <span>👁️ Nạp phiếu</span>
+                        </button>
+                        <a class="btn-action-sm" href="${escapeHtml(f.public_url)}" target="_blank" style="background: #fffbeb; color: #b45309; border-color: #fde68a;" title="Xem nội dung JSON thô trên R2">
+                            <span>📄 Xem JSON</span>
+                        </a>
+                    `;
+                } else if (f.file_type === 'image') {
+                    actionBtns = `
+                        <button type="button" class="btn-action-sm" onclick="openFullscreenModal('${escapeHtml(f.public_url)}')" title="Xem phóng to ảnh gốc toàn màn hình">
+                            <span>🖼️ Xem ảnh</span>
+                        </button>
+                        <a class="btn-action-sm" href="${escapeHtml(f.public_url)}" target="_blank" download title="Tải ảnh gốc về máy">
+                            <span>📥 Tải ảnh</span>
+                        </a>
+                    `;
+                } else {
+                    actionBtns = `
+                        <a class="btn-action-sm" href="${escapeHtml(f.public_url)}" target="_blank" download>
+                            <span>📥 Tải file</span>
+                        </a>
+                    `;
+                }
+
+                actionBtns += `
+                    <button type="button" class="btn-action-sm danger" onclick="deleteR2File('${escapeHtml(f.key)}')" title="Xóa file này khỏi Cloudflare R2">
+                        <span>🗑️ Xóa</span>
+                    </button>
+                `;
+
+                return `
+                    <tr>
+                        <td style="text-align: center; color: var(--muted); font-weight: bold;">${idx + 1}</td>
+                        <td style="text-align: center;">${typeBadge}</td>
+                        <td>
+                            <strong style="color: var(--text);">${escapeHtml(f.name)}</strong>
+                            <div style="font-size: 11px; color: var(--muted); font-family: monospace; margin-top: 3px;">${escapeHtml(f.key)}</div>
+                        </td>
+                        <td style="font-size: 12px; font-weight: 500; color: #475569;">${escapeHtml(f.size_formatted)}</td>
+                        <td style="font-size: 12px; color: var(--muted);">${timeStr}</td>
+                        <td style="text-align: center;">
+                            <div class="history-action-btns" style="justify-content: center;">
+                                ${actionBtns}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        async function reloadJsonFileToWorkspace(fileName) {
+            if (!fileName) return;
+            // Tìm trong cachedHistoryDocs xem có doc nào khớp file_name không để lấy kèm metadata CSDL
+            const foundDoc = cachedHistoryDocs ? cachedHistoryDocs.find(d => d.file_name === fileName) : null;
+            await reloadDocumentToWorkspace(foundDoc ? foundDoc.id : null, fileName);
+        }
+
+        async function exportAllExcelToR2() {
+            const btn = document.getElementById("btnExportAllR2");
+            if (btn) btn.disabled = true;
+            setStatus("⏳ Đang xuất toàn bộ phiếu ra Excel và lưu vào Cloudflare R2...");
+
+            try {
+                const res = await fetch("/api/r2/export-all-excel", { method: "POST" });
+                const data = await res.json();
+
+                if (!res.ok || data.status !== "success") {
+                    throw new Error(data.error || data.detail || "Không thể xuất Excel");
+                }
+
+                alert(`✓ ${data.message}\nFile đã lưu tại: ${data.r2_key}`);
+                setStatus("● Đã xuất và lưu Excel lên Cloudflare R2!");
+
+                // Tự động tải xuống file Excel vừa tạo
+                if (data.public_url) {
+                    const a = document.createElement("a");
+                    a.href = data.public_url;
+                    a.download = data.file_name;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                }
+
+                // Tải lại danh sách R2
+                await loadR2FilesHistoryTab();
+            } catch (err) {
+                alert("Lỗi xuất Excel lên R2: " + err.message);
+                setStatus("● Lỗi xuất Excel R2");
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function deleteR2File(key) {
+            if (!key) return;
+            if (!confirm(`Bạn có chắc chắn muốn xóa file "${key}" trên Cloudflare R2 không? Hành động này không thể hoàn tác.`)) {
+                return;
+            }
+
+            setStatus(`⏳ Đang xóa file ${key} trên Cloudflare R2...`);
+            try {
+                const res = await fetch(`/api/r2/files?key=${encodeURIComponent(key)}`, { method: "DELETE" });
+                const data = await res.json();
+
+                if (!res.ok || data.status !== "success") {
+                    throw new Error(data.error || data.message || "Lỗi xóa file");
+                }
+
+                setStatus(`● ${data.message}`);
+                await loadR2FilesHistoryTab();
+            } catch (err) {
+                alert("Lỗi xóa file R2: " + err.message);
+                setStatus("● Lỗi xóa file R2");
             }
         }
 
@@ -3829,10 +4340,13 @@
                 .then(d => {
                     const b = document.getElementById("historyBadgeCount");
                     if (b && d.total !== undefined) b.textContent = d.total;
+                    const d1b = document.getElementById("d1DocsCountBadge");
+                    if (d1b && d.total !== undefined) d1b.textContent = d.total;
                 })
                 .catch(() => {});
 
             checkR2Status();
+            loadR2FilesHistoryTab();
         });
     </script>
 

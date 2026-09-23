@@ -501,6 +501,17 @@ export default {
         const excelBuffer = await createBatchExcel([{ data: jsonData, filename: clean }]);
         const excelFileName = clean.replace(/\.json$/i, ".xlsx");
 
+        // Tự động sao lưu file Excel lên Cloudflare R2
+        try {
+          await env.MY_BUCKET.put(`excel_exports/${excelFileName}`, excelBuffer, {
+            httpMetadata: {
+              contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+          });
+        } catch (e) {
+          console.warn("Lỗi lưu file Excel đơn lên R2:", e);
+        }
+
         return new Response(excelBuffer, {
           status: 200,
           headers: {
@@ -642,16 +653,164 @@ export default {
 
       if (pathname === "/api/r2/files" && method === "GET") {
         const prefix = url.searchParams.get("prefix") || "";
-        const list = await env.MY_BUCKET.list({ prefix, limit: 100 });
+        const type = (url.searchParams.get("type") || "all").toLowerCase();
+        const search = (url.searchParams.get("search") || "").toLowerCase().trim();
+        const limit = Math.min(1000, Math.max(1, parseInt(url.searchParams.get("limit") || "1000", 10)));
+
+        let r2Prefix = prefix;
+        if (type === "excel") r2Prefix = "excel_exports/";
+        else if (type === "json") r2Prefix = "output/";
+        else if (type === "image") r2Prefix = "web_uploads/";
+
+        const list = await env.MY_BUCKET.list({ prefix: r2Prefix, limit });
         const pubBase = (env.R2_PUBLIC_URL || "").replace(/\/$/, "");
-        const files = (list.objects || []).map(obj => ({
-          key: obj.key,
-          size: obj.size,
-          last_modified: obj.uploaded ? obj.uploaded.toISOString() : null,
-          uploaded: obj.uploaded,
-          public_url: pubBase ? `${pubBase}/${obj.key}` : `/${obj.key}`
-        }));
-        return jsonResponse({ status: "success", count: files.length, files });
+
+        let allFiles = (list.objects || []).map(obj => {
+          const key = obj.key;
+          let fileType = "other";
+          let folder = "root";
+
+          if (key.startsWith("excel_exports/") || key.toLowerCase().endsWith(".xlsx") || key.toLowerCase().endsWith(".xls")) {
+            fileType = "excel";
+            folder = "excel_exports";
+          } else if (key.startsWith("output/") || key.toLowerCase().endsWith(".json")) {
+            fileType = "json";
+            folder = "output";
+          } else if (
+            key.startsWith("web_uploads/") ||
+            key.startsWith("images/") ||
+            /\.(jpg|jpeg|png|webp|bmp|gif)$/i.test(key)
+          ) {
+            fileType = "image";
+            folder = key.includes("/") ? key.split("/")[0] : "images";
+          }
+
+          const fileName = key.includes("/") ? key.split("/").pop() : key;
+          const sizeKb = obj.size / 1024;
+          const sizeFormatted = sizeKb >= 1024 
+            ? (sizeKb / 1024).toFixed(2) + " MB" 
+            : sizeKb.toFixed(1) + " KB";
+
+          return {
+            key: obj.key,
+            name: fileName,
+            folder: folder,
+            file_type: fileType,
+            size: obj.size,
+            size_formatted: sizeFormatted,
+            last_modified: obj.uploaded ? obj.uploaded.toISOString() : null,
+            uploaded: obj.uploaded,
+            public_url: pubBase ? `${pubBase}/${obj.key}` : `/${obj.key}`
+          };
+        });
+
+        // Thống kê tổng hợp trước khi filter
+        const stats = {
+          total: allFiles.length,
+          excel_count: allFiles.filter(f => f.file_type === "excel").length,
+          json_count: allFiles.filter(f => f.file_type === "json").length,
+          image_count: allFiles.filter(f => f.file_type === "image").length,
+          other_count: allFiles.filter(f => f.file_type === "other").length
+        };
+
+        // Lọc theo type nếu cần
+        if (type !== "all") {
+          allFiles = allFiles.filter(f => f.file_type === type);
+        }
+
+        // Lọc theo từ khóa tìm kiếm
+        if (search) {
+          allFiles = allFiles.filter(f => 
+            f.key.toLowerCase().includes(search) || 
+            f.name.toLowerCase().includes(search)
+          );
+        }
+
+        return jsonResponse({
+          status: "success",
+          bucket: env.R2_BUCKET_NAME || "ocr-vn01",
+          stats,
+          count: allFiles.length,
+          files: allFiles
+        });
+      }
+
+      // DELETE /api/r2/files : Xóa file trên Cloudflare R2
+      if (pathname === "/api/r2/files" && method === "DELETE") {
+        const key = url.searchParams.get("key");
+        if (!key) {
+          return jsonResponse({ error: "Thiếu tham số key của file cần xóa" }, 400);
+        }
+        try {
+          await env.MY_BUCKET.delete(key);
+          return jsonResponse({
+            status: "success",
+            message: `Đã xóa file '${key}' khỏi Cloudflare R2 thành công!`
+          });
+        } catch (e) {
+          return jsonResponse({ error: "Lỗi xóa file R2: " + e.message }, 500);
+        }
+      }
+
+      // POST /api/r2/export-all-excel : Xuất toàn bộ phiếu và lưu file Excel mới lên R2
+      if (pathname === "/api/r2/export-all-excel" && method === "POST") {
+        try {
+          const { results: allDocs } = await env.DB.prepare(
+            "SELECT file_name, raw_json FROM documents ORDER BY id DESC"
+          ).all();
+
+          if (!allDocs || allDocs.length === 0) {
+            return jsonResponse({ error: "Chưa có dữ liệu nào trong CSDL D1 để xuất Excel." }, 400);
+          }
+
+          const recordsData = [];
+          for (const doc of allDocs) {
+            let jsonData = null;
+            if (doc.raw_json) {
+              try {
+                jsonData = typeof doc.raw_json === "string" ? JSON.parse(doc.raw_json) : doc.raw_json;
+              } catch (_) {}
+            }
+            if (!jsonData) {
+              try {
+                const obj = await env.MY_BUCKET.get(`output/${doc.file_name}`);
+                if (obj) jsonData = JSON.parse(await obj.text());
+              } catch (_) {}
+            }
+            if (jsonData) {
+              recordsData.push({ data: jsonData, filename: doc.file_name });
+            }
+          }
+
+          if (recordsData.length === 0) {
+            return jsonResponse({ error: "Không tìm thấy dữ liệu JSON hợp lệ để xuất Excel." }, 400);
+          }
+
+          const excelBuffer = await createBatchExcel(recordsData);
+          const timestamp = new Date().toISOString().replace(/[-:T]/g, "").slice(0, 14);
+          const excelFileName = `nhat_ky_xe_tong_hop_${timestamp}.xlsx`;
+          const r2Key = `excel_exports/${excelFileName}`;
+
+          await env.MY_BUCKET.put(r2Key, excelBuffer, {
+            httpMetadata: {
+              contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+          });
+
+          const pubBase = (env.R2_PUBLIC_URL || "").replace(/\/$/, "");
+          const pubUrl = pubBase ? `${pubBase}/${r2Key}` : `/${r2Key}`;
+
+          return jsonResponse({
+            status: "success",
+            message: `Đã xuất ${recordsData.length} phiếu ra Excel và lưu thành công lên Cloudflare R2!`,
+            file_name: excelFileName,
+            r2_key: r2Key,
+            total_sheets: recordsData.length,
+            public_url: pubUrl
+          });
+        } catch (e) {
+          return jsonResponse({ error: "Lỗi xuất & lưu Excel lên R2: " + e.message }, 500);
+        }
       }
 
       if (
