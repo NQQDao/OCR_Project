@@ -2118,11 +2118,23 @@
                             </div>
                         </div>
 
+                        <!-- Batch Actions Bar (Hidden by default) -->
+                        <div id="r2BatchActions" class="batch-actions-panel" style="display: none; background: #e0f2fe; border: 1px solid #bae6fd; padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; align-items: center; justify-content: space-between;">
+                            <div style="color: #0369a1; font-weight: 500;">
+                                Đã chọn <span id="r2SelectedCount">0</span> file
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="btn btn-primary btn-sm" onclick="downloadSelectedR2Files()">📥 Tải xuống</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedR2Files()">🗑️ Xóa file đã chọn</button>
+                            </div>
+                        </div>
+
                         <!-- Bảng danh sách file R2 -->
                         <div class="history-table-wrap">
                             <table class="history-table">
                                 <thead>
                                     <tr>
+                                        <th style="width: 40px; text-align: center;"><input type="checkbox" id="r2SelectAll" onclick="toggleR2SelectAll()"></th>
                                         <th style="width: 45px; text-align: center;">STT</th>
                                         <th style="width: 120px; text-align: center;">Phân loại</th>
                                         <th>Tên file & Đường dẫn trên Cloudflare R2</th>
@@ -2133,7 +2145,7 @@
                                 </thead>
                                 <tbody id="r2FilesHistoryTableBody">
                                     <tr>
-                                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--muted);">Đang tải danh sách file từ Cloudflare R2...</td>
+                                        <td colspan="7" style="text-align: center; padding: 30px; color: var(--muted);">Đang tải danh sách file từ Cloudflare R2...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -4154,8 +4166,13 @@
             const tbody = document.getElementById("r2FilesHistoryTableBody");
             if (!tbody) return;
 
+            // Reset "Select All" checkbox state
+            const selectAllCheck = document.getElementById("r2SelectAll");
+            if (selectAllCheck) selectAllCheck.checked = false;
+            updateR2BatchActions();
+
             if (!files || files.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px 20px; color: var(--muted);">
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px 20px; color: var(--muted);">
                     <div style="font-size: 32px; margin-bottom: 8px;">📭</div>
                     <strong>Không tìm thấy file nào trên Cloudflare R2 phù hợp</strong>
                     <div style="font-size: 12px; margin-top: 4px;">Hãy thử tìm kiếm với từ khóa khác hoặc bấm nút "Tất cả".</div>
@@ -4220,6 +4237,7 @@
 
                 return `
                     <tr>
+                        <td style="text-align: center;"><input type="checkbox" class="r2-row-checkbox" value="${escapeHtml(f.key)}" data-url="${escapeHtml(f.public_url)}" onclick="updateR2BatchActions()"></td>
                         <td style="text-align: center; color: var(--muted); font-weight: bold;">${idx + 1}</td>
                         <td style="text-align: center;">${typeBadge}</td>
                         <td>
@@ -4236,6 +4254,113 @@
                     </tr>
                 `;
             }).join("");
+        }
+
+        function toggleR2SelectAll() {
+            const selectAllCheck = document.getElementById("r2SelectAll");
+            const checkboxes = document.querySelectorAll(".r2-row-checkbox");
+            
+            checkboxes.forEach(cb => {
+                cb.checked = selectAllCheck.checked;
+            });
+            
+            updateR2BatchActions();
+        }
+
+        function updateR2BatchActions() {
+            const checkboxes = document.querySelectorAll(".r2-row-checkbox:checked");
+            const count = checkboxes.length;
+            
+            const batchPanel = document.getElementById("r2BatchActions");
+            const countSpan = document.getElementById("r2SelectedCount");
+            
+            if (batchPanel && countSpan) {
+                countSpan.textContent = count;
+                if (count > 0) {
+                    batchPanel.style.display = "flex";
+                } else {
+                    batchPanel.style.display = "none";
+                }
+            }
+            
+            // Cập nhật trạng thái checkbox "Select All"
+            const selectAllCheck = document.getElementById("r2SelectAll");
+            const allCheckboxes = document.querySelectorAll(".r2-row-checkbox");
+            if (selectAllCheck && allCheckboxes.length > 0) {
+                selectAllCheck.checked = count === allCheckboxes.length;
+            }
+        }
+
+        async function downloadSelectedR2Files() {
+            const checkboxes = document.querySelectorAll(".r2-row-checkbox:checked");
+            if (checkboxes.length === 0) return;
+
+            setStatus(`⏳ Đang tải ${checkboxes.length} file...`);
+
+            // Mở từng link trong tab mới để tải xuống
+            for (let i = 0; i < checkboxes.length; i++) {
+                const url = checkboxes[i].getAttribute("data-url");
+                if (url) {
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.target = "_blank";
+                    a.download = "";
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    
+                    // Delay để trình duyệt không block tải xuống nhiều file
+                    if (i < checkboxes.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 600));
+                    }
+                }
+            }
+
+            setStatus(`✓ Đã tải ${checkboxes.length} file từ R2`);
+        }
+
+        async function deleteSelectedR2Files() {
+            const checkboxes = document.querySelectorAll(".r2-row-checkbox:checked");
+            if (checkboxes.length === 0) return;
+
+            const keysToDelete = Array.from(checkboxes).map(cb => cb.value);
+
+            if (!confirm(`⚠️ Bạn có chắc chắn muốn xóa vĩnh viễn ${keysToDelete.length} file đã chọn khỏi Cloudflare R2?\n\nHành động này không thể hoàn tác!`)) {
+                return;
+            }
+
+            setStatus(`⏳ Đang xóa ${keysToDelete.length} file...`);
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Chạy xóa lần lượt hoặc song song. Xóa tuần tự an toàn hơn.
+            for (let i = 0; i < keysToDelete.length; i++) {
+                const key = keysToDelete[i];
+                try {
+                    const response = await fetch("/api/r2/files?key=" + encodeURIComponent(key), {
+                        method: "DELETE"
+                    });
+                    
+                    if (response.ok) {
+                        successCount++;
+                    } else {
+                        errorCount++;
+                    }
+                } catch (err) {
+                    errorCount++;
+                }
+            }
+
+            if (errorCount > 0) {
+                alert(`⚠️ Xóa xong. Thành công: ${successCount}, Lỗi: ${errorCount}`);
+                setStatus(`⚠ Lỗi khi xóa ${errorCount} file`);
+            } else {
+                setStatus(`✓ Đã xóa ${successCount} file thành công`);
+            }
+
+            // Ẩn panel và tải lại danh sách
+            document.getElementById("r2BatchActions").style.display = "none";
+            await loadR2FilesHistoryTab();
         }
 
         async function reloadJsonFileToWorkspace(fileName) {
