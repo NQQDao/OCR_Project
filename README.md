@@ -2,7 +2,7 @@
 
 # OCR Project (Powered by Gemini)
 
-Hệ thống nhận diện và trích xuất dữ liệu từ hình ảnh/tài liệu sử dụng sức mạnh của Google Gemini 3.6 Flash.
+Hệ thống nhận diện và trích xuất dữ liệu từ hình ảnh/tài liệu sử dụng sức mạnh của Google Gemini 3.8 Flash.
 
 ---
 
