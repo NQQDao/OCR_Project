@@ -9,3 +9,10 @@ __pycache__
 *.log
 .gemini
 *.code-workspace
+*.db*
+output/
+web_uploads/
+excel_exports/
+cloudflared.exe
+cloudflare_worker/
+scratch*

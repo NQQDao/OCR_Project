@@ -27,3 +27,12 @@ cloudflared.exe
 cloudflare_worker/node_modules/
 cloudflare_worker/.wrangler/
 
+# Temporary and log files
+scratch*
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+.pytest_cache/
+
