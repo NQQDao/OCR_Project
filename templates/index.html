@@ -4169,6 +4169,16 @@
         }
 
 
+        async function deleteSelectedHistory() {
+            const checkedBoxes = Array.from(document.querySelectorAll(".history-select-item:checked"));
+            if (!checkedBoxes.length) return;
+
+            const docIds = checkedBoxes.map(cb => cb.dataset.id).filter(Boolean);
+            
+            if (!confirm(`⚠️ Bạn có chắc chắn muốn xóa vĩnh viễn ${docIds.length} phiếu đã chọn khỏi Database D1?\n\nHành động này không thể hoàn tác!`)) {
+                return;
+            }
+
             setStatus(`⏳ Đang xóa ${docIds.length} phiếu...`);
             let successCount = 0;
             let errorCount = 0;
@@ -4928,7 +4938,8 @@
                 }
             }
         });
-    
+    </script>
+
         let previewBatchImages = [];
         let previewBatchIndex = 0;
 
@@ -5012,8 +5023,6 @@
             }
         });
     </script>
-
-</script>
 
     <!-- MODAL TỪ ĐIỂN CHỮ VIẾT TẮT -->
     <div id="dictModal" class="modal-backdrop" onclick="if(event.target===this) closeAbbreviationModal()">
