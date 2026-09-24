@@ -4943,6 +4943,7 @@
         let batchImgScale = 1;
         let batchImgPanX = 0;
         let batchImgPanY = 0;
+        let batchImgRotation = 0;
         let isBatchPanning = false;
         let batchStartX = 0;
         let batchStartY = 0;
@@ -4953,7 +4954,7 @@
             if (!img) return;
             
             img.style.transition = isInstant ? "none" : "transform 0.2s ease-out";
-            img.style.transform = `translate(${batchImgPanX}px, ${batchImgPanY}px) scale(${batchImgScale})`;
+            img.style.transform = `translate(${batchImgPanX}px, ${batchImgPanY}px) scale(${batchImgScale}) rotate(${batchImgRotation}deg)`;
             
             if (badge) {
                 badge.textContent = Math.round(batchImgScale * 100) + "%";
@@ -4965,10 +4966,16 @@
             applyBatchImageTransform();
         }
 
+        function rotateBatchImage() {
+            batchImgRotation = (batchImgRotation + 90) % 360;
+            applyBatchImageTransform(false);
+        }
+
         function resetBatchZoom() {
             batchImgScale = 1;
             batchImgPanX = 0;
             batchImgPanY = 0;
+            batchImgRotation = 0;
             applyBatchImageTransform();
         }
 
@@ -5396,6 +5403,7 @@
                     <button type="button" class="btn-action-sm" onclick="zoomBatchImage(-0.2)" style="background: #334155; color: white; border: none; padding: 4px 10px;">-</button>
                     <span id="batchZoomBadge" style="width: 45px; text-align: center; cursor: pointer;" onclick="resetBatchZoom()" title="Bấm để đặt lại 100%">100%</span>
                     <button type="button" class="btn-action-sm" onclick="zoomBatchImage(0.2)" style="background: #334155; color: white; border: none; padding: 4px 10px;">+</button>
+                    <button type="button" class="btn-action-sm" onclick="rotateBatchImage()" style="background: #334155; color: white; border: none; padding: 4px 10px; margin-left: 10px;" title="Xoay ảnh 90 độ">↻ Xoay</button>
                 </div>
 
                 <button type="button" class="btn btn-primary" onclick="confirmExportBatchFromPreview()" style="font-size: 16px; padding: 10px 30px;">
