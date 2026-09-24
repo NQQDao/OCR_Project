@@ -146,15 +146,18 @@ export default {
       // GET /api/documents : Danh sách phiếu xẻ
       if (pathname === "/api/documents" && method === "GET") {
         const skip = Math.max(0, parseInt(url.searchParams.get("skip") || "0", 10));
-        const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get("limit") || "50", 10)));
+        const limit = Math.min(1000, Math.max(1, parseInt(url.searchParams.get("limit") || "50", 10)));
         const search = url.searchParams.get("search");
+        const sortBy = url.searchParams.get("sortBy") || "newest_created";
 
         const total = await countDocuments(env.DB, search);
-        const docs = await getDocuments(env.DB, { skip, limit, search });
+        const docs = await getDocuments(env.DB, { skip, limit, search, sortBy });
 
         return jsonResponse({
           status: "success",
           total,
+          skip,
+          limit,
           count: docs.length,
           documents: docs
         });

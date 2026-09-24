@@ -18,29 +18,34 @@ export async function countDocuments(db, search = null) {
   return res?.count || 0;
 }
 
-export async function getDocuments(db, { skip = 0, limit = 50, search = null } = {}) {
-  let docsQuery;
-  const cleanSearch = search && search.trim() ? `%${search.trim()}%` : null;
+export async function getDocuments(db, { skip = 0, limit = 50, search = null, sortBy = 'newest_created' } = {}) {
+  let query = `SELECT id, file_name, image_path, so_xe, ngay_xe, kich_thuoc_go_tron, created_at FROM documents`;
+  const params = [];
 
-  if (cleanSearch) {
-    docsQuery = db.prepare(
-      `SELECT id, file_name, image_path, so_xe, ngay_xe, kich_thuoc_go_tron, created_at 
-       FROM documents 
-       WHERE file_name LIKE ? OR so_xe LIKE ? OR ngay_xe LIKE ? OR kich_thuoc_go_tron LIKE ?
-       ORDER BY id DESC LIMIT ? OFFSET ?`
-    ).bind(cleanSearch, cleanSearch, cleanSearch, cleanSearch, limit, skip);
-  } else {
-    docsQuery = db.prepare(
-      `SELECT id, file_name, image_path, so_xe, ngay_xe, kich_thuoc_go_tron, created_at 
-       FROM documents 
-       ORDER BY id DESC LIMIT ? OFFSET ?`
-    ).bind(limit, skip);
+  if (search && search.trim()) {
+    query += ` WHERE file_name LIKE ? OR so_xe LIKE ? OR ngay_xe LIKE ? OR kich_thuoc_go_tron LIKE ?`;
+    const q = `%${search.trim()}%`;
+    params.push(q, q, q, q);
   }
 
-  const { results: docs } = await docsQuery.all();
+  // Handle SQL sorting
+  if (sortBy === 'newest_created') {
+    query += ` ORDER BY created_at DESC`;
+  } else if (sortBy === 'oldest_created') {
+    query += ` ORDER BY created_at ASC`;
+  } else if (sortBy === 'so_xe_asc') {
+    query += ` ORDER BY so_xe ASC`;
+  } else {
+    query += ` ORDER BY id DESC`; // fallback
+  }
+
+  query += ` LIMIT ? OFFSET ?`;
+  params.push(limit, skip);
+
+  const { results: docs } = await db.prepare(query).bind(...params).all();
   if (!docs || docs.length === 0) return [];
 
-  // Lấy số lượng items của từng document
+  // Get item counts
   const docIds = docs.map(d => d.id);
   const placeholders = docIds.map(() => "?").join(",");
   const { results: counts } = await db.prepare(
@@ -258,7 +263,7 @@ export async function getDailyStats(db, dateStr) {
     `SELECT 
       COUNT(i.id) as total_items,
       SUM(CAST(REPLACE(IFNULL(i.khoi_luong, '0'), ',', '.') AS REAL)) as total_volume_items
-     FROM items i
+     FROM document_items i
      JOIN documents d ON i.document_id = d.id
      WHERE date(d.created_at, '+7 hours') = ?`
   ).bind(dateStr).first();

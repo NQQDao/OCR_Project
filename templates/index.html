@@ -1763,9 +1763,6 @@
                 <span>📂 Lịch sử phiếu xẻ</span>
                 <span class="nav-badge" id="historyBadgeCount">0</span>
             </button>
-            <button type="button" class="nav-tab-btn" id="tabBtnDashboard" onclick="switchTab('dashboard')">
-                <span>📊 Dashboard Thống kê</span>
-            </button>
         </nav>
 
         <!-- TAB 1: MÀN HÌNH LÀM VIỆC OCR -->
@@ -2024,6 +2021,17 @@
                                 </tbody>
                             </table>
                         </div>
+                        
+                        <!-- Phân trang D1 -->
+                        <div class="pagination-controls" id="historyPagination" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 20px; padding-bottom: 10px;">
+                            <button class="btn-action-sm" id="btnPrevHistory" onclick="changeHistoryPage(-1)" style="padding: 8px 12px; font-weight: 500;">
+                                <span>&larr; Trang trước</span>
+                            </button>
+                            <span id="historyPageInfo" style="font-size: 14px; font-weight: 600; color: #475569;">Trang 1 / 1</span>
+                            <button class="btn-action-sm" id="btnNextHistory" onclick="changeHistoryPage(1)" style="padding: 8px 12px; font-weight: 500;">
+                                <span>Trang sau &rarr;</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- PHẦN 2: KHO FILE LƯU TRỮ TRÊN CLOUDFLARE R2 -->
@@ -2148,6 +2156,7 @@
                                 </thead>
                                 <tbody id="r2FilesHistoryTableBody">
                                     <tr>
+                                        <td colspan="6" style="text-align: center; padding: 30px; color: var(--muted);">Đang tải danh sách file từ Cloudflare R2...</td>
                                         <td colspan="7" style="text-align: center; padding: 30px; color: var(--muted);">Đang tải danh sách file từ Cloudflare R2...</td>
                                     </tr>
                                 </tbody>
@@ -3119,39 +3128,6 @@
             if (lb) lb.classList.remove("is-panning");
         }
 
-        function openExcelViewerModal(url, filename) {
-            const modal = document.getElementById("excelViewerModal");
-            const iframe = document.getElementById("excelViewerIframe");
-            const title = document.getElementById("excelViewerTitle");
-            const downloadBtn = document.getElementById("excelViewerDownloadBtn");
-            const loading = document.getElementById("excelViewerLoading");
-            
-            if (modal && iframe) {
-                // Sử dụng Office Online Viewer để render Excel trực tiếp trên trình duyệt
-                const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
-                
-                if (title) title.textContent = filename || 'Xem trước File Excel';
-                if (downloadBtn) downloadBtn.href = url;
-                if (loading) loading.style.display = "flex";
-                
-                iframe.src = viewerUrl;
-                modal.style.display = "flex";
-                document.body.style.overflow = "hidden"; // Khóa cuộn trang nền
-            }
-        }
-        
-        function closeExcelViewerModal() {
-            const modal = document.getElementById("excelViewerModal");
-            const iframe = document.getElementById("excelViewerIframe");
-            if (modal) {
-                modal.style.display = "none";
-                document.body.style.overflow = "";
-            }
-            if (iframe) {
-                iframe.src = ""; // Dừng tải iframe khi đóng
-            }
-        }
-
         function lightboxZoom(delta) {
             lightboxScale = Math.min(4, Math.max(0.3, Math.round((lightboxScale + delta) * 100) / 100));
             applyLightboxTransform();
@@ -3546,73 +3522,20 @@
         function switchTab(tabName) {
             const workspace = document.getElementById("workspaceTabContent");
             const history = document.getElementById("historyTabContent");
-            const dashboard = document.getElementById("dashboardTabContent");
             const btnWorkspace = document.getElementById("tabBtnWorkspace");
             const btnHistory = document.getElementById("tabBtnHistory");
-            const btnDashboard = document.getElementById("tabBtnDashboard");
-
-            workspace.style.display = "none";
-            history.style.display = "none";
-            if (dashboard) dashboard.style.display = "none";
-            
-            btnWorkspace.classList.remove("active");
-            btnHistory.classList.remove("active");
-            if (btnDashboard) btnDashboard.classList.remove("active");
 
             if (tabName === "history") {
+                workspace.style.display = "none";
                 history.style.display = "block";
+                btnWorkspace.classList.remove("active");
                 btnHistory.classList.add("active");
                 loadHistoryDocuments();
-            } else if (tabName === "dashboard") {
-                if (dashboard) dashboard.style.display = "block";
-                if (btnDashboard) btnDashboard.classList.add("active");
-                
-                // Khởi tạo ngày mặc định nếu chưa có
-                const dateInput = document.getElementById("dashboardDateInput");
-                if (!dateInput.value) {
-                    const now = new Date();
-                    const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split("T")[0];
-                    dateInput.value = localIso;
-                }
-                loadDashboardStats();
             } else {
                 workspace.style.display = "block";
+                history.style.display = "none";
                 btnWorkspace.classList.add("active");
-            }
-        }
-
-        async function loadDashboardStats() {
-            const dateInput = document.getElementById("dashboardDateInput");
-            const dateStr = dateInput ? dateInput.value : "";
-            if (!dateStr) return;
-
-            try {
-                // Show loading states
-                document.getElementById("dashTotalDocs").textContent = "...";
-                document.getElementById("dashTotalVolTron").textContent = "...";
-                document.getElementById("dashTotalItems").textContent = "...";
-                document.getElementById("dashTotalVolItems").textContent = "...";
-                document.getElementById("dashR2TodayFiles").textContent = "...";
-                document.getElementById("dashR2TodaySize").textContent = "...";
-                document.getElementById("dashR2TotalFiles").textContent = "...";
-                document.getElementById("dashR2TotalSize").textContent = "...";
-
-                const res = await fetch(`/api/dashboard/stats?date=${dateStr}`);
-                const data = await res.json();
-                if (data.status === "success") {
-                    const s = data.data;
-                    document.getElementById("dashTotalDocs").textContent = s.total_docs || 0;
-                    document.getElementById("dashTotalVolTron").textContent = (s.total_volume_tron || 0).toLocaleString("vi-VN", { maximumFractionDigits: 3 });
-                    document.getElementById("dashTotalItems").textContent = s.total_items || 0;
-                    document.getElementById("dashTotalVolItems").textContent = (s.total_volume_items || 0).toLocaleString("vi-VN", { maximumFractionDigits: 3 });
-                    
-                    document.getElementById("dashR2TodayFiles").textContent = s.r2_today_files || 0;
-                    document.getElementById("dashR2TodaySize").textContent = ((s.r2_today_size || 0) / (1024 * 1024)).toLocaleString("vi-VN", { maximumFractionDigits: 1 });
-                    document.getElementById("dashR2TotalFiles").textContent = s.r2_total_files || 0;
-                    document.getElementById("dashR2TotalSize").textContent = ((s.r2_total_size || 0) / (1024 * 1024)).toLocaleString("vi-VN", { maximumFractionDigits: 1 });
-                }
-            } catch (err) {
-                console.error("Lỗi tải dashboard stats:", err);
+                btnHistory.classList.remove("active");
             }
         }
 
@@ -3749,13 +3672,8 @@
 
                 // 2. Lọc theo ngày
                 if (fromDate || toDate) {
-                    let docDate;
-                    if (dateType === "created_at" && doc.created_at) {
-                        docDate = new Date(doc.created_at.replace(" ", "T") + "Z");
-                        docDate.setHours(0, 0, 0, 0); // Đưa về 0h của múi giờ địa phương
-                    } else {
-                        docDate = parseViDate(doc.ngay_xe);
-                    }
+                    const rawDateStr = dateType === "created_at" ? doc.created_at : doc.ngay_xe;
+                    const docDate = parseViDate(rawDateStr);
                     if (!docDate) {
                         return false;
                     }
@@ -3774,9 +3692,9 @@
             // 4. Sắp xếp danh sách
             filtered.sort((a, b) => {
                 if (sortBy === "newest_created") {
-                    return (new Date(b.created_at ? b.created_at.replace(" ", "T") + "Z" : 0)) - (new Date(a.created_at ? a.created_at.replace(" ", "T") + "Z" : 0));
+                    return (new Date(b.created_at || 0)) - (new Date(a.created_at || 0));
                 } else if (sortBy === "oldest_created") {
-                    return (new Date(a.created_at ? a.created_at.replace(" ", "T") + "Z" : 0)) - (new Date(b.created_at ? b.created_at.replace(" ", "T") + "Z" : 0));
+                    return (new Date(a.created_at || 0)) - (new Date(b.created_at || 0));
                 } else if (sortBy === "lines_desc") {
                     return (b.total_items || 0) - (a.total_items || 0);
                 } else if (sortBy === "lines_asc") {
@@ -3792,8 +3710,44 @@
             });
 
             currentFilteredDocs = filtered;
-            renderHistoryTable(filtered);
+            currentHistoryPage = 1;
+            
             updateHistoryFilterSummary(filtered.length, cachedHistoryDocs.length);
+            renderHistoryPage();
+        }
+
+        let currentHistoryPage = 1;
+        const HISTORY_PAGE_SIZE = 20;
+
+        function renderHistoryPage() {
+            const totalDocs = currentFilteredDocs.length;
+            const totalPages = Math.ceil(totalDocs / HISTORY_PAGE_SIZE) || 1;
+            
+            if (currentHistoryPage < 1) currentHistoryPage = 1;
+            if (currentHistoryPage > totalPages) currentHistoryPage = totalPages;
+
+            const startIndex = (currentHistoryPage - 1) * HISTORY_PAGE_SIZE;
+            const endIndex = startIndex + HISTORY_PAGE_SIZE;
+            
+            const docsToRender = currentFilteredDocs.slice(startIndex, endIndex);
+            renderHistoryTable(docsToRender, startIndex);
+
+            const pageInfo = document.getElementById("historyPageInfo");
+            if (pageInfo) {
+                pageInfo.textContent = `Trang ${currentHistoryPage} / ${totalPages} (Tổng: ${totalDocs})`;
+            }
+
+            const btnPrev = document.getElementById("btnPrevHistory");
+            const btnNext = document.getElementById("btnNextHistory");
+            if (btnPrev) btnPrev.disabled = currentHistoryPage === 1;
+            if (btnNext) btnNext.disabled = currentHistoryPage === totalPages;
+        }
+
+        function changeHistoryPage(delta) {
+            currentHistoryPage += delta;
+            renderHistoryPage();
+            // Cuộn lên đầu bảng để xem rõ hơn
+            document.getElementById("historyTableBody").scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function updateHistoryFilterSummary(visibleCount, totalCount) {
@@ -3869,7 +3823,7 @@
             }
         }
 
-        function renderHistoryTable(docs) {
+        function renderHistoryTable(docs, startIndex = 0) {
             const tbody = document.getElementById("historyTableBody");
             const selectAll = document.getElementById("selectAllHistory");
             if (selectAll) selectAll.checked = false;
@@ -3890,7 +3844,7 @@
                     : `<div class="thumb-placeholder" title="Không có ảnh">📄</div>`;
 
                 const timeStr = doc.created_at
-                    ? new Date(doc.created_at.replace(" ", "T") + "Z").toLocaleString("vi-VN", { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
+                    ? new Date(doc.created_at).toLocaleString("vi-VN", { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
                     : "-";
 
                 return `
@@ -3898,7 +3852,7 @@
                         <td style="text-align: center;">
                             <input type="checkbox" class="history-select-item" value="${escapeHtml(doc.file_name)}" onchange="updateSelectedHistoryCount()">
                         </td>
-                        <td style="text-align: center; color: var(--muted); font-weight: bold;">${idx + 1}</td>
+                        <td style="text-align: center; color: var(--muted); font-weight: bold;">${startIndex + idx + 1}</td>
                         <td style="text-align: center;">${thumbHtml}</td>
                         <td><strong>${escapeHtml(doc.so_xe || "Chưa có số xẻ")}</strong></td>
                         <td>${escapeHtml(doc.ngay_xe || "-")}</td>
@@ -4266,6 +4220,7 @@
             updateR2BatchActions();
 
             if (!files || files.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px 20px; color: var(--muted);">
                 tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; padding: 40px 20px; color: var(--muted);">
                     <div style="font-size: 32px; margin-bottom: 8px;">📭</div>
                     <strong>Không tìm thấy file nào trên Cloudflare R2 phù hợp</strong>
@@ -4293,11 +4248,8 @@
                 let actionBtns = '';
                 if (f.file_type === 'excel') {
                     actionBtns = `
-                        <button type="button" class="btn-action-sm" onclick="openExcelViewerModal('${escapeHtml(f.public_url)}', '${escapeHtml(f.name)}')" style="background: #e0f2fe; color: #0369a1; border-color: #bae6fd;" title="Xem trực tiếp file Excel trên trình duyệt">
-                            <span>👁️ Xem Excel</span>
-                        </button>
                         <a class="btn-action-sm" href="${escapeHtml(f.public_url)}" target="_blank" download style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;" title="Tải trực tiếp file Excel từ Cloudflare R2">
-                            <span>📥 Tải xuống</span>
+                            <span>📥 Tải Excel</span>
                         </a>
                     `;
                 } else if (f.file_type === 'json') {
@@ -4941,81 +4893,6 @@
             </div>
         </div>
     </div>
-    <!-- TAB 3: DASHBOARD THỐNG KÊ -->
-    <div id="dashboardTabContent" style="display: none;">
-        <section class="panel dashboard-panel">
-            <div class="panel-head">
-                <div class="panel-title"><span class="panel-icon">📊</span> DASHBOARD THỐNG KÊ TRONG NGÀY</div>
-                <span class="panel-sub">Theo dõi tổng quan dữ liệu phiếu nhập xuất và khối lượng theo ngày</span>
-            </div>
-            
-            <div style="padding: 16px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px;">
-                <span style="font-weight: 500; color: #475569;">📅 Chọn ngày xem:</span>
-                <input type="date" id="dashboardDateInput" class="filter-input-date" onchange="loadDashboardStats()">
-                <button type="button" class="btn btn-secondary" onclick="loadDashboardStats()">🔄 Cập nhật</button>
-            </div>
-
-            <div class="dashboard-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; background: #f8fafc;">
-                <!-- D1 Stats -->
-                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #3b82f6;">
-                    <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Số phiếu đã xử lý</div>
-                    <div style="display: flex; align-items: baseline; gap: 10px;">
-                        <span id="dashTotalDocs" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
-                        <span style="color: #94a3b8; font-size: 14px;">phiếu</span>
-                    </div>
-                </div>
-
-                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #10b981;">
-                    <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Khối lượng gỗ tròn nhập</div>
-                    <div style="display: flex; align-items: baseline; gap: 10px;">
-                        <span id="dashTotalVolTron" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
-                        <span style="color: #94a3b8; font-size: 14px;">m³</span>
-                    </div>
-                </div>
-
-                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #f59e0b;">
-                    <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Tổng số dòng bóc tách</div>
-                    <div style="display: flex; align-items: baseline; gap: 10px;">
-                        <span id="dashTotalItems" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
-                        <span style="color: #94a3b8; font-size: 14px;">dòng</span>
-                    </div>
-                </div>
-                
-                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #8b5cf6;">
-                    <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">KL gỗ thành khí (xuất)</div>
-                    <div style="display: flex; align-items: baseline; gap: 10px;">
-                        <span id="dashTotalVolItems" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
-                        <span style="color: #94a3b8; font-size: 14px;">m³</span>
-                    </div>
-                </div>
-
-                <!-- R2 Stats -->
-                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #0284c7; grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
-                    <div>
-                        <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Lưu trữ Cloudflare R2 (Hôm nay)</div>
-                        <div style="display: flex; align-items: baseline; gap: 10px;">
-                            <span id="dashR2TodayFiles" style="font-size: 32px; font-weight: 800; color: #0284c7;">0</span>
-                            <span style="color: #94a3b8; font-size: 14px;">file mới</span>
-                            <span style="color: #cbd5e1; margin: 0 5px;">|</span>
-                            <span id="dashR2TodaySize" style="font-size: 24px; font-weight: 700; color: #0ea5e9;">0</span>
-                            <span style="color: #94a3b8; font-size: 14px;">MB</span>
-                        </div>
-                    </div>
-                    
-                    <div style="text-align: right; border-left: 1px solid #e2e8f0; padding-left: 20px;">
-                        <div style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Tổng dung lượng hệ thống</div>
-                        <div style="display: flex; align-items: baseline; gap: 10px; justify-content: flex-end;">
-                            <span id="dashR2TotalFiles" style="font-size: 24px; font-weight: 700; color: #334155;">0</span>
-                            <span style="color: #94a3b8; font-size: 13px;">file</span>
-                            <span style="color: #cbd5e1; margin: 0 5px;">|</span>
-                            <span id="dashR2TotalSize" style="font-size: 24px; font-weight: 700; color: #334155;">0</span>
-                            <span style="color: #94a3b8; font-size: 13px;">MB</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </div>
 
     <!-- Fullscreen Lightbox Modal -->
     <div id="imageLightboxModal" class="image-lightbox-modal" style="display: none;">
@@ -5035,27 +4912,6 @@
             </div>
             <div class="lightbox-body" id="lightboxBody">
                 <img id="lightboxImage" src="" alt="Ảnh phóng to chi tiết" draggable="false">
-            </div>
-        </div>
-    </div>
-    <!-- Excel Viewer Modal -->
-    <div id="excelViewerModal" class="image-lightbox-modal" style="display: none; z-index: 9999;">
-        <div class="lightbox-overlay" onclick="closeExcelViewerModal()"></div>
-        <div class="lightbox-content" style="max-width: 95%; max-height: 95%; width: 1400px; height: 90vh; background: #f8fafc; overflow: hidden; display: flex; flex-direction: column;">
-            <div class="lightbox-header" style="background: white; border-bottom: 1px solid #e2e8f0; padding: 12px 20px;">
-                <div class="lightbox-title" style="color: #0f172a; font-size: 16px;"><span style="margin-right:8px;">📊</span> <span id="excelViewerTitle">Xem trước File Excel</span></div>
-                <div class="lightbox-tools">
-                    <a id="excelViewerDownloadBtn" class="lightbox-btn" href="#" target="_blank" download style="background: #ecfdf5; color: #047857; text-decoration: none; display: inline-flex; align-items: center; border-color: #a7f3d0;" title="Tải xuống file này">📥 Tải xuống</a>
-                    <button class="lightbox-close" type="button" onclick="closeExcelViewerModal()" title="Đóng">✕ Đóng</button>
-                </div>
-            </div>
-            <div class="lightbox-body" style="padding: 0; display: flex; flex-direction: column; flex: 1; position: relative;">
-                <div id="excelViewerLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #f8fafc; z-index: 1;">
-                    <div style="font-size: 40px; margin-bottom: 16px; animation: pulse 2s infinite;">📊</div>
-                    <div style="color: #475569; font-weight: 500; font-size: 15px;">Đang kết nối để hiển thị file Excel...</div>
-                    <div style="color: #94a3b8; font-size: 12px; margin-top: 8px;">Trình xem trực tuyến cung cấp bởi Microsoft Office</div>
-                </div>
-                <iframe id="excelViewerIframe" src="" style="width: 100%; height: 100%; border: none; flex: 1; position: relative; z-index: 2;" onload="document.getElementById('excelViewerLoading').style.display = 'none';"></iframe>
             </div>
         </div>
     </div>
