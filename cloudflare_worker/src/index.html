@@ -4466,9 +4466,9 @@
                 let actionBtns = '';
                 if (f.file_type === 'excel') {
                     actionBtns = `
-                        <a class="btn-action-sm" href="https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(f.public_url)}" target="_blank" style="background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; margin-right: 4px;" title="Xem trước file Excel trực tiếp trên trình duyệt">
+                        <button type="button" class="btn-action-sm" onclick="openExcelPreviewModal('${escapeHtml(f.public_url)}')" style="background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; margin-right: 4px;" title="Xem trước file Excel trực tiếp trên trình duyệt">
                             <span>👁️ Xem trước</span>
-                        </a>
+                        </button>
                         <a class="btn-action-sm" href="${escapeHtml(f.public_url)}" target="_blank" download style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;" title="Tải trực tiếp file Excel từ Cloudflare R2">
                             <span>📥 Tải Excel</span>
                         </a>
@@ -4914,7 +4914,31 @@
             checkR2Status();
             loadR2FilesHistoryTab();
         });
+    
+        function openExcelPreviewModal(url) {
+            const previewUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+            document.getElementById("excelPreviewIframe").src = previewUrl;
+            document.getElementById("excelPreviewModal").style.display = "flex";
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeExcelPreviewModal() {
+            document.getElementById("excelPreviewModal").style.display = "none";
+            document.getElementById("excelPreviewIframe").src = "";
+            document.body.style.overflow = "";
+        }
+        
+        // Add ESC key support for this modal too
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                const excelModal = document.getElementById("excelPreviewModal");
+                if (excelModal && excelModal.style.display !== "none") {
+                    closeExcelPreviewModal();
+                }
+            }
+        });
     </script>
+</script>
 
     <!-- MODAL TỪ ĐIỂN CHỮ VIẾT TẮT -->
     <div id="dictModal" class="modal-backdrop" onclick="if(event.target===this) closeAbbreviationModal()">
@@ -5166,6 +5190,23 @@
             </div>
         </div>
     </div>
+
+    <!-- MODAL XEM TRƯỚC EXCEL -->
+    <div id="excelPreviewModal" class="modal-backdrop" onclick="if(event.target===this) closeExcelPreviewModal()" style="z-index: 10000; display: none;">
+        <div class="modal-card" style="max-width: 95vw; width: 1400px; height: 90vh;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>👁️</span>
+                    <span>XEM TRƯỚC FILE EXCEL TỪ CLOUDFLARE R2</span>
+                </div>
+                <button type="button" class="modal-close" onclick="closeExcelPreviewModal()" title="Đóng">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+                <iframe id="excelPreviewIframe" src="" style="width: 100%; height: 100%; border: none; flex-grow: 1;"></iframe>
+            </div>
+        </div>
+    </div>
 </body>
+
 
 </html>
