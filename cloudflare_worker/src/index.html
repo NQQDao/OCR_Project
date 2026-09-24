@@ -2393,7 +2393,6 @@
         }
 
         async function runOCR() {
-
             const input = document.getElementById("imageInput");
             const button = document.getElementById("ocrButton");
 
@@ -2403,163 +2402,104 @@
             }
 
             const files = Array.from(input.files);
-
             selectedImageFiles = files;
-
             ocrResults = [];
 
             renderImageGallery(files);
-
             showImage(files[0]);
-
-            const formData = new FormData();
-
-            files.forEach(file => {
-                formData.append("files", file);
-            });
-
-            setStatus(`⏳ Đang OCR ${files.length} ảnh...`, "processing");
 
             button.disabled = true;
             button.style.opacity = ".65";
 
-            // Hiển thị trạng thái đang xử lý
-            document.querySelectorAll(".image-status")
-                .forEach(status => {
-                    status.textContent = "⏳";
-                    status.className = "image-status processing";
-                });
+            document.querySelectorAll(".image-status").forEach(status => {
+                status.textContent = "⏳";
+                status.className = "image-status processing";
+            });
 
-            try {
+            const total = files.length;
+            let success = 0;
+            let errors = 0;
 
-                const response = await fetch(
-                    "/api/ocr/batch",
-                    {
-                        method: "POST",
-                        body: formData
+            setStatus(`⏳ Đang OCR: 0/${total} ảnh...`, "processing");
+
+            for (let i = 0; i < total; i++) {
+                const file = files[i];
+                
+                // Cập nhật trạng thái đang chạy cho ảnh hiện tại
+                const currentStatusBadge = document.querySelector(`.image-status[data-index="${i}"]`);
+                if (currentStatusBadge) {
+                    currentStatusBadge.textContent = "⚙️";
+                    currentStatusBadge.style.background = "var(--primary)";
+                }
+
+                // Cập nhật thanh tiêu đề file đang xem
+                const viewerTitle = document.getElementById("currentViewerTitle");
+                if (viewerTitle) viewerTitle.innerHTML = `Đang xử lý: <strong>${i + 1}</strong> (${file.name})`;
+                
+                const formData = new FormData();
+                formData.append("files", file);
+                
+                try {
+                    const response = await fetch("/api/ocr", { method: "POST", body: formData });
+                    const result = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(result.detail || result.error || "OCR thất bại");
                     }
-                );
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(
-                        result.detail || result.error || "OCR thất bại"
-                    );
-                }
-
-                console.log("Kết quả Batch OCR:", result);
-
-                // Tự động nhận diện cấu trúc kết quả linh hoạt (Array, Object có results, hoặc Object đơn)
-                if (Array.isArray(result)) {
-                    ocrResults = result;
-                } else if (result && Array.isArray(result.results)) {
-                    ocrResults = result.results;
-                } else if (result && result.status) {
-                    ocrResults = [result];
-                } else {
-                    ocrResults = [];
-                }
-
-                console.log("===== KIỂM TRA JSON BATCH =====");
-                console.log("Số lượng kết quả:", ocrResults.length);
-                console.log("Danh sách JSON:", ocrResults.map(item => item.json_file));
-
-                // Cập nhật trạng thái từng ảnh
-                ocrResults.forEach((item, index) => {
-
-                    const status =
-                        document.querySelector(
-                            `.image-status[data-index="${index}"]`
-                        );
-
-                    if (!status) return;
-
-                    if (item.status === "success") {
-
-                        status.textContent = "✓";
-                        status.className =
-                            "image-status success";
-
+                    
+                    const resData = Array.isArray(result.results) ? result.results[0] : (Array.isArray(result) ? result[0] : result);
+                    ocrResults.push(resData);
+                    
+                    if (resData.status === "success") {
+                        success++;
+                        if (currentStatusBadge) {
+                            currentStatusBadge.textContent = "✅";
+                            currentStatusBadge.className = "image-status ok";
+                            currentStatusBadge.style.background = "";
+                        }
+                        
+                        // Tự động load JSON của ảnh thành công đầu tiên
+                        if (success === 1) {
+                            currentJsonFile = resData.json_file;
+                            selectedImageIndex = i;
+                            showImage(files[i]);
+                            await loadJSON(currentJsonFile);
+                        }
                     } else {
-
-                        status.textContent = "⚠";
-                        status.className =
-                            "image-status error";
+                        errors++;
+                        if (currentStatusBadge) {
+                            currentStatusBadge.textContent = "❌";
+                            currentStatusBadge.className = "image-status error";
+                            currentStatusBadge.style.background = "";
+                        }
                     }
-                });
-
-                const success = typeof result.success === "number"
-                    ? result.success
-                    : ocrResults.filter(item => item.status === "success").length;
-                const error = typeof result.error === "number"
-                    ? result.error
-                    : (ocrResults.length - success);
-                const total = typeof result.total === "number"
-                    ? result.total
-                    : (ocrResults.length || files.length);
-
-                if (success > 0) {
-                    setStatus(
-                        `✓ OCR hoàn thành: ${success}/${total} ảnh`,
-                        error > 0 ? "processing" : "success"
-                    );
-                } else {
-                    setStatus(
-                        `⚠ OCR thất bại: 0/${total} ảnh`,
-                        "error"
-                    );
+                } catch (err) {
+                    console.error("Lỗi OCR file", file.name, err);
+                    errors++;
+                    ocrResults.push({ file: file.name, status: "error", error: err.message });
+                    if (currentStatusBadge) {
+                        currentStatusBadge.textContent = "❌";
+                        currentStatusBadge.className = "image-status error";
+                        currentStatusBadge.style.background = "";
+                    }
                 }
+                
+                // Cập nhật thanh status bar
+                setStatus(`⏳ Đang OCR: ${i + 1}/${total} ảnh (Thành công: ${success}, Lỗi: ${errors})...`, "processing");
+            }
 
-                // Hiển thị JSON của các ảnh tải lên
-                const firstSuccessIndex = ocrResults.findIndex(
-                    item => item.status === "success"
-                );
+            button.disabled = false;
+            button.style.opacity = "1";
+            
+            if (success > 0) {
+                setStatus(`✅ Đã hoàn tất OCR! Trạng thái: ${success}/${total} ảnh thành công.`, "success");
+            } else {
+                setStatus(`❌ OCR thất bại toàn bộ ${total} ảnh.`, "error");
+            }
 
-                if (firstSuccessIndex !== -1) {
-
-                    selectedImageIndex = firstSuccessIndex;
-
-                    currentJsonFile =
-                        ocrResults[firstSuccessIndex].json_file;
-
-                    await loadJSON(currentJsonFile);
-                }
-
-                if (error > 0) {
-
-                    const errorList = ocrResults
-                        .filter(item => item.status === "error")
-                        .map(item =>
-                            `${item.file}: ${item.error}`
-                        )
-                        .join("\n");
-
-                    alert(
-                        `Batch OCR hoàn thành nhưng có ${error} ảnh lỗi:\n\n${errorList}`
-                    );
-                }
-
-            } catch (error) {
-
-                console.error(error);
-
-                setStatus("⚠ Lỗi OCR: " + (error.message || "Không xác định"), "error");
-
-                // Nếu toàn bộ request lỗi
-                document.querySelectorAll(".image-status")
-                    .forEach(status => {
-                        status.textContent = "⚠";
-                        status.className =
-                            "image-status error";
-                    });
-
-                alert(error.message);
-
-            } finally {
-
-                button.disabled = false;
-                button.style.opacity = "1";
+            if (errors > 0) {
+                const errorList = ocrResults.filter(item => item.status === "error").map(item => item.file + ": " + item.error).join("\n");
+                alert(`Quá trình OCR hoàn tất nhưng có ${errors} ảnh bị lỗi:\n\n${errorList}`);
             }
         }
 
