@@ -246,3 +246,29 @@ export async function deleteSystemSetting(db, key) {
   await db.prepare("DELETE FROM system_settings WHERE key = ?").bind(key).run();
 }
 
+export async function getDailyStats(db, dateStr) {
+  const docQuery = await db.prepare(
+    `SELECT 
+      COUNT(id) as total_docs,
+      SUM(CAST(REPLACE(IFNULL(khoi_luong_go_tron, '0'), ',', '.') AS REAL)) as total_volume_tron
+     FROM documents WHERE date(created_at, '+7 hours') = ?`
+  ).bind(dateStr).first();
+
+  const itemsQuery = await db.prepare(
+    `SELECT 
+      COUNT(i.id) as total_items,
+      SUM(CAST(REPLACE(IFNULL(i.khoi_luong, '0'), ',', '.') AS REAL)) as total_volume_items
+     FROM items i
+     JOIN documents d ON i.document_id = d.id
+     WHERE date(d.created_at, '+7 hours') = ?`
+  ).bind(dateStr).first();
+
+  return {
+    date: dateStr,
+    total_docs: docQuery?.total_docs || 0,
+    total_volume_tron: docQuery?.total_volume_tron || 0,
+    total_items: itemsQuery?.total_items || 0,
+    total_volume_items: itemsQuery?.total_volume_items || 0
+  };
+}
+

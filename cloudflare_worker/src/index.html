@@ -1763,6 +1763,9 @@
                 <span>📂 Lịch sử phiếu xẻ</span>
                 <span class="nav-badge" id="historyBadgeCount">0</span>
             </button>
+            <button type="button" class="nav-tab-btn" id="tabBtnDashboard" onclick="switchTab('dashboard')">
+                <span>📊 Dashboard Thống kê</span>
+            </button>
         </nav>
 
         <!-- TAB 1: MÀN HÌNH LÀM VIỆC OCR -->
@@ -3543,20 +3546,58 @@
         function switchTab(tabName) {
             const workspace = document.getElementById("workspaceTabContent");
             const history = document.getElementById("historyTabContent");
+            const dashboard = document.getElementById("dashboardTabContent");
             const btnWorkspace = document.getElementById("tabBtnWorkspace");
             const btnHistory = document.getElementById("tabBtnHistory");
+            const btnDashboard = document.getElementById("tabBtnDashboard");
+
+            workspace.style.display = "none";
+            history.style.display = "none";
+            if (dashboard) dashboard.style.display = "none";
+            
+            btnWorkspace.classList.remove("active");
+            btnHistory.classList.remove("active");
+            if (btnDashboard) btnDashboard.classList.remove("active");
 
             if (tabName === "history") {
-                workspace.style.display = "none";
                 history.style.display = "block";
-                btnWorkspace.classList.remove("active");
                 btnHistory.classList.add("active");
                 loadHistoryDocuments();
+            } else if (tabName === "dashboard") {
+                if (dashboard) dashboard.style.display = "block";
+                if (btnDashboard) btnDashboard.classList.add("active");
+                
+                // Khởi tạo ngày mặc định nếu chưa có
+                const dateInput = document.getElementById("dashboardDateInput");
+                if (!dateInput.value) {
+                    const now = new Date();
+                    const localIso = new Date(now.getTime() - (now.getTimezoneOffset() * 60000)).toISOString().split("T")[0];
+                    dateInput.value = localIso;
+                }
+                loadDashboardStats();
             } else {
                 workspace.style.display = "block";
-                history.style.display = "none";
                 btnWorkspace.classList.add("active");
-                btnHistory.classList.remove("active");
+            }
+        }
+
+        async function loadDashboardStats() {
+            const dateInput = document.getElementById("dashboardDateInput");
+            const dateStr = dateInput ? dateInput.value : "";
+            if (!dateStr) return;
+
+            try {
+                const res = await fetch(`/api/dashboard/stats?date=${dateStr}`);
+                const data = await res.json();
+                if (data.status === "success") {
+                    const s = data.data;
+                    document.getElementById("dashTotalDocs").textContent = s.total_docs || 0;
+                    document.getElementById("dashTotalVolTron").textContent = (s.total_volume_tron || 0).toLocaleString("vi-VN", { maximumFractionDigits: 3 });
+                    document.getElementById("dashTotalItems").textContent = s.total_items || 0;
+                    document.getElementById("dashTotalVolItems").textContent = (s.total_volume_items || 0).toLocaleString("vi-VN", { maximumFractionDigits: 3 });
+                }
+            } catch (err) {
+                console.error("Lỗi tải dashboard stats:", err);
             }
         }
 
@@ -4884,6 +4925,59 @@
                 </div>
             </div>
         </div>
+    </div>
+    <!-- TAB 3: DASHBOARD THỐNG KÊ -->
+    <div id="dashboardTabContent" style="display: none;">
+        <section class="panel dashboard-panel">
+            <div class="panel-head">
+                <div class="panel-title"><span class="panel-icon">📊</span> DASHBOARD THỐNG KÊ TRONG NGÀY</div>
+                <span class="panel-sub">Theo dõi tổng quan dữ liệu phiếu nhập xuất và khối lượng theo ngày</span>
+            </div>
+            
+            <div style="padding: 16px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 15px;">
+                <span style="font-weight: 500; color: #475569;">📅 Chọn ngày xem:</span>
+                <input type="date" id="dashboardDateInput" class="filter-input-date" onchange="loadDashboardStats()">
+                <button type="button" class="btn btn-secondary" onclick="loadDashboardStats()">🔄 Cập nhật</button>
+            </div>
+
+            <div class="dashboard-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; background: #f8fafc;">
+                <!-- Card 1: Số phiếu -->
+                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #3b82f6;">
+                    <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Số phiếu đã xử lý</div>
+                    <div style="display: flex; align-items: baseline; gap: 10px;">
+                        <span id="dashTotalDocs" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
+                        <span style="color: #94a3b8; font-size: 14px;">phiếu</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: Khối lượng gỗ tròn -->
+                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #10b981;">
+                    <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Khối lượng gỗ tròn nhập</div>
+                    <div style="display: flex; align-items: baseline; gap: 10px;">
+                        <span id="dashTotalVolTron" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
+                        <span style="color: #94a3b8; font-size: 14px;">m³</span>
+                    </div>
+                </div>
+
+                <!-- Card 3: Số dòng dữ liệu -->
+                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #f59e0b;">
+                    <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Tổng số dòng bóc tách</div>
+                    <div style="display: flex; align-items: baseline; gap: 10px;">
+                        <span id="dashTotalItems" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
+                        <span style="color: #94a3b8; font-size: 14px;">dòng</span>
+                    </div>
+                </div>
+                
+                <!-- Card 4: Khối lượng thành khí -->
+                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #8b5cf6;">
+                    <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">KL gỗ thành khí (xuất)</div>
+                    <div style="display: flex; align-items: baseline; gap: 10px;">
+                        <span id="dashTotalVolItems" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
+                        <span style="color: #94a3b8; font-size: 14px;">m³</span>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- Fullscreen Lightbox Modal -->

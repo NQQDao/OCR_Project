@@ -27,7 +27,8 @@ import {
   deleteAbbreviation,
   getSystemSetting,
   setSystemSetting,
-  deleteSystemSetting
+  deleteSystemSetting,
+  getDailyStats
 } from "./db.js";
 
 const DEFAULT_CATEGORIES = {
@@ -523,7 +524,27 @@ export default {
       }
 
       // ============================================================
-      // 8. TỪ ĐIỂN VIẾT TẮT & HUẤN LUYỆN PROMPT
+      // 8. DASHBOARD THỐNG KÊ
+      // ============================================================
+
+      if (pathname === "/api/dashboard/stats" && method === "GET") {
+        // Lấy ngày hiện tại theo giờ Việt Nam (GMT+7)
+        let targetDateStr = url.searchParams.get("date");
+        if (!targetDateStr) {
+          const now = new Date();
+          now.setHours(now.getHours() + 7);
+          targetDateStr = now.toISOString().split("T")[0]; // YYYY-MM-DD
+        }
+
+        const stats = await getDailyStats(env.DB, targetDateStr);
+        return jsonResponse({
+          status: "success",
+          data: stats
+        });
+      }
+
+      // ============================================================
+      // 9. TỪ ĐIỂN VIẾT TẮT & HUẤN LUYỆN PROMPT
       // ============================================================
 
       if (pathname === "/api/abbreviations" && method === "GET") {
