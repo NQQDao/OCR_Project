@@ -11,6 +11,7 @@ import htmlContent from "./html.js";
 import { createBatchExcel } from "./excel.js";
 import {
   buildOcrPrompt,
+  buildFastPrompt,
   callGeminiVision,
   parseAndValidateOcrResponse,
   BASE_OCR_PROMPT
@@ -306,7 +307,7 @@ export default {
           return jsonResponse({ error: "Chưa chọn file ảnh nào để nhận diện." }, 400);
         }
 
-        const prompt = await buildOcrPrompt(env);
+        const urlParams = new URL(request.url); const mode = urlParams.searchParams.get('mode'); const prompt = mode === 'fast' ? await buildFastPrompt(env) : await buildOcrPrompt(env);
         const results = [];
 
         for (const file of files) {

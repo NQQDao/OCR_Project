@@ -471,3 +471,4 @@ export function parseAndValidateOcrResponse(rawText, sourceFileName, modelUsed) 
     }
   };
 }
+export async function buildFastPrompt(env) { return `Hãy quét nhanh hình ảnh này và trả về ĐÚNG MỘT JSON với định dạng sau (không giải thích gì thêm):\n{\n  "so_xe": "...", // Trích xuất mã số xe/số phiếu (ví dụ: 107 - I7085/1A). Nếu không có trả về chuỗi rỗng.\n  "so_dong": 15 // Đếm số lượng dòng dữ liệu có trong bảng chi tiết cấu kiện. Trả về số nguyên (kiểu int).\n}`; }
