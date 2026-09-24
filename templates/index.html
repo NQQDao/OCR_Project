@@ -3587,6 +3587,16 @@
             if (!dateStr) return;
 
             try {
+                // Show loading states
+                document.getElementById("dashTotalDocs").textContent = "...";
+                document.getElementById("dashTotalVolTron").textContent = "...";
+                document.getElementById("dashTotalItems").textContent = "...";
+                document.getElementById("dashTotalVolItems").textContent = "...";
+                document.getElementById("dashR2TodayFiles").textContent = "...";
+                document.getElementById("dashR2TodaySize").textContent = "...";
+                document.getElementById("dashR2TotalFiles").textContent = "...";
+                document.getElementById("dashR2TotalSize").textContent = "...";
+
                 const res = await fetch(`/api/dashboard/stats?date=${dateStr}`);
                 const data = await res.json();
                 if (data.status === "success") {
@@ -3595,6 +3605,11 @@
                     document.getElementById("dashTotalVolTron").textContent = (s.total_volume_tron || 0).toLocaleString("vi-VN", { maximumFractionDigits: 3 });
                     document.getElementById("dashTotalItems").textContent = s.total_items || 0;
                     document.getElementById("dashTotalVolItems").textContent = (s.total_volume_items || 0).toLocaleString("vi-VN", { maximumFractionDigits: 3 });
+                    
+                    document.getElementById("dashR2TodayFiles").textContent = s.r2_today_files || 0;
+                    document.getElementById("dashR2TodaySize").textContent = ((s.r2_today_size || 0) / (1024 * 1024)).toLocaleString("vi-VN", { maximumFractionDigits: 1 });
+                    document.getElementById("dashR2TotalFiles").textContent = s.r2_total_files || 0;
+                    document.getElementById("dashR2TotalSize").textContent = ((s.r2_total_size || 0) / (1024 * 1024)).toLocaleString("vi-VN", { maximumFractionDigits: 1 });
                 }
             } catch (err) {
                 console.error("Lỗi tải dashboard stats:", err);
@@ -4941,7 +4956,7 @@
             </div>
 
             <div class="dashboard-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; background: #f8fafc;">
-                <!-- Card 1: Số phiếu -->
+                <!-- D1 Stats -->
                 <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #3b82f6;">
                     <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Số phiếu đã xử lý</div>
                     <div style="display: flex; align-items: baseline; gap: 10px;">
@@ -4950,7 +4965,6 @@
                     </div>
                 </div>
 
-                <!-- Card 2: Khối lượng gỗ tròn -->
                 <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #10b981;">
                     <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Khối lượng gỗ tròn nhập</div>
                     <div style="display: flex; align-items: baseline; gap: 10px;">
@@ -4959,7 +4973,6 @@
                     </div>
                 </div>
 
-                <!-- Card 3: Số dòng dữ liệu -->
                 <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #f59e0b;">
                     <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Tổng số dòng bóc tách</div>
                     <div style="display: flex; align-items: baseline; gap: 10px;">
@@ -4968,12 +4981,36 @@
                     </div>
                 </div>
                 
-                <!-- Card 4: Khối lượng thành khí -->
                 <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #8b5cf6;">
                     <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">KL gỗ thành khí (xuất)</div>
                     <div style="display: flex; align-items: baseline; gap: 10px;">
                         <span id="dashTotalVolItems" style="font-size: 36px; font-weight: 800; color: #1e293b;">0</span>
                         <span style="color: #94a3b8; font-size: 14px;">m³</span>
+                    </div>
+                </div>
+
+                <!-- R2 Stats -->
+                <div class="dash-card" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border-top: 4px solid #0284c7; grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                    <div>
+                        <div style="color: #64748b; font-size: 14px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Lưu trữ Cloudflare R2 (Hôm nay)</div>
+                        <div style="display: flex; align-items: baseline; gap: 10px;">
+                            <span id="dashR2TodayFiles" style="font-size: 32px; font-weight: 800; color: #0284c7;">0</span>
+                            <span style="color: #94a3b8; font-size: 14px;">file mới</span>
+                            <span style="color: #cbd5e1; margin: 0 5px;">|</span>
+                            <span id="dashR2TodaySize" style="font-size: 24px; font-weight: 700; color: #0ea5e9;">0</span>
+                            <span style="color: #94a3b8; font-size: 14px;">MB</span>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: right; border-left: 1px solid #e2e8f0; padding-left: 20px;">
+                        <div style="color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; margin-bottom: 8px;">Tổng dung lượng hệ thống</div>
+                        <div style="display: flex; align-items: baseline; gap: 10px; justify-content: flex-end;">
+                            <span id="dashR2TotalFiles" style="font-size: 24px; font-weight: 700; color: #334155;">0</span>
+                            <span style="color: #94a3b8; font-size: 13px;">file</span>
+                            <span style="color: #cbd5e1; margin: 0 5px;">|</span>
+                            <span id="dashR2TotalSize" style="font-size: 24px; font-weight: 700; color: #334155;">0</span>
+                            <span style="color: #94a3b8; font-size: 13px;">MB</span>
+                        </div>
                     </div>
                 </div>
             </div>

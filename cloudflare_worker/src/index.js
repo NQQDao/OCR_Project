@@ -537,6 +537,52 @@ export default {
         }
 
         const stats = await getDailyStats(env.DB, targetDateStr);
+
+        // Fetch R2 stats
+        let r2TotalFiles = 0;
+        let r2TotalSize = 0;
+        let r2TodayFiles = 0;
+        let r2TodaySize = 0;
+
+        if (env.MY_BUCKET) {
+          try {
+            const listParams = { limit: 1000 };
+            let listed = await env.MY_BUCKET.list(listParams);
+            let objects = listed.objects;
+            
+            // Lấy tối đa 3000 file để tránh timeout (nếu nhiều quá)
+            let loops = 0;
+            while (listed.truncated && loops < 3) {
+              listParams.cursor = listed.cursor;
+              listed = await env.MY_BUCKET.list(listParams);
+              objects.push(...listed.objects);
+              loops++;
+            }
+
+            for (const obj of objects) {
+              r2TotalFiles++;
+              r2TotalSize += obj.size;
+              
+              if (obj.uploaded) {
+                const uploadDate = new Date(obj.uploaded);
+                uploadDate.setHours(uploadDate.getHours() + 7); // GMT+7
+                const uploadDateStr = uploadDate.toISOString().split("T")[0];
+                if (uploadDateStr === targetDateStr) {
+                  r2TodayFiles++;
+                  r2TodaySize += obj.size;
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("Lỗi khi đếm R2 stats:", e);
+          }
+        }
+
+        stats.r2_total_files = r2TotalFiles;
+        stats.r2_total_size = r2TotalSize;
+        stats.r2_today_files = r2TodayFiles;
+        stats.r2_today_size = r2TodaySize;
+
         return jsonResponse({
           status: "success",
           data: stats
