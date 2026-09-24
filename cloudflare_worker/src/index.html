@@ -3116,6 +3116,39 @@
             if (lb) lb.classList.remove("is-panning");
         }
 
+        function openExcelViewerModal(url, filename) {
+            const modal = document.getElementById("excelViewerModal");
+            const iframe = document.getElementById("excelViewerIframe");
+            const title = document.getElementById("excelViewerTitle");
+            const downloadBtn = document.getElementById("excelViewerDownloadBtn");
+            const loading = document.getElementById("excelViewerLoading");
+            
+            if (modal && iframe) {
+                // Sử dụng Office Online Viewer để render Excel trực tiếp trên trình duyệt
+                const viewerUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
+                
+                if (title) title.textContent = filename || 'Xem trước File Excel';
+                if (downloadBtn) downloadBtn.href = url;
+                if (loading) loading.style.display = "flex";
+                
+                iframe.src = viewerUrl;
+                modal.style.display = "flex";
+                document.body.style.overflow = "hidden"; // Khóa cuộn trang nền
+            }
+        }
+        
+        function closeExcelViewerModal() {
+            const modal = document.getElementById("excelViewerModal");
+            const iframe = document.getElementById("excelViewerIframe");
+            if (modal) {
+                modal.style.display = "none";
+                document.body.style.overflow = "";
+            }
+            if (iframe) {
+                iframe.src = ""; // Dừng tải iframe khi đóng
+            }
+        }
+
         function lightboxZoom(delta) {
             lightboxScale = Math.min(4, Math.max(0.3, Math.round((lightboxScale + delta) * 100) / 100));
             applyLightboxTransform();
@@ -4199,8 +4232,11 @@
                 let actionBtns = '';
                 if (f.file_type === 'excel') {
                     actionBtns = `
+                        <button type="button" class="btn-action-sm" onclick="openExcelViewerModal('${escapeHtml(f.public_url)}', '${escapeHtml(f.name)}')" style="background: #e0f2fe; color: #0369a1; border-color: #bae6fd;" title="Xem trực tiếp file Excel trên trình duyệt">
+                            <span>👁️ Xem Excel</span>
+                        </button>
                         <a class="btn-action-sm" href="${escapeHtml(f.public_url)}" target="_blank" download style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;" title="Tải trực tiếp file Excel từ Cloudflare R2">
-                            <span>📥 Tải Excel</span>
+                            <span>📥 Tải xuống</span>
                         </a>
                     `;
                 } else if (f.file_type === 'json') {
@@ -4863,6 +4899,27 @@
             </div>
             <div class="lightbox-body" id="lightboxBody">
                 <img id="lightboxImage" src="" alt="Ảnh phóng to chi tiết" draggable="false">
+            </div>
+        </div>
+    </div>
+    <!-- Excel Viewer Modal -->
+    <div id="excelViewerModal" class="image-lightbox-modal" style="display: none; z-index: 9999;">
+        <div class="lightbox-overlay" onclick="closeExcelViewerModal()"></div>
+        <div class="lightbox-content" style="max-width: 95%; max-height: 95%; width: 1400px; height: 90vh; background: #f8fafc; overflow: hidden; display: flex; flex-direction: column;">
+            <div class="lightbox-header" style="background: white; border-bottom: 1px solid #e2e8f0; padding: 12px 20px;">
+                <div class="lightbox-title" style="color: #0f172a; font-size: 16px;"><span style="margin-right:8px;">📊</span> <span id="excelViewerTitle">Xem trước File Excel</span></div>
+                <div class="lightbox-tools">
+                    <a id="excelViewerDownloadBtn" class="lightbox-btn" href="#" target="_blank" download style="background: #ecfdf5; color: #047857; text-decoration: none; display: inline-flex; align-items: center; border-color: #a7f3d0;" title="Tải xuống file này">📥 Tải xuống</a>
+                    <button class="lightbox-close" type="button" onclick="closeExcelViewerModal()" title="Đóng">✕ Đóng</button>
+                </div>
+            </div>
+            <div class="lightbox-body" style="padding: 0; display: flex; flex-direction: column; flex: 1; position: relative;">
+                <div id="excelViewerLoading" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; background: #f8fafc; z-index: 1;">
+                    <div style="font-size: 40px; margin-bottom: 16px; animation: pulse 2s infinite;">📊</div>
+                    <div style="color: #475569; font-weight: 500; font-size: 15px;">Đang kết nối để hiển thị file Excel...</div>
+                    <div style="color: #94a3b8; font-size: 12px; margin-top: 8px;">Trình xem trực tuyến cung cấp bởi Microsoft Office</div>
+                </div>
+                <iframe id="excelViewerIframe" src="" style="width: 100%; height: 100%; border: none; flex: 1; position: relative; z-index: 2;" onload="document.getElementById('excelViewerLoading').style.display = 'none';"></iframe>
             </div>
         </div>
     </div>
