@@ -3693,8 +3693,13 @@
 
                 // 2. Lọc theo ngày
                 if (fromDate || toDate) {
-                    const rawDateStr = dateType === "created_at" ? doc.created_at : doc.ngay_xe;
-                    const docDate = parseViDate(rawDateStr);
+                    let docDate;
+                    if (dateType === "created_at" && doc.created_at) {
+                        docDate = new Date(doc.created_at.replace(" ", "T") + "Z");
+                        docDate.setHours(0, 0, 0, 0); // Đưa về 0h của múi giờ địa phương
+                    } else {
+                        docDate = parseViDate(doc.ngay_xe);
+                    }
                     if (!docDate) {
                         return false;
                     }
@@ -3713,9 +3718,9 @@
             // 4. Sắp xếp danh sách
             filtered.sort((a, b) => {
                 if (sortBy === "newest_created") {
-                    return (new Date(b.created_at || 0)) - (new Date(a.created_at || 0));
+                    return (new Date(b.created_at ? b.created_at.replace(" ", "T") + "Z" : 0)) - (new Date(a.created_at ? a.created_at.replace(" ", "T") + "Z" : 0));
                 } else if (sortBy === "oldest_created") {
-                    return (new Date(a.created_at || 0)) - (new Date(b.created_at || 0));
+                    return (new Date(a.created_at ? a.created_at.replace(" ", "T") + "Z" : 0)) - (new Date(b.created_at ? b.created_at.replace(" ", "T") + "Z" : 0));
                 } else if (sortBy === "lines_desc") {
                     return (b.total_items || 0) - (a.total_items || 0);
                 } else if (sortBy === "lines_asc") {
@@ -3829,7 +3834,7 @@
                     : `<div class="thumb-placeholder" title="Không có ảnh">📄</div>`;
 
                 const timeStr = doc.created_at
-                    ? new Date(doc.created_at).toLocaleString("vi-VN", { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
+                    ? new Date(doc.created_at.replace(" ", "T") + "Z").toLocaleString("vi-VN", { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' })
                     : "-";
 
                 return `
