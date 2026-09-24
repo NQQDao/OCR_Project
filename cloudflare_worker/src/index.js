@@ -351,13 +351,14 @@ export default {
               env
             });
 
-            if (isFastMode) {
-                let cleanText = aiResp.text.trim();
-                if (cleanText.startsWith("```")) {
-                    const lines = cleanText.split("\n");
-                    cleanText = lines.slice(1, lines[lines.length - 1].trim() === "```" ? -1 : undefined).join("\n").trim();
+            if (mode === 'fast') {
+                let fastJson = { so_xe: "", so_dong: 0 };
+                const match = aiResp.text.match(/\{[\s\S]*?\}/);
+                if (match) {
+                    try {
+                        fastJson = JSON.parse(match[0]);
+                    } catch (e) {}
                 }
-                const fastJson = JSON.parse(cleanText);
                 results.push({
                    status: "success",
                    file: originalName,

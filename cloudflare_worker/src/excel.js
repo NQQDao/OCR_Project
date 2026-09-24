@@ -682,7 +682,7 @@ export async function createBatchExcel(recordsData) {
   a5_1.alignment = { horizontal: "center", vertical: "middle" };
 
   const headers5 = [
-    "File", "Ngày", "Ngày xẻ", "Số xẻ", "STT dòng",
+    "File", "Ngày", "Ngày xẻ", "Số xẻ", "STT dòng or Chủng loại",
     "Kích thước", "Khối lượng ghi", "Khối lượng tính", "Chênh lệch", "Trạng thái"
   ];
   const r5Header = ws5.getRow(3);
