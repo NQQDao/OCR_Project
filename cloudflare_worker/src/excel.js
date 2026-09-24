@@ -698,6 +698,54 @@ export async function createBatchExcel(recordsData) {
 
   let r5Row = 4;
   for (const record of records) {
+    // 1. Kiểm tra chênh lệch Gỗ tròn
+    const strGoTron = record.kich_thuoc_go_tron || "";
+    const matches = [...strGoTron.matchAll(/(\d+(?:[,.]\d+)?)[\s\-]*[Vv]\s*(\d+)/g)];
+    if (matches.length >= 2) {
+      const parseNum = (s) => parseFloat(s.replace(',', '.'));
+      const dai1 = parseNum(matches[0][1]);
+      const vanh1 = parseInt(matches[0][2], 10);
+      const dai2 = parseNum(matches[1][1]);
+      const vanh2 = parseInt(matches[1][2], 10);
+      
+      if (!isNaN(dai1) && !isNaN(dai2) && !isNaN(vanh1) && !isNaN(vanh2)) {
+        const lengthDiff = +(dai2 - dai1).toFixed(2);
+        const girthDiff = vanh2 - vanh1;
+        
+        if (Math.abs(lengthDiff) > 0 || Math.abs(girthDiff) > 0) {
+          const r = ws5.getRow(r5Row);
+          r.height = 36;
+          const parsedNx = parseDate(record.ngay_xe);
+          
+          r.getCell(1).value = record.file;
+          r.getCell(2).value = parsedNx || record.ngay_xe;
+          r.getCell(3).value = parsedNx || record.ngay_xe;
+          r.getCell(4).value = record.so_xe;
+          r.getCell(5).value = "Gỗ tròn";
+          r.getCell(6).value = strGoTron;
+          r.getCell(7).value = `Dài: ${dai1}m\nVanh: ${vanh1}cm`;
+          r.getCell(8).value = `Dài: ${dai2}m\nVanh: ${vanh2}cm`;
+          
+          const diffTexts = [];
+          if (lengthDiff !== 0) diffTexts.push(`Dài: ${lengthDiff > 0 ? '+'+lengthDiff : lengthDiff}m`);
+          if (girthDiff !== 0) diffTexts.push(`Vanh: ${girthDiff > 0 ? '+'+girthDiff : girthDiff}cm`);
+          r.getCell(9).value = diffTexts.join("\n");
+          r.getCell(10).value = "SAI LỆCH KÍCH THƯỚC";
+          
+          for (let c = 1; c <= 10; c++) {
+            const cell = r.getCell(c);
+            cell.font = { name: "Arial", size: 9, bold: true, color: { argb: "FF0000" } };
+            cell.alignment = { horizontal: [1, 6].includes(c) ? "left" : "center", vertical: "middle", wrapText: true };
+            applyBorder(cell);
+          }
+          if (parsedNx) r.getCell(2).numFmt = "dd/mm/yyyy";
+          if (parsedNx) r.getCell(3).numFmt = "dd/mm/yyyy";
+          r5Row++;
+        }
+      }
+    }
+
+    // 2. Cảnh báo các dòng gỗ xẻ bị sai lệch khối lượng
     for (const item of record.norm_items) {
       if (item.status === "OK") continue;
 
