@@ -340,6 +340,36 @@
         }
 
         /* ===== IMAGE VIEWER & ZOOM INTERFACE ===== */
+                .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #cbd5e1;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            font-size: 20px;
+            color: #334155;
+            cursor: pointer;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+        .nav-btn:hover {
+            background: #fff;
+            color: var(--primary);
+            transform: translateY(-50%) scale(1.1);
+        }
+        .nav-btn:active {
+            transform: translateY(-50%) scale(0.95);
+        }
+        .prev-btn { left: 16px; }
+        .next-btn { right: 16px; }
+
         .image-viewer-wrapper {
             position: relative;
             width: 100%;
@@ -1789,6 +1819,8 @@
                 <div class="panel-body">
                     <div id="imageGallery" class="image-gallery"></div>
                     <div id="imageViewerWrapper" class="image-viewer-wrapper">
+                                                <button class="nav-btn prev-btn" onclick="prevImage()" title="Ảnh trước">❮</button>
+                        <button class="nav-btn next-btn" onclick="nextImage()" title="Ảnh tiếp theo">❯</button>
                         <div id="imageContainer" class="image-container">
                             <div class="image-empty" id="imageEmptyPlaceholder">
                                 <div class="big-icon">📷</div>
@@ -2212,6 +2244,57 @@
         let selectedImageIndex = 0;
         let selectedImageFiles = [];
 
+
+        async function selectThumbnail(index) {
+            if (!selectedImageFiles || index < 0 || index >= selectedImageFiles.length) return;
+            selectedImageIndex = index;
+            
+            const thumbs = document.querySelectorAll(".image-thumb");
+            thumbs.forEach(el => el.classList.remove("active"));
+            
+            const wrapper = document.querySelectorAll(".image-thumb-wrapper")[index];
+            if (wrapper) {
+                const img = wrapper.querySelector(".image-thumb");
+                if (img) {
+                    img.classList.add("active");
+                    wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
+            }
+
+            const file = selectedImageFiles[index];
+            showImage(file);
+
+            const result = ocrResults[index];
+            if (!result || result.status !== "success" || !result.json_file) {
+                setStatus(`👀 Đang xem: ${file.name}`);
+                return;
+            }
+
+            try {
+                currentJsonFile = result.json_file;
+                setStatus(`⏳ Đang tải dữ liệu: ${file.name}`);
+                await loadJSON(currentJsonFile);
+                setStatus(`✅ Đang xem: ${file.name}`);
+            } catch (error) {
+                console.error(error);
+                setStatus(`❌ Không đọc được dữ liệu: ${file.name}`);
+                alert(`Không đọc được JSON của ảnh:\n${file.name}`);
+            }
+        }
+        
+        function prevImage() {
+            if (!selectedImageFiles || selectedImageFiles.length <= 1) return;
+            let newIndex = selectedImageIndex - 1;
+            if (newIndex < 0) newIndex = selectedImageFiles.length - 1;
+            selectThumbnail(newIndex);
+        }
+
+        function nextImage() {
+            if (!selectedImageFiles || selectedImageFiles.length <= 1) return;
+            let newIndex = selectedImageIndex + 1;
+            if (newIndex >= selectedImageFiles.length) newIndex = 0;
+            selectThumbnail(newIndex);
+        }
         function renderImageGallery(files) {
 
             const gallery = document.getElementById("imageGallery");
@@ -2244,60 +2327,7 @@
                 status.textContent = "○";
                 status.dataset.index = index;
 
-                img.addEventListener("click", async function () {
-
-                    // Ảnh đang chọn
-                    selectedImageIndex = index;
-
-                    document.querySelectorAll(".image-thumb")
-                        .forEach(el => el.classList.remove("active"));
-
-                    img.classList.add("active");
-
-                    // Hiển thị ảnh
-                    showImage(selectedImageFiles[index]);
-
-                    // Lấy kết quả OCR tương ứng
-                    const result = ocrResults[index];
-
-                    // Nếu ảnh chưa OCR thành công
-                    if (
-                        !result ||
-                        result.status !== "success" ||
-                        !result.json_file
-                    ) {
-                        setStatus(`● Đang xem: ${file.name}`);
-                        return;
-                    }
-
-                    // Đọc JSON tương ứng
-                    try {
-
-                        currentJsonFile = result.json_file;
-
-                        setStatus(
-                            `⏳ Đang tải dữ liệu: ${file.name}`
-                        );
-
-                        await loadJSON(currentJsonFile);
-
-                        setStatus(
-                            `✓ Đang xem: ${file.name}`
-                        );
-
-                    } catch (error) {
-
-                        console.error(error);
-
-                        setStatus(
-                            `⚠ Không đọc được dữ liệu: ${file.name}`
-                        );
-
-                        alert(
-                            `Không đọc được JSON của ảnh:\n${file.name}`
-                        );
-                    }
-                });
+                img.addEventListener("click", function () { selectThumbnail(index); });
 
                 wrapper.appendChild(img);
                 wrapper.appendChild(status);
