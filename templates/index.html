@@ -2135,7 +2135,7 @@
                                 Đã chọn <span id="r2SelectedCount">0</span> file
                             </div>
                             <div style="display: flex; gap: 10px;">
-                                <button type="button" class="btn btn-primary btn-sm" onclick="downloadSelectedR2Files()">📥 Tải xuống</button>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="downloadSelectedR2Files()">📊 Xuất file tổng hợp và tải xuống</button>
                                 <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedR2Files()">🗑️ Xóa file đã chọn</button>
                             </div>
                         </div>
@@ -4338,33 +4338,63 @@
                 selectAllCheck.checked = count === allCheckboxes.length;
             }
         }
-
         async function downloadSelectedR2Files() {
-            const checkboxes = document.querySelectorAll(".r2-row-checkbox:checked");
+            const checkboxes = document.querySelectorAll('.r2-row-checkbox:checked');
             if (checkboxes.length === 0) return;
 
-            setStatus(`⏳ Đang tải ${checkboxes.length} file...`);
+            const jsonFiles = [];
+            const otherUrls = [];
 
-            // Mở từng link trong tab mới để tải xuống
             for (let i = 0; i < checkboxes.length; i++) {
-                const url = checkboxes[i].getAttribute("data-url");
-                if (url) {
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.target = "_blank";
-                    a.download = "";
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    
-                    // Delay để trình duyệt không block tải xuống nhiều file
-                    if (i < checkboxes.length - 1) {
-                        await new Promise(resolve => setTimeout(resolve, 600));
-                    }
+                const url = checkboxes[i].getAttribute('data-url');
+                const key = checkboxes[i].value;
+                if (key.toLowerCase().endsWith('.json')) {
+                    jsonFiles.push(key);
+                } else if (url) {
+                    otherUrls.push(url);
                 }
             }
 
-            setStatus(`✓ Đã tải ${checkboxes.length} file từ R2`);
+            if (jsonFiles.length > 0) {
+                setStatus('⏳ Đang xuất file tổng hợp cho ' + jsonFiles.length + ' phiếu...');
+                try {
+                    const res = await fetch('/api/excel/batch', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ json_files: jsonFiles })
+                    });
+                    if (!res.ok) throw new Error('Lỗi API xuất Excel');
+                    
+                    const blob = await res.blob();
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = 'Phieu_Tong_Hop_' + new Date().getTime() + '.xlsx';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    setStatus('✅ Xuất và tải xuống Excel tổng hợp thành công!');
+                } catch (err) {
+                    alert('Lỗi xuất Excel: ' + err.message);
+                    setStatus('❌ Xuất Excel thất bại.');
+                }
+            }
+
+            if (otherUrls.length > 0) {
+                setStatus('⏳ Đang tải ' + otherUrls.length + ' file khác...');
+                for (let i = 0; i < otherUrls.length; i++) {
+                    const a = document.createElement('a');
+                    a.href = otherUrls[i];
+                    a.target = '_blank';
+                    a.download = '';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    if (i < otherUrls.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 600));
+                    }
+                }
+                setStatus('✅ Hoàn tất tải file.');
+            }
         }
 
         async function deleteSelectedR2Files() {
