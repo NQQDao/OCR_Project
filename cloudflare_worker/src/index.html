@@ -4017,7 +4017,7 @@
 
             tbody.innerHTML = docs.map((doc, idx) => {
                 const thumbHtml = doc.image_path
-                    ? `<img src="/web_uploads/${encodeURIComponent(doc.image_path)}" class="thumb-mini" alt="Ảnh phiếu" title="Bấm xem to" onclick="openFullscreenModal('/web_uploads/${encodeURIComponent(doc.image_path)}')">`
+                    ? `<img src="/web_uploads/${encodeURIComponent(doc.image_path)}" class="thumb-mini" alt="Ảnh phiếu" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'><rect width=\'40\' height=\'40\' fill=\'%23f1f5f9\'/><text x=\'50%\' y=\'50%\' font-family=\'Arial\' font-size=\'10\' fill=\'%2394a3b8\' text-anchor=\'middle\' dy=\'.3em\'>Lỗi</text></svg>';" title="Bấm xem to" onclick="openFullscreenModal('/web_uploads/${encodeURIComponent(doc.image_path)}')">`
                     : `<div class="thumb-placeholder" title="Không có ảnh">📄</div>`;
 
                 const timeStr = doc.created_at
@@ -5352,7 +5352,7 @@
                 </div>
             </div>
             <div class="lightbox-body" id="lightboxBody">
-                <img id="lightboxImage" src="" alt="Ảnh phóng to chi tiết" draggable="false">
+                <img id="lightboxImage" src="" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'><rect width=\'400\' height=\'300\' fill=\'%230f172a\'/><text x=\'50%\' y=\'50%\' font-family=\'Arial\' font-size=\'16\' fill=\'%2364748b\' text-anchor=\'middle\' dy=\'.3em\'>Ảnh không tồn tại hoặc đã bị xóa khỏi R2</text></svg>';" alt="Ảnh phóng to chi tiết" draggable="false">
             </div>
         </div>
     </div>
@@ -5386,7 +5386,7 @@
             <div class="modal-body" style="padding: 0; display: flex; flex-direction: column; overflow: hidden; position: relative;">
                 
                 <div id="previewBatchContainer" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 20px; overflow: hidden; cursor: grab;">
-                    <img id="previewBatchImage" src="" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); transform-origin: center; cursor: inherit;" draggable="false">
+                    <img id="previewBatchImage" src="" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'><rect width=\'400\' height=\'300\' fill=\'%230f172a\'/><text x=\'50%\' y=\'50%\' font-family=\'Arial\' font-size=\'16\' fill=\'%2364748b\' text-anchor=\'middle\' dy=\'.3em\'>Ảnh không tồn tại hoặc đã bị xóa khỏi R2</text></svg>';" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); transform-origin: center; cursor: inherit;" draggable="false">
                     <div id="previewBatchTitle" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 16px; backdrop-filter: blur(4px);">
                         Số xẻ: ...
                     </div>
