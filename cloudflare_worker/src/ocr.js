@@ -22,6 +22,7 @@ PHẦN 1 - HEADER
 - kich_thuoc_go_tron
 - khoi_luong_go_tron
 - kich_thuoc_xe
+- don_gia (Đọc số tiền ở mục TỔNG CỘNG của phần thông tin gỗ tròn)
 
 QUY TẮC:
 1. so_xe chỉ chứa số xẻ.
@@ -78,7 +79,8 @@ QUAN TRỌNG: Chỉ trả về duy nhất chuỗi JSON hợp lệ theo schema sa
     "so_xe": "",
     "kich_thuoc_go_tron": "",
     "khoi_luong_go_tron": "",
-    "kich_thuoc_xe": ""
+    "kich_thuoc_xe": "",
+    "don_gia": ""
   },
   "items": [
     {

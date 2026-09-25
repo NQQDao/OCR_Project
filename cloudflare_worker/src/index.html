@@ -2755,6 +2755,7 @@
             document.getElementById("kich_thuoc_go_tron").value = header.kich_thuoc_go_tron || "";
             document.getElementById("khoi_luong_go_tron").value = header.khoi_luong_go_tron || "";
             document.getElementById("kich_thuoc_xe").value = header.kich_thuoc_xe || "";
+            document.getElementById("don_gia").value = header.don_gia || "";
 
             const tbody = document.getElementById("itemsTable");
             tbody.innerHTML = "";
@@ -2977,7 +2978,7 @@
             setStatus(`● Đã chọn ${this.files.length} ảnh`);
         });
 
-        ["so_xe", "ngay_xe", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe"].forEach(id => {
+        ["so_xe", "ngay_xe", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe", "don_gia"].forEach(id => {
             document.getElementById(id).addEventListener("input", updateJSONFromForm);
         });
 

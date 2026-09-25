@@ -174,6 +174,7 @@ function normalizeRecord(data, filename) {
     khoi_luong_go_tron: roundWood.khoi_luong,
     khoi_luong_go_tron_num: roundMassNum,
     kich_thuoc_xe: txt(header.kich_thuoc_xe || data.kich_thuoc_xe),
+    don_gia: num(header.don_gia || data.don_gia) || 0,
     round_wood: roundWood,
     items,
     norm_items: normItems,
@@ -850,12 +851,16 @@ export async function createBatchExcel(recordsData) {
     if (!monthData[monthKey]) {
       monthData[monthKey] = {
         kl_go_tron: 0,
-        kl_go_xe: 0
+        kl_go_xe: 0,
+        thanh_tien: 0
       };
     }
     
     const klTron = num(record.khoi_luong_go_tron) || 0;
+    const donGia = record.don_gia || 0;
+    
     monthData[monthKey].kl_go_tron += klTron;
+    monthData[monthKey].thanh_tien += (klTron * donGia);
     
     if (record.items && record.items.length > 0) {
       for (const item of record.items) {
@@ -867,6 +872,7 @@ export async function createBatchExcel(recordsData) {
   let r6Row = 3;
   let totalKlTron = 0;
   let totalKlXe = 0;
+  let totalThanhTien = 0;
   
   for (const [mKey, mData] of Object.entries(monthData)) {
     const row = ws6.getRow(r6Row);
@@ -874,13 +880,14 @@ export async function createBatchExcel(recordsData) {
     row.getCell(2).value = mKey;
     row.getCell(3).value = "m3";
     row.getCell(4).value = mData.kl_go_tron;
-    row.getCell(5).value = 0; // Thành tiền để 0
+    row.getCell(5).value = mData.thanh_tien;
     row.getCell(6).value = mData.kl_go_xe;
     
     row.getCell(7).value = { formula: `IF(D${r6Row}=0, 0, F${r6Row}/D${r6Row})`, result: (mData.kl_go_tron > 0 ? (mData.kl_go_xe / mData.kl_go_tron) : 0) };
     
     totalKlTron += mData.kl_go_tron;
     totalKlXe += mData.kl_go_xe;
+    totalThanhTien += mData.thanh_tien;
     
     for (let c = 1; c <= 7; c++) {
       const cell = row.getCell(c);
@@ -905,7 +912,7 @@ export async function createBatchExcel(recordsData) {
   const tRow = ws6.getRow(r6Row);
   tRow.getCell(2).value = "Tổng";
   tRow.getCell(4).value = { formula: `SUM(D3:D${r6Row-1})`, result: totalKlTron };
-  tRow.getCell(5).value = { formula: `SUM(E3:E${r6Row-1})`, result: 0 };
+  tRow.getCell(5).value = { formula: `SUM(E3:E${r6Row-1})`, result: totalThanhTien };
   tRow.getCell(6).value = { formula: `SUM(F3:F${r6Row-1})`, result: totalKlXe };
   tRow.getCell(7).value = { formula: `IF(D${r6Row}=0, 0, F${r6Row}/D${r6Row})`, result: (totalKlTron > 0 ? (totalKlXe / totalKlTron) : 0) };
   
