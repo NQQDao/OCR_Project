@@ -1916,6 +1916,10 @@
                             <label>📐 Kích thước xẻ</label>
                             <input id="kich_thuoc_xe" type="text">
                         </div>
+                        <div class="field full">
+                            <label>💰 Đơn giá (TỔNG CỘNG)</label>
+                            <input id="don_gia" type="text">
+                        </div>
                     </div>
 
                     <div class="panel-title" style="margin: 4px 0 10px;"><span class="panel-icon">📋</span> CHI TIẾT CẤU
@@ -2755,7 +2759,7 @@
             document.getElementById("kich_thuoc_go_tron").value = header.kich_thuoc_go_tron || "";
             document.getElementById("khoi_luong_go_tron").value = header.khoi_luong_go_tron || "";
             document.getElementById("kich_thuoc_xe").value = header.kich_thuoc_xe || "";
-            document.getElementById("don_gia").value = header.don_gia || "";
+            const donGiaEl = document.getElementById("don_gia"); if (donGiaEl) donGiaEl.value = header.don_gia || "";
 
             const tbody = document.getElementById("itemsTable");
             tbody.innerHTML = "";
@@ -2979,7 +2983,8 @@
         });
 
         ["so_xe", "ngay_xe", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe", "don_gia"].forEach(id => {
-            document.getElementById(id).addEventListener("input", updateJSONFromForm);
+            const el = document.getElementById(id);
+            if (el) el.addEventListener("input", updateJSONFromForm);
         });
 
         const jsonViewer = document.getElementById("jsonViewer");
