@@ -1921,7 +1921,7 @@
                             <input id="kich_thuoc_xe" type="text">
                         </div>
                         <div class="field full">
-                            <label>💰 Đơn giá (TỔNG CỘNG)</label>
+                            <label>💰 Đơn giá gỗ tròn trên m3</label>
                             <input id="don_gia" type="text">
                         </div>
                     </div>
@@ -2827,8 +2827,9 @@
             currentData.header.khoi_luong_go_tron =
                 document.getElementById("khoi_luong_go_tron").value;
 
-            currentData.header.kich_thuoc_xe =
-                document.getElementById("kich_thuoc_xe").value;
+            currentData.header.kich_thuoc_xe = document.getElementById("kich_thuoc_xe").value;
+            const donGiaElForm = document.getElementById("don_gia");
+            if (donGiaElForm) currentData.header.don_gia = donGiaElForm.value;
 
             // Cập nhật JSON viewer
             document.getElementById("jsonViewer").value =
