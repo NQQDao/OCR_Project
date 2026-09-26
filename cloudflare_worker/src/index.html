@@ -889,6 +889,90 @@
             box-shadow: 0 0 0 2px rgba(11, 114, 217, .08);
         }
 
+        
+        /* Nút xoá dòng */
+        .btn-delete-row {
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 4px 6px;
+            cursor: pointer;
+            font-size: 15px;
+            line-height: 1;
+            color: #e02424;
+            transition: all 0.18s ease;
+        }
+        .btn-delete-row:hover {
+            background: #fde8e8;
+            border-color: #f8b4b4;
+            transform: scale(1.15);
+        }
+
+        /* Nút thêm dòng dưới bảng */
+        .table-btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            background: #ebf5ff;
+            border: 1px dashed #76a9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .table-btn-add:hover {
+            background: #def0ff;
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(11, 114, 217, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Pop-up tooltip hiển thị đầy đủ thông tin khi di chuột */
+        #cellHoverTooltip {
+            position: fixed;
+            z-index: 999999;
+            pointer-events: none;
+            background: rgba(15, 23, 42, 0.94);
+            color: #f8fafc;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            line-height: 1.45;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            backdrop-filter: blur(8px);
+            transition: opacity 0.12s ease, transform 0.12s ease;
+            opacity: 0;
+            transform: translateY(4px);
+            white-space: pre-wrap;
+            max-width: 400px;
+            word-break: break-word;
+        }
+        #cellHoverTooltip.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        #cellHoverTooltip .tooltip-label {
+            display: block;
+            font-size: 11px;
+            color: #93c5fd;
+            font-weight: 600;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        #cellHoverTooltip .tooltip-value {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #ffffff;
+            font-family: inherit;
+        }
+
         .validation {
             margin-top: 14px;
             padding: 13px 15px;
@@ -1940,10 +2024,14 @@
                                     <th>STT</th>
                                     <th>Tên cấu kiện</th>
                                     <th>Ghi chú</th>
+                                    <th style="width: 45px; text-align: center;">Xóa</th>
                                 </tr>
                             </thead>
                             <tbody id="itemsTable"></tbody>
                         </table>
+                    </div>
+                    <div style="display: flex; justify-content: flex-start; margin-top: 8px;">
+                        <button type="button" class="table-btn-add" onclick="addItemRow()">➕ Thêm dòng mới</button>
                     </div>
 
                     <div id="validation" class="validation"></div>
@@ -2766,24 +2854,29 @@
             document.getElementById("kich_thuoc_xe").value = header.kich_thuoc_xe || "";
             const donGiaEl = document.getElementById("don_gia"); if (donGiaEl) donGiaEl.value = header.don_gia || "";
 
-            const tbody = document.getElementById("itemsTable");
+                        const tbody = document.getElementById("itemsTable");
             tbody.innerHTML = "";
             const items = currentData.items || [];
             items.forEach((item, index) => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
             <td>${item.dong ?? index + 1}</td>
-            <td><input data-field="ngay" value="${escapeHtml(item.ngay || "")}"></td>
-            <td><input data-field="kich_thuoc_so_luong" value="${escapeHtml(item.kich_thuoc_so_luong || "")}"></td>
-            <td><input data-field="khoi_luong" value="${escapeHtml(item.khoi_luong || "")}"></td>
-            <td><input data-field="cong_trinh" value="${escapeHtml(item.cong_trinh || "")}"></td>
-            <td><input data-field="stt_cau_kien" value="${escapeHtml(item.stt_cau_kien || "")}"></td>
-            <td><input data-field="ten_cau_kien" value="${escapeHtml(item.ten_cau_kien || "")}"></td>
-            <td><input data-field="ghi_chu" value="${escapeHtml(item.ghi_chu || "")}"></td>
+            <td><input data-field="ngay" title="${escapeHtml(item.ngay || "")}" value="${escapeHtml(item.ngay || "")}"></td>
+            <td><input data-field="kich_thuoc_so_luong" title="${escapeHtml(item.kich_thuoc_so_luong || "")}" value="${escapeHtml(item.kich_thuoc_so_luong || "")}"></td>
+            <td><input data-field="khoi_luong" title="${escapeHtml(item.khoi_luong || "")}" value="${escapeHtml(item.khoi_luong || "")}"></td>
+            <td><input data-field="cong_trinh" title="${escapeHtml(item.cong_trinh || "")}" value="${escapeHtml(item.cong_trinh || "")}"></td>
+            <td><input data-field="stt_cau_kien" title="${escapeHtml(item.stt_cau_kien || "")}" value="${escapeHtml(item.stt_cau_kien || "")}"></td>
+            <td><input data-field="ten_cau_kien" title="${escapeHtml(item.ten_cau_kien || "")}" value="${escapeHtml(item.ten_cau_kien || "")}"></td>
+            <td><input data-field="ghi_chu" title="${escapeHtml(item.ghi_chu || "")}" value="${escapeHtml(item.ghi_chu || "")}"></td>
+            <td style="text-align: center;">
+                <button type="button" class="btn-delete-row" title="Xóa dòng ${item.dong ?? (index + 1)}" onclick="deleteItemRow(${index})">🗑️</button>
+            </td>
         `;
                 tr.querySelectorAll("input").forEach(input => {
                     input.addEventListener("input", () => {
                         item[input.dataset.field] = input.value;
+                        input.title = input.value;
+                        showCellTooltip(input);
                         updateJSONFromForm();
                     });
                 });
@@ -2806,6 +2899,139 @@
                 box.innerHTML = `✓ Khối lượng các dòng đang khớp.`;
             }
         }
+
+        // ===== QUẢN LÝ THÊM & XOÁ DÒNG TRONG BẢNG CẤU KIỆN =====
+        function deleteItemRow(index) {
+            if (!currentData || !currentData.items) return;
+            const item = currentData.items[index];
+            const dongNum = item?.dong ?? (index + 1);
+            if (!confirm(`Bạn có chắc chắn muốn xóa dòng số ${dongNum}?`)) {
+                return;
+            }
+            currentData.items.splice(index, 1);
+            // Đánh lại số thứ tự dòng cho chuẩn xác
+            currentData.items.forEach((it, idx) => {
+                it.dong = idx + 1;
+            });
+            renderData();
+            updateJSONFromForm();
+            hideCellTooltip();
+        }
+
+        function addItemRow() {
+            if (!currentData) {
+                alert("Vui lòng mở một phiếu trước khi thêm dòng.");
+                return;
+            }
+            if (!currentData.items) currentData.items = [];
+            const newDong = currentData.items.length + 1;
+            const defaultNgay = currentData.header?.ngay_xe || currentData.header?.ngay_nhap || "";
+            currentData.items.push({
+                dong: newDong,
+                ngay: defaultNgay,
+                kich_thuoc_so_luong: "",
+                khoi_luong: "",
+                cong_trinh: "",
+                stt_cau_kien: "",
+                ten_cau_kien: "",
+                ghi_chu: ""
+            });
+            renderData();
+            updateJSONFromForm();
+            setTimeout(() => {
+                const rows = document.querySelectorAll("#itemsTable tr");
+                if (rows.length > 0) {
+                    const lastRow = rows[rows.length - 1];
+                    const targetInput = lastRow.querySelector('input[data-field="kich_thuoc_so_luong"]');
+                    if (targetInput) {
+                        targetInput.focus();
+                        targetInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }
+            }, 60);
+        }
+
+        // ===== TOOLTIP HOVER CHO BẢNG CẤU KIỆN =====
+        const FIELD_LABELS = {
+            ngay: "🗓 Ngày",
+            kich_thuoc_so_luong: "📏 Kích thước & SL",
+            khoi_luong: "⚖️ Khối lượng",
+            cong_trinh: "🏛 Công trình",
+            stt_cau_kien: "🔢 STT cấu kiện",
+            ten_cau_kien: "🏷 Tên cấu kiện",
+            ghi_chu: "📝 Ghi chú"
+        };
+
+        let tooltipEl = null;
+
+        function getOrCreateTooltip() {
+            if (!tooltipEl) {
+                tooltipEl = document.getElementById("cellHoverTooltip");
+                if (!tooltipEl) {
+                    tooltipEl = document.createElement("div");
+                    tooltipEl.id = "cellHoverTooltip";
+                    document.body.appendChild(tooltipEl);
+                }
+            }
+            return tooltipEl;
+        }
+
+        function showCellTooltip(input) {
+            const val = input.value ? input.value.trim() : "";
+            if (!val) {
+                hideCellTooltip();
+                return;
+            }
+            const field = input.dataset.field;
+            const label = FIELD_LABELS[field] || "Thông tin";
+            const tip = getOrCreateTooltip();
+            tip.innerHTML = `<span class="tooltip-label">${label}</span><span class="tooltip-value">${escapeHtml(val)}</span>`;
+            
+            const rect = input.getBoundingClientRect();
+            let left = rect.left;
+            let top = rect.top - 54;
+            
+            if (left + 320 > window.innerWidth) {
+                left = window.innerWidth - 330;
+            }
+            if (left < 10) left = 10;
+
+            if (top < 10) {
+                top = rect.bottom + 8;
+            }
+            
+            tip.style.left = left + "px";
+            tip.style.top = top + "px";
+            tip.classList.add("active");
+        }
+
+        function hideCellTooltip() {
+            const tip = getOrCreateTooltip();
+            tip.classList.remove("active");
+        }
+
+        // Ủy quyền sự kiện chuột cho bảng để xử lý hover mượt mà
+        document.addEventListener("DOMContentLoaded", () => {
+            const tbody = document.getElementById("itemsTable");
+            if (tbody) {
+                tbody.addEventListener("mouseover", (e) => {
+                    const input = e.target.closest("input[data-field]");
+                    if (input) showCellTooltip(input);
+                });
+                tbody.addEventListener("mouseout", (e) => {
+                    const input = e.target.closest("input[data-field]");
+                    if (input && document.activeElement !== input) hideCellTooltip();
+                });
+                tbody.addEventListener("focusin", (e) => {
+                    const input = e.target.closest("input[data-field]");
+                    if (input) showCellTooltip(input);
+                });
+                tbody.addEventListener("focusout", (e) => {
+                    hideCellTooltip();
+                });
+            }
+        });
+
 
         function updateJSONFromForm() {
 
@@ -5424,6 +5650,7 @@
             </div>
         </div>
     </div>
+    <div id="cellHoverTooltip"></div>
 </body>
 
 
