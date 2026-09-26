@@ -812,7 +812,7 @@ export async function createBatchExcel(recordsData) {
     "Đơn vị tính", 
     "Khối lượng gỗ tròn đưa vào xẻ", 
     "Thành tiền", 
-    "Khối lượng gỗ", 
+    "Khối lượng gỗ thành khí", 
     "Phần Trăm"
   ];
   
