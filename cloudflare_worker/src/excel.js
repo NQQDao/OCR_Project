@@ -798,7 +798,7 @@ export async function createBatchExcel(recordsData) {
   // ----------------------------------------------------
   const ws6 = wb.addWorksheet("BAO_CAO_THANG", { views: [{ showGridLines: true }] });
   
-  ws6.mergeCells("A1:G1");
+  ws6.mergeCells("A1:H1");
   const a6_1 = ws6.getCell("A1");
   a6_1.value = "BÁO CÁO TỔNG HỢP KHỐI LƯỢNG GỖ THEO THÁNG";
   a6_1.font = { name: "Times New Roman", size: 14, bold: true };
@@ -807,7 +807,8 @@ export async function createBatchExcel(recordsData) {
   const h6 = ws6.getRow(2);
   h6.values = [
     "STT", 
-    "Nội dung", 
+    "Số xẻ",
+    "Tháng theo dõi", 
     "Đơn vị tính", 
     "Khối lượng gỗ tròn đưa vào xẻ", 
     "Thành tiền", 
@@ -816,7 +817,7 @@ export async function createBatchExcel(recordsData) {
   ];
   
   h6.height = 30;
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 1; i <= 8; i++) {
     const c = h6.getCell(i);
     c.font = { name: "Times New Roman", size: 11, bold: true };
     c.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
@@ -824,20 +825,20 @@ export async function createBatchExcel(recordsData) {
   }
   
   ws6.getColumn(1).width = 8;
-  ws6.getColumn(2).width = 25;
-  ws6.getColumn(3).width = 15;
-  ws6.getColumn(4).width = 25;
-  ws6.getColumn(5).width = 20;
-  ws6.getColumn(6).width = 20;
-  ws6.getColumn(7).width = 15;
+  ws6.getColumn(2).width = 20; // Số xẻ
+  ws6.getColumn(3).width = 25; // Tháng theo dõi
+  ws6.getColumn(4).width = 15; // Đơn vị tính
+  ws6.getColumn(5).width = 25; // KL gỗ tròn
+  ws6.getColumn(6).width = 20; // Thành tiền
+  ws6.getColumn(7).width = 20; // KL gỗ
+  ws6.getColumn(8).width = 15; // Phần trăm
 
-  // Gom nhóm dữ liệu theo tháng
-  const monthData = {};
+  // Gom nhóm dữ liệu theo Số xẻ + Tháng
+  const groupData = {};
   for (const record of records) {
     let dateStr = record.ngay_xe || record.ngay_nhap || "";
     let monthKey = "Không rõ";
     if (dateStr) {
-      // Parse dd/mm/yyyy
       const parts = dateStr.split("/");
       if (parts.length >= 2) {
         const m = parseInt(parts[1], 10);
@@ -848,8 +849,13 @@ export async function createBatchExcel(recordsData) {
       }
     }
     
-    if (!monthData[monthKey]) {
-      monthData[monthKey] = {
+    let soXe = record.so_xe || "Không rõ";
+    let groupKey = soXe + "|||" + monthKey;
+    
+    if (!groupData[groupKey]) {
+      groupData[groupKey] = {
+        so_xe: soXe,
+        thang: monthKey,
         kl_go_tron: 0,
         kl_go_xe: 0,
         thanh_tien: 0
@@ -859,12 +865,12 @@ export async function createBatchExcel(recordsData) {
     const klTron = num(record.khoi_luong_go_tron) || 0;
     const donGia = record.don_gia || 0;
     
-    monthData[monthKey].kl_go_tron += klTron;
-    monthData[monthKey].thanh_tien += (klTron * donGia);
+    groupData[groupKey].kl_go_tron += klTron;
+    groupData[groupKey].thanh_tien += (klTron * donGia);
     
     if (record.items && record.items.length > 0) {
       for (const item of record.items) {
-        monthData[monthKey].kl_go_xe += (num(item.khoi_luong) || 0);
+        groupData[groupKey].kl_go_xe += (num(item.khoi_luong) || 0);
       }
     }
   }
@@ -874,34 +880,42 @@ export async function createBatchExcel(recordsData) {
   let totalKlXe = 0;
   let totalThanhTien = 0;
   
-  for (const [mKey, mData] of Object.entries(monthData)) {
+  for (const [gKey, gData] of Object.entries(groupData)) {
     const row = ws6.getRow(r6Row);
     row.getCell(1).value = r6Row - 2;
-    row.getCell(2).value = mKey;
-    row.getCell(3).value = "m3";
-    row.getCell(4).value = mData.kl_go_tron;
-    row.getCell(5).value = mData.thanh_tien;
-    row.getCell(6).value = mData.kl_go_xe;
+    row.getCell(2).value = gData.so_xe;
     
-    row.getCell(7).value = { formula: `IF(D${r6Row}=0, 0, F${r6Row}/D${r6Row})`, result: (mData.kl_go_tron > 0 ? (mData.kl_go_xe / mData.kl_go_tron) : 0) };
+    // Style số xẻ màu xanh lơ giống ảnh mẫu
+    row.getCell(2).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "00B0F0" } }; 
+    row.getCell(2).font = { name: "Times New Roman", size: 11, color: { argb: "000000" } };
     
-    totalKlTron += mData.kl_go_tron;
-    totalKlXe += mData.kl_go_xe;
-    totalThanhTien += mData.thanh_tien;
+    row.getCell(3).value = gData.thang;
+    row.getCell(4).value = "m3";
+    row.getCell(5).value = gData.kl_go_tron;
+    row.getCell(6).value = gData.thanh_tien;
+    row.getCell(7).value = gData.kl_go_xe;
     
-    for (let c = 1; c <= 7; c++) {
+    row.getCell(8).value = { formula: `IF(E${r6Row}=0, 0, G${r6Row}/E${r6Row})`, result: (gData.kl_go_tron > 0 ? (gData.kl_go_xe / gData.kl_go_tron) : 0) };
+    
+    totalKlTron += gData.kl_go_tron;
+    totalKlXe += gData.kl_go_xe;
+    totalThanhTien += gData.thanh_tien;
+    
+    for (let c = 1; c <= 8; c++) {
       const cell = row.getCell(c);
-      cell.font = { name: "Times New Roman", size: 11 };
+      if (c !== 2) {
+        cell.font = { name: "Times New Roman", size: 11 };
+      }
       cell.alignment = { horizontal: "center", vertical: "middle" };
       applyBorder(cell);
       
-      if (c === 4 || c === 6) {
+      if (c === 5 || c === 7) {
         cell.numFmt = "#,##0.000";
       }
-      if (c === 5) {
+      if (c === 6) {
         cell.numFmt = "#,##0";
       }
-      if (c === 7) {
+      if (c === 8) {
         cell.numFmt = "0.00%";
       }
     }
@@ -910,25 +924,26 @@ export async function createBatchExcel(recordsData) {
   
   // Total Row
   const tRow = ws6.getRow(r6Row);
+  ws6.mergeCells(`B${r6Row}:D${r6Row}`);
   tRow.getCell(2).value = "Tổng";
-  tRow.getCell(4).value = { formula: `SUM(D3:D${r6Row-1})`, result: totalKlTron };
-  tRow.getCell(5).value = { formula: `SUM(E3:E${r6Row-1})`, result: totalThanhTien };
-  tRow.getCell(6).value = { formula: `SUM(F3:F${r6Row-1})`, result: totalKlXe };
-  tRow.getCell(7).value = { formula: `IF(D${r6Row}=0, 0, F${r6Row}/D${r6Row})`, result: (totalKlTron > 0 ? (totalKlXe / totalKlTron) : 0) };
+  tRow.getCell(5).value = { formula: `SUM(E3:E${r6Row-1})`, result: totalKlTron };
+  tRow.getCell(6).value = { formula: `SUM(F3:F${r6Row-1})`, result: totalThanhTien };
+  tRow.getCell(7).value = { formula: `SUM(G3:G${r6Row-1})`, result: totalKlXe };
+  tRow.getCell(8).value = { formula: `IF(E${r6Row}=0, 0, G${r6Row}/E${r6Row})`, result: (totalKlTron > 0 ? (totalKlXe / totalKlTron) : 0) };
   
-  for (let c = 1; c <= 7; c++) {
+  for (let c = 1; c <= 8; c++) {
       const cell = tRow.getCell(c);
       cell.font = { name: "Times New Roman", size: 11, bold: true };
       cell.alignment = { horizontal: "center", vertical: "middle" };
       applyBorder(cell);
       
-      if (c === 4 || c === 6) {
+      if (c === 5 || c === 7) {
         cell.numFmt = "#,##0.000";
       }
-      if (c === 5) {
+      if (c === 6) {
         cell.numFmt = "#,##0";
       }
-      if (c === 7) {
+      if (c === 8) {
         cell.numFmt = "0.00%";
       }
   }
