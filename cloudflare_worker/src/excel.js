@@ -387,7 +387,7 @@ export async function createBatchExcel(recordsData) {
   a2_1.alignment = { horizontal: "center", vertical: "middle" };
 
   const headers2 = [
-    "Ngày", "File / Phiếu", "Ngày xẻ", "Mã gỗ tròn", "Kích thước gỗ tròn",
+    "Ngày", "File / Phiếu", "Ngày xẻ", "Mã gỗ", "Kích thước gỗ tròn",
     "Khối lượng gỗ tròn (m³)", "Số dòng thành khí", "Khối lượng thành khí ngày (m³)",
     "Tỷ lệ ngày / gỗ tròn", "Cảnh báo"
   ];
@@ -489,7 +489,7 @@ export async function createBatchExcel(recordsData) {
   a3_1.alignment = { horizontal: "center", vertical: "middle" };
 
   const headers3 = [
-    "STT", "File / Phiếu", "Ngày xẻ", "Mã gỗ tròn", "Kích thước gỗ tròn",
+    "STT", "File / Phiếu", "Ngày xẻ", "Mã gỗ", "Kích thước gỗ tròn",
     "Khối lượng gỗ tròn (m³)", "Số dòng gỗ thành khí", "Tổng khối lượng thành khí (m³)",
     "Tỷ lệ % thành phẩm", "Kích thước xẻ"
   ];
@@ -577,7 +577,7 @@ export async function createBatchExcel(recordsData) {
   a4_1.alignment = { horizontal: "center", vertical: "middle" };
 
   const headers4 = [
-    "File / Phiếu", "Ngày", "Ngày xẻ", "Mã gỗ tròn", "Thông tin gỗ tròn OCR gốc",
+    "File / Phiếu", "Ngày", "Ngày xẻ", "Mã gỗ", "Thông tin gỗ tròn OCR gốc",
     "Khối lượng gỗ tròn (m³)", "STT dòng", "Kích thước và số lượng",
     "Dài (cm)", "Rộng (cm)", "Dày (cm)", "SL", "Khối lượng ghi (m³)",
     "Khối lượng tính (m³)", "Chênh lệch (m³)", "Trạng thái", "Công trình",
@@ -679,7 +679,7 @@ export async function createBatchExcel(recordsData) {
   
   // Row 1
   ws5.mergeCells("A1:A2");
-  ws5.getCell("A1").value = "Mã gỗ tròn";
+  ws5.getCell("A1").value = "Mã gỗ";
   
   ws5.mergeCells("B1:D1");
   ws5.getCell("B1").value = "BB gỗ về";
@@ -727,7 +727,7 @@ export async function createBatchExcel(recordsData) {
   for (let c = 8; c <= 10; c++) headerFmt(ws5.getCell(2, c), "FFFFFFFF");
 
   // Columns Width
-  ws5.getColumn(1).width = 15; // Mã gỗ tròn
+  ws5.getColumn(1).width = 15; // Mã gỗ
   [2,3,4, 5,6,7, 8,9,10].forEach(col => ws5.getColumn(col).width = 10);
   ws5.getColumn(11).width = 15; // Đơn giá
   ws5.getColumn(12).width = 18; // Thành tiền
@@ -811,7 +811,7 @@ export async function createBatchExcel(recordsData) {
   const h6 = ws6.getRow(2);
   h6.values = [
     "STT", 
-    "Mã gỗ tròn",
+    "Mã gỗ",
     "Tháng theo dõi", 
     "Đơn vị tính", 
     "Khối lượng gỗ tròn đưa vào xẻ", 
@@ -829,7 +829,7 @@ export async function createBatchExcel(recordsData) {
   }
   
   ws6.getColumn(1).width = 8;
-  ws6.getColumn(2).width = 20; // Mã gỗ tròn
+  ws6.getColumn(2).width = 20; // Mã gỗ
   ws6.getColumn(3).width = 25; // Tháng theo dõi
   ws6.getColumn(4).width = 15; // Đơn vị tính
   ws6.getColumn(5).width = 25; // KL gỗ tròn
@@ -837,7 +837,7 @@ export async function createBatchExcel(recordsData) {
   ws6.getColumn(7).width = 20; // KL gỗ
   ws6.getColumn(8).width = 15; // Phần trăm
 
-  // Gom nhóm dữ liệu theo Mã gỗ tròn + Tháng
+  // Gom nhóm dữ liệu theo Mã gỗ + Tháng
   const groupData = {};
   for (const record of records) {
     let dateStr = record.ngay_xe || record.ngay_nhap || "";
