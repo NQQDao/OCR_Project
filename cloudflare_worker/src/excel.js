@@ -764,6 +764,10 @@ export async function createBatchExcel(recordsData) {
         r.getCell(9).value = vanh2 - vanh1;
         r.getCell(10).value = kl2 - kl1;
         
+        // Gán Đơn giá (cột K - 11)
+        const donGia = record.don_gia ? parseFloat(record.don_gia) : 0;
+        r.getCell(11).value = donGia;
+        
         // Formula for Thanh Tien (L = J * K)
         r.getCell(12).value = { formula: `J${r5Row}*K${r5Row}`, result: 0 };
         
