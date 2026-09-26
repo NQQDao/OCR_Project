@@ -1990,8 +1990,8 @@
                 <div class="panel-body">
                     <div class="form-grid">
                         <div class="field">
-                            <label>🪚 Số xẻ</label>
-                            <input id="so_xe" type="text" placeholder="Nhập số xẻ">
+                            <label>🪚 Mã gỗ tròn</label>
+                            <input id="so_xe" type="text" placeholder="Nhập mã gỗ tròn">
                         </div>
                         <div class="field">
                             <label>📅 Ngày xẻ</label>
@@ -2148,7 +2148,7 @@
                                         <option value="oldest_created">Cũ nhất ↑</option>
                                         <option value="lines_desc">Số dòng: Nhiều nhất ↓</option>
                                         <option value="lines_asc">Số dòng: Ít nhất ↑</option>
-                                        <option value="so_xe_asc">Số xẻ: A → Z</option>
+                                        <option value="so_xe_asc">Mã gỗ tròn: A → Z</option>
                                         <option value="ngay_xe_desc">Ngày xẻ: Mới nhất ↓</option>
                                     </select>
                                 </div>
@@ -2173,7 +2173,7 @@
                                         <th style="width: 40px; text-align: center;"><input type="checkbox" id="selectAllHistory" onchange="toggleSelectAllHistory(this.checked)"></th>
                                         <th style="width: 45px; text-align: center;">STT</th>
                                         <th style="width: 65px; text-align: center;">Ảnh</th>
-                                        <th>Số xẻ</th>
+                                        <th>Mã gỗ tròn</th>
                                         <th>Ngày xẻ</th>
                                         <th>Quy cách gỗ tròn</th>
                                         <th style="text-align: center; width: 95px;">Số dòng</th>
@@ -4307,7 +4307,7 @@
                         </td>
                         <td style="text-align: center; color: var(--muted); font-weight: bold;">${startIndex + idx + 1}</td>
                         <td style="text-align: center;">${thumbHtml}</td>
-                        <td><strong>${escapeHtml(doc.so_xe || "Chưa có số xẻ")}</strong></td>
+                        <td><strong>${escapeHtml(doc.so_xe || "Chưa có mã gỗ tròn")}</strong></td>
                         <td>${escapeHtml(doc.ngay_xe || "-")}</td>
                         <td>${escapeHtml(doc.kich_thuoc_go_tron || "-")}</td>
                         <td style="text-align: center;"><span class="tag-pill success">${doc.total_items} dòng</span></td>
@@ -5311,7 +5311,7 @@
                 if (doc) {
                     previewBatchImages.push({
                         image_path: doc.image_path,
-                        so_xe: doc.so_xe || "Chưa có số xẻ",
+                        so_xe: doc.so_xe || "Chưa có mã gỗ tròn",
                         file_name: fileName
                     });
                 }
@@ -5344,7 +5344,7 @@
                 imgEl.style.display = "none";
             }
             
-            titleEl.textContent = `(${previewBatchIndex + 1}/${previewBatchImages.length}) Số xẻ: ${data ? data.so_xe : "Không rõ"}`;
+            titleEl.textContent = `(${previewBatchIndex + 1}/${previewBatchImages.length}) Mã gỗ tròn: ${data ? data.so_xe : "Không rõ"}`;
         }
 
         function prevBatchImage() {
@@ -5664,7 +5664,7 @@
                 <div id="previewBatchContainer" style="flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; padding: 20px; overflow: hidden; cursor: grab;">
                     <img id="previewBatchImage" src="" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'><rect width=\'400\' height=\'300\' fill=\'%230f172a\'/><text x=\'50%\' y=\'50%\' font-family=\'Arial\' font-size=\'16\' fill=\'%2364748b\' text-anchor=\'middle\' dy=\'.3em\'>Ảnh không tồn tại hoặc đã bị xóa khỏi R2</text></svg>';" style="max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); transform-origin: center; cursor: inherit;" draggable="false">
                     <div id="previewBatchTitle" style="position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 16px; backdrop-filter: blur(4px);">
-                        Số xẻ: ...
+                        Mã gỗ tròn: ...
                     </div>
                 </div>
 
