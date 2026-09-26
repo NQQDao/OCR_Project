@@ -891,6 +891,15 @@
 
         
         /* Nút xoá dòng */
+        .input-error {
+            border: 1px solid #f87171 !important;
+            background-color: #fef2f2 !important;
+            color: #991b1b !important;
+        }
+        .input-error:focus {
+            box-shadow: 0 0 0 2px rgba(248, 113, 113, 0.2) !important;
+        }
+
         .btn-delete-row {
             background: transparent;
             border: 1px solid transparent;
@@ -2886,17 +2895,46 @@
             renderValidation();
         }
 
-        function renderValidation() {
+                function renderValidation() {
             const validation = currentData.validation || {};
             const lineVolume = validation.line_volume || [];
             const warnings = lineVolume.filter(x => x.trang_thai && x.trang_thai !== "OK");
             const box = document.getElementById("validation");
             if (warnings.length) {
+                const dongLoi = warnings.map(w => w.dong).join(", ");
                 box.className = "validation warning-box";
-                box.innerHTML = `⚠ Có <strong>${warnings.length}</strong> dòng cần kiểm tra khối lượng.`;
+                box.innerHTML = `⚠ Có <strong>${warnings.length}</strong> dòng cần kiểm tra khối lượng (Dòng: ${dongLoi}).`;
+                
+                // Highlight các ô bị lỗi
+                const tbody = document.getElementById("itemsTable");
+                if (tbody) {
+                    const rows = tbody.querySelectorAll("tr");
+                    rows.forEach(tr => {
+                        const dongCell = tr.querySelector("td:first-child");
+                        if (dongCell) {
+                            const dongNum = parseInt(dongCell.textContent);
+                            const klInput = tr.querySelector('input[data-field="khoi_luong"]');
+                            if (klInput) {
+                                if (warnings.some(w => w.dong === dongNum)) {
+                                    klInput.classList.add("input-error");
+                                    klInput.title = "Khối lượng không khớp với kích thước & số lượng!";
+                                } else {
+                                    klInput.classList.remove("input-error");
+                                }
+                            }
+                        }
+                    });
+                }
             } else {
                 box.className = "validation success-box";
                 box.innerHTML = `✓ Khối lượng các dòng đang khớp.`;
+                
+                // Gỡ bỏ highlight nếu có
+                const errorInputs = document.querySelectorAll("#itemsTable input.input-error");
+                errorInputs.forEach(input => {
+                    input.classList.remove("input-error");
+                    input.title = input.value;
+                });
             }
         }
 
