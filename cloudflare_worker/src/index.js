@@ -224,12 +224,17 @@ export default {
 
       // GET /api/json/:filename : Lấy nội dung file JSON
       if (pathname.startsWith("/api/json/") && method === "GET") {
-        let filename = decodeURIComponent(pathname.slice("/api/json/".length));
+        let rawParam = pathname.slice("/api/json/".length);
+        let filename = decodeURIComponent(rawParam);
+        let clean = filename.trim();
+        if (!clean.toLowerCase().endsWith(".json")) clean += ".json";
         if (!filename.toLowerCase().endsWith(".json")) filename += ".json";
 
-        // Thử tìm trên R2 trước
+        // Thử tìm trên R2 trước (cả tên gốc và tên trimmed)
         let obj = await env.MY_BUCKET.get(`output/${filename}`);
+        if (!obj && filename !== clean) obj = await env.MY_BUCKET.get(`output/${clean}`);
         if (!obj) obj = await env.MY_BUCKET.get(filename);
+        if (!obj && filename !== clean) obj = await env.MY_BUCKET.get(clean);
 
         if (obj) {
           const content = await obj.text();
@@ -246,8 +251,17 @@ export default {
         // Nếu R2 chưa có, thử tìm trong D1
         const doc = await getDocumentByFileName(env.DB, filename);
         if (doc && doc.raw_json) {
+          const rawContent = typeof doc.raw_json === "string" ? doc.raw_json : JSON.stringify(doc.raw_json);
+          // Tự động sao lưu lại lên R2
+          try {
+            await env.MY_BUCKET.put(`output/${clean}`, rawContent, {
+              httpMetadata: { contentType: "application/json; charset=utf-8" }
+            });
+          } catch (e) {
+            console.warn("Lỗi sao lưu JSON lên R2:", e);
+          }
           return new Response(
-            typeof doc.raw_json === "string" ? doc.raw_json : JSON.stringify(doc.raw_json),
+            rawContent,
             {
               status: 200,
               headers: {
@@ -441,12 +455,16 @@ export default {
 
         const recordsData = [];
         for (const fileName of jsonFiles) {
-          let clean = fileName.trim();
+          let rawName = String(fileName);
+          let clean = rawName.trim();
           if (!clean.endsWith(".json")) clean += ".json";
+          if (!rawName.endsWith(".json")) rawName += ".json";
 
           // Thử đọc từ R2
-          let obj = await env.MY_BUCKET.get(`output/${clean}`);
-          if (!obj) obj = await env.MY_BUCKET.get(clean);
+          let obj = await env.MY_BUCKET.get(`output/${rawName}`);
+          if (!obj && rawName !== clean) obj = await env.MY_BUCKET.get(`output/${clean}`);
+          if (!obj) obj = await env.MY_BUCKET.get(rawName);
+          if (!obj && rawName !== clean) obj = await env.MY_BUCKET.get(clean);
 
           if (obj) {
             try {
@@ -457,7 +475,7 @@ export default {
           }
 
           // Thử đọc từ D1
-          const doc = await getDocumentByFileName(env.DB, clean);
+          const doc = await getDocumentByFileName(env.DB, rawName);
           if (doc && doc.raw_json) {
             try {
               const d = typeof doc.raw_json === "string" ? JSON.parse(doc.raw_json) : doc.raw_json;
@@ -498,12 +516,16 @@ export default {
         const jsonFile = url.searchParams.get("json_file");
         if (!jsonFile) return jsonResponse({ error: "Chưa truyền tham số json_file" }, 400);
 
-        let clean = jsonFile.trim();
+        let rawName = String(jsonFile);
+        let clean = rawName.trim();
         if (!clean.endsWith(".json")) clean += ".json";
+        if (!rawName.endsWith(".json")) rawName += ".json";
 
         let jsonData = null;
-        let obj = await env.MY_BUCKET.get(`output/${clean}`);
-        if (!obj) obj = await env.MY_BUCKET.get(clean);
+        let obj = await env.MY_BUCKET.get(`output/${rawName}`);
+        if (!obj && rawName !== clean) obj = await env.MY_BUCKET.get(`output/${clean}`);
+        if (!obj) obj = await env.MY_BUCKET.get(rawName);
+        if (!obj && rawName !== clean) obj = await env.MY_BUCKET.get(clean);
 
         if (obj) {
           try {
@@ -512,9 +534,15 @@ export default {
         }
 
         if (!jsonData) {
-          const doc = await getDocumentByFileName(env.DB, clean);
+          const doc = await getDocumentByFileName(env.DB, rawName);
           if (doc && doc.raw_json) {
             jsonData = typeof doc.raw_json === "string" ? JSON.parse(doc.raw_json) : doc.raw_json;
+            // Tự động sao lưu lại lên R2
+            try {
+              await env.MY_BUCKET.put(`output/${clean}`, typeof doc.raw_json === "string" ? doc.raw_json : JSON.stringify(doc.raw_json), {
+                httpMetadata: { contentType: "application/json; charset=utf-8" }
+              });
+            } catch (e) {}
           }
         }
 

@@ -97,7 +97,23 @@ export async function getDocumentById(db, id) {
 }
 
 export async function getDocumentByFileName(db, fileName) {
-  return await db.prepare("SELECT * FROM documents WHERE file_name = ?").bind(fileName).first();
+  if (!fileName) return null;
+  const raw = String(fileName);
+  const trimmed = raw.trim();
+  const withoutJson = trimmed.replace(/\.json$/i, "");
+  const withJson = withoutJson + ".json";
+
+  return await db.prepare(`
+    SELECT * FROM documents 
+    WHERE file_name = ? 
+       OR file_name = ? 
+       OR file_name = ? 
+       OR TRIM(file_name) = ?
+       OR TRIM(REPLACE(file_name, '.json', '')) = ?
+       OR image_path = ?
+       OR TRIM(image_path) = ?
+    ORDER BY id DESC LIMIT 1
+  `).bind(raw, trimmed, withJson, trimmed, withoutJson, raw, trimmed).first();
 }
 
 export async function deleteDocument(db, id) {
