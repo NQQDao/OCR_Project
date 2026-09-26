@@ -1905,6 +1905,10 @@
                             <input id="ngay_xe" type="text" placeholder="Ngày / tháng / năm">
                         </div>
                         <div class="field">
+                            <label>🗓 Ngày gỗ về</label>
+                            <input id="ngay_nhap" type="text" placeholder="Ngày / tháng / năm">
+                        </div>
+                        <div class="field">
                             <label>🪵 Kích thước gỗ tròn</label>
                             <input id="kich_thuoc_go_tron" type="text">
                         </div>
@@ -2756,6 +2760,7 @@
             const header = currentData.header || {};
             document.getElementById("so_xe").value = header.so_xe || "";
             document.getElementById("ngay_xe").value = header.ngay_xe || "";
+            const ngayNhapEl = document.getElementById("ngay_nhap"); if (ngayNhapEl) ngayNhapEl.value = header.ngay_nhap || "";
             document.getElementById("kich_thuoc_go_tron").value = header.kich_thuoc_go_tron || "";
             document.getElementById("khoi_luong_go_tron").value = header.khoi_luong_go_tron || "";
             document.getElementById("kich_thuoc_xe").value = header.kich_thuoc_xe || "";
@@ -2813,8 +2818,8 @@
             currentData.header.so_xe =
                 document.getElementById("so_xe").value;
 
-            currentData.header.ngay_xe =
-                document.getElementById("ngay_xe").value;
+            currentData.header.ngay_xe = document.getElementById("ngay_xe").value;
+            const ngayNhapEl2 = document.getElementById("ngay_nhap"); if (ngayNhapEl2) currentData.header.ngay_nhap = ngayNhapEl2.value;
 
             currentData.header.kich_thuoc_go_tron =
                 document.getElementById("kich_thuoc_go_tron").value;
@@ -2982,7 +2987,7 @@
             setStatus(`● Đã chọn ${this.files.length} ảnh`);
         });
 
-        ["so_xe", "ngay_xe", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe", "don_gia"].forEach(id => {
+        ["so_xe", "ngay_xe", "ngay_nhap", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe", "don_gia"].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener("input", updateJSONFromForm);
         });
