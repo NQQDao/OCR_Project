@@ -238,7 +238,7 @@ export async function createBatchExcel(recordsData) {
   }
 
   const subheaders = {
-    D3: "Số", E3: "Ký hiệu", F3: "Dài", G3: "Vành", H3: "Dài", I3: "Vành",
+    D3: "Số", E3: "Ký hiệu", F3: "Dài", G3: "Vanh", H3: "Dài", I3: "Vanh",
     J3: "Khối lượng gỗ", K3: "Đơn giá", L3: "Thành tiền",
     M3: "Rộng", N3: "Cao", O3: "Dài", P3: "SL", Q3: "Khối lượng",
   };
