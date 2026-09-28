@@ -601,6 +601,24 @@ export function parseAndValidateOcrResponse(rawText, sourceFileName, modelUsed) 
     doc.header.tong_khoi_luong_thanh_khi = tkl;
   }
   const items = Array.isArray(doc.items) ? doc.items : [];
+
+  if (!doc.header) doc.header = {};
+  if (!doc.header.tong_khoi_luong_thanh_khi) {
+    const writtenTotals = extractDailyTotals(items);
+    if (writtenTotals.length > 0 && writtenTotals[0].tong_m3_ghi_tren_giay) {
+      doc.header.tong_khoi_luong_thanh_khi = String(writtenTotals[0].tong_m3_ghi_tren_giay);
+    } else {
+      let sumVol = 0;
+      items.forEach(it => {
+        const v = parseNumber(it.khoi_luong);
+        if (v != null) sumVol += v;
+      });
+      if (sumVol > 0) {
+        doc.header.tong_khoi_luong_thanh_khi = String(Math.round(sumVol * 1000) / 1000);
+      }
+    }
+  }
+
   const lineValidation = validateItems(items);
   const dailySummary = calculateDailySummary(items);
   const dailyValidation = validateDailyTotals(items);

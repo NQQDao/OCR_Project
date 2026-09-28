@@ -2010,7 +2010,7 @@
                             <input id="khoi_luong_go_tron" type="text">
                         </div>
                         <div class="field">
-                            <label>📦 Tổng KL thành khí (trên giấy)</label>
+                            <label>📦 Tổng KL thành khí</label>
                             <input id="tong_khoi_luong_thanh_khi" type="text" placeholder="Ví dụ: 0.546 m3" title="Tổng kết khối lượng xẻ cuối ngày ghi trên phiếu để đối chiếu với tổng bảng">
                         </div>
                         <div class="field full">
@@ -2872,7 +2872,19 @@
             document.getElementById("khoi_luong_go_tron").value = header.khoi_luong_go_tron || "";
             document.getElementById("kich_thuoc_xe").value = header.kich_thuoc_xe || "";
             const donGiaEl = document.getElementById("don_gia"); if (donGiaEl) donGiaEl.value = header.don_gia || "";
-            const tongThanhKhiEl = document.getElementById("tong_khoi_luong_thanh_khi"); if (tongThanhKhiEl) tongThanhKhiEl.value = header.tong_khoi_luong_thanh_khi || "";
+            let calcTotalVolume = 0;
+            (currentData.items || []).forEach(it => {
+                calcTotalVolume += parseNumHelper(it.khoi_luong);
+            });
+            calcTotalVolume = Math.round(calcTotalVolume * 1000) / 1000;
+
+            let displayedTotal = header.tong_khoi_luong_thanh_khi || "";
+            if (!displayedTotal && calcTotalVolume > 0) {
+                displayedTotal = String(calcTotalVolume);
+                header.tong_khoi_luong_thanh_khi = displayedTotal;
+            }
+            const tongThanhKhiEl = document.getElementById("tong_khoi_luong_thanh_khi");
+            if (tongThanhKhiEl) tongThanhKhiEl.value = displayedTotal;
 
                         const tbody = document.getElementById("itemsTable");
             tbody.innerHTML = "";
