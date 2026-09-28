@@ -26,8 +26,8 @@ region = "aws:us-east-1"
 
 [vars]
 AI_PROVIDER = "openrouter"
-OPENROUTER_MODEL = "google/gemini-2.0-flash-001"
-OPENROUTER_FALLBACK_MODELS = "google/gemini-2.0-flash-001,qwen/qwen-2.5-vl-72b-instruct:free,qwen/qwen-2.5-vl-72b-instruct,meta-llama/llama-3.2-11b-vision-instruct,openai/gpt-4o-mini"
+OPENROUTER_MODEL = "google/gemini-2.5-flash"
+OPENROUTER_FALLBACK_MODELS = "google/gemini-2.5-flash,google/gemini-2.5-flash-lite,qwen/qwen2.5-vl-72b-instruct,google/gemini-3.5-flash,openai/gpt-4o-mini"
 GEMINI_MODEL = "gemini-3.8-flash"
 GEMINI_FALLBACK_MODELS = "gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash,gemini-flash-latest"
 R2_BUCKET_NAME = "ocr-vn01"
