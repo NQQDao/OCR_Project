@@ -226,6 +226,140 @@ export async function callGeminiVision({ imageBase64, mimeType = "image/jpeg", p
   throw new Error(`Tất cả các model Gemini đều không phản hồi thành công. Lỗi: ${lastError?.message || ""} [${errorLogs.join("; ")}]`);
 }
 
+export async function callOpenRouterVision({ imageBase64, mimeType = "image/jpeg", prompt, env }) {
+  const apiKey = env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    throw new Error("Chưa cấu hình OPENROUTER_API_KEY trên Cloudflare Worker.");
+  }
+
+  const defaultPool = [
+    env.OPENROUTER_MODEL || "google/gemini-2.0-flash-001",
+    "qwen/qwen-2.5-vl-72b-instruct:free",
+    "qwen/qwen-2.5-vl-72b-instruct",
+    "meta-llama/llama-3.2-11b-vision-instruct",
+    "openai/gpt-4o-mini"
+  ];
+  const configuredModels = (env.OPENROUTER_FALLBACK_MODELS || "")
+    .split(",")
+    .map(s => s.trim())
+    .filter(Boolean);
+  const modelsPool = [...new Set([...configuredModels, ...defaultPool])];
+
+  const systemPrompt = `Bạn là hệ thống OCR thị giác chuyên dụng bóc tách biểu mẫu tiếng Việt viết tay.
+Nhiệm vụ: Phân tích hình ảnh và trả về DUY NHẤT một chuỗi JSON hợp lệ theo đúng cấu trúc schema yêu cầu.
+QUY TẮC BẮT BUỘC:
+1. Chỉ trả về JSON thuần, bắt đầu bằng { và kết thúc bằng }, không bọc văn bản giải thích.
+2. Không tự động đổi chữ I thành số 1, không tự đổi số 1 thành chữ I.
+3. Không tự chế hoặc thêm trường dữ liệu không có trên biểu mẫu.`;
+
+  let lastError = null;
+  const errorLogs = [];
+
+  for (let idx = 0; idx < modelsPool.length; idx++) {
+    const model = modelsPool[idx];
+    const payload = {
+      model: model,
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: [
+            { type: "text", text: prompt },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${mimeType};base64,${imageBase64}`
+              }
+            }
+          ]
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0
+    };
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "HTTP-Referer": "https://ocr-project.cloudflare.workers.dev",
+            "X-Title": "OCR Wood Project",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (resp.ok) {
+          const data = await resp.json();
+          const text = data.choices?.[0]?.message?.content;
+          if (text) {
+            return { text, modelUsed: `openrouter/${model}` };
+          }
+          throw new Error("OpenRouter trả về choices rỗng.");
+        }
+
+        const errText = await resp.text();
+        const status = resp.status;
+        lastError = new Error(`HTTP ${status}: ${errText}`);
+        errorLogs.push(`${model} (thử ${attempt}): HTTP ${status}`);
+
+        // 429 hoặc lỗi model không tồn tại -> chuyển model fallback tiếp theo
+        if (status === 429 || status === 404 || status === 400) {
+          break;
+        }
+        if (status >= 500 && attempt < 2) {
+          await new Promise(r => setTimeout(r, 1500));
+          continue;
+        }
+        break;
+      } catch (err) {
+        lastError = err;
+        errorLogs.push(`${model}: ${err.message}`);
+        break;
+      }
+    }
+  }
+
+  throw new Error(`Tất cả các model OpenRouter đều không phản hồi thành công. Lỗi: ${lastError?.message || ""} [${errorLogs.join("; ")}]`);
+}
+
+/**
+ * Hàm điều phối AI Vision thông minh (Multi-provider Fallback)
+ * Ưu tiên gọi OpenRouter hoặc Gemini tùy theo biến AI_PROVIDER cấu hình
+ */
+export async function callVision({ imageBase64, mimeType = "image/jpeg", prompt, env }) {
+  const provider = (env.AI_PROVIDER || "").toLowerCase().trim();
+
+  // 1. Nếu ưu tiên OpenRouter hoặc chỉ có OpenRouter Key
+  if (provider === "openrouter" || (env.OPENROUTER_API_KEY && !env.GEMINI_API_KEY)) {
+    try {
+      return await callOpenRouterVision({ imageBase64, mimeType, prompt, env });
+    } catch (err) {
+      console.warn("[OpenRouter Thất bại - Thử Fallback sang Gemini nếu có]", err.message);
+      if (env.GEMINI_API_KEY) {
+        return await callGeminiVision({ imageBase64, mimeType, prompt, env });
+      }
+      throw err;
+    }
+  }
+
+  // 2. Mặc định hoặc nếu chọn Gemini
+  try {
+    return await callGeminiVision({ imageBase64, mimeType, prompt, env });
+  } catch (err) {
+    console.warn("[Gemini Thất bại - Thử Fallback sang OpenRouter nếu có]", err.message);
+    if (env.OPENROUTER_API_KEY) {
+      return await callOpenRouterVision({ imageBase64, mimeType, prompt, env });
+    }
+    throw err;
+  }
+}
+
 // ----------------------------------------------------
 // TÍNH TOÁN & VALIDATION LOGIC
 // ----------------------------------------------------

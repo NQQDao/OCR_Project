@@ -12,7 +12,9 @@ import { createBatchExcel } from "./excel.js";
 import {
   buildOcrPrompt,
   buildFastPrompt,
+  callVision,
   callGeminiVision,
+  callOpenRouterVision,
   parseAndValidateOcrResponse,
   BASE_OCR_PROMPT
 } from "./ocr.js";
@@ -357,8 +359,8 @@ export default {
               httpMetadata: { contentType: mimeType }
             });
 
-            // 2. Gọi Google Gemini Vision với Fallback
-            const aiResp = await callGeminiVision({
+            // 2. Gọi AI Vision (OpenRouter hoặc Gemini với Multi-model Fallback)
+            const aiResp = await callVision({
               imageBase64: base64Data,
               mimeType,
               prompt,

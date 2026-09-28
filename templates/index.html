@@ -1985,7 +1985,7 @@
             <section class="panel data-panel">
                 <div class="panel-head">
                     <div class="panel-title"><span class="panel-icon">📝</span> THÔNG TIN OCR</div>
-                    <span class="panel-sub">Có thể chỉnh sửa trước khi lưu</span>
+                    <span class="panel-sub" id="ocrModelBadge">Có thể chỉnh sửa trước khi lưu</span>
                 </div>
                 <div class="panel-body">
                     <div class="form-grid">
@@ -2854,6 +2854,12 @@
 
         function renderData() {
             if (!currentData) return;
+            const modelBadge = document.getElementById("ocrModelBadge");
+            if (modelBadge && currentData.source && currentData.source.model) {
+                modelBadge.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600;"><span style="font-size:10px;">🤖</span> Model: ${escapeHtml(currentData.source.model)}</span>`;
+            } else if (modelBadge) {
+                modelBadge.textContent = "Có thể chỉnh sửa trước khi lưu";
+            }
             const header = currentData.header || {};
             document.getElementById("so_xe").value = header.so_xe || "";
             document.getElementById("ngay_xe").value = header.ngay_xe || "";
