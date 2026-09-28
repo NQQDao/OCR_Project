@@ -2868,6 +2868,7 @@
             document.getElementById("khoi_luong_go_tron").value = header.khoi_luong_go_tron || "";
             document.getElementById("kich_thuoc_xe").value = header.kich_thuoc_xe || "";
             const donGiaEl = document.getElementById("don_gia"); if (donGiaEl) donGiaEl.value = header.don_gia || "";
+            const tongThanhKhiEl = document.getElementById("tong_khoi_luong_thanh_khi"); if (tongThanhKhiEl) tongThanhKhiEl.value = header.tong_khoi_luong_thanh_khi || "";
 
                         const tbody = document.getElementById("itemsTable");
             tbody.innerHTML = "";
@@ -2901,46 +2902,104 @@
             renderValidation();
         }
 
-                function renderValidation() {
+                function parseNumHelper(v) {
+            if (!v) return 0;
+            const s = String(v).replace(/\s+/g, "").replace(",", ".");
+            const n = parseFloat(s);
+            return isNaN(n) ? 0 : n;
+        }
+
+        function renderValidation() {
             const validation = currentData.validation || {};
             const lineVolume = validation.line_volume || [];
             const warnings = lineVolume.filter(x => x.trang_thai && x.trang_thai !== "OK");
             const box = document.getElementById("validation");
-            if (warnings.length) {
-                const dongLoi = warnings.map(w => w.dong).join(", ");
-                box.className = "validation warning-box";
-                box.innerHTML = `⚠ Có <strong>${warnings.length}</strong> dòng cần kiểm tra khối lượng (Dòng: ${dongLoi}).`;
-                
-                // Highlight các ô bị lỗi
-                const tbody = document.getElementById("itemsTable");
-                if (tbody) {
-                    const rows = tbody.querySelectorAll("tr");
-                    rows.forEach(tr => {
-                        const dongCell = tr.querySelector("td:first-child");
-                        if (dongCell) {
-                            const dongNum = parseInt(dongCell.textContent);
-                            const klInput = tr.querySelector('input[data-field="khoi_luong"]');
-                            if (klInput) {
-                                if (warnings.some(w => w.dong === dongNum)) {
-                                    klInput.classList.add("input-error");
-                                    klInput.title = "Khối lượng không khớp với kích thước & số lượng!";
-                                } else {
-                                    klInput.classList.remove("input-error");
-                                }
-                            }
-                        }
-                    });
+            if (!box) return;
+
+            // 1. Tính tổng khối lượng thực tế của tất cả các dòng trong bảng
+            const items = currentData.items || [];
+            let totalTableVolume = 0;
+            items.forEach(it => {
+                totalTableVolume += parseNumHelper(it.khoi_luong);
+            });
+            totalTableVolume = Math.round(totalTableVolume * 1000) / 1000;
+
+            // 2. Lấy tổng khối lượng thành khí ghi trên giấy
+            const header = currentData.header || {};
+            const writtenTotalRaw = header.tong_khoi_luong_thanh_khi || "";
+            const writtenTotal = parseNumHelper(writtenTotalRaw);
+
+            let totalValidationMsg = "";
+            let isTotalMismatch = false;
+            const tongThanhKhiInput = document.getElementById("tong_khoi_luong_thanh_khi");
+
+            if (writtenTotalRaw && writtenTotal > 0) {
+                const diff = Math.round(Math.abs(totalTableVolume - writtenTotal) * 1000) / 1000;
+                if (diff <= 0.003) {
+                    totalValidationMsg = `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed rgba(22, 101, 52, 0.3); font-size:12.5px; color:#166534;">✓ <strong>Khớp Tổng KL thành khí:</strong> Giấy ghi <strong>${writtenTotal} m³</strong> = Tổng bảng <strong>${totalTableVolume} m³</strong> (Khớp 100%).</div>`;
+                    if (tongThanhKhiInput) {
+                        tongThanhKhiInput.classList.remove("input-error");
+                        tongThanhKhiInput.style.borderColor = "#22c55e";
+                        tongThanhKhiInput.style.backgroundColor = "#f0fdf4";
+                    }
+                } else {
+                    isTotalMismatch = true;
+                    const diffSign = totalTableVolume > writtenTotal ? `+${diff}` : `-${diff}`;
+                    totalValidationMsg = `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed rgba(153, 27, 27, 0.3); font-size:12.5px; color:#991b1b;">⚠️ <strong>LỆCH TỔNG THÀNH KHÍ:</strong> Giấy ghi <strong>${writtenTotal} m³</strong> nhưng Tổng bảng tính được là <strong>${totalTableVolume} m³</strong> (Lệch: <strong>${diffSign} m³</strong>).</div>`;
+                    if (tongThanhKhiInput) {
+                        tongThanhKhiInput.classList.add("input-error");
+                        tongThanhKhiInput.title = `Lệch tổng thành khí: Giấy ghi ${writtenTotal} m³ vs Bảng ${totalTableVolume} m³`;
+                    }
                 }
             } else {
-                box.className = "validation success-box";
-                box.innerHTML = `✓ Khối lượng các dòng đang khớp.`;
-                
-                // Gỡ bỏ highlight nếu có
-                const errorInputs = document.querySelectorAll("#itemsTable input.input-error");
-                errorInputs.forEach(input => {
-                    input.classList.remove("input-error");
-                    input.title = input.value;
+                if (tongThanhKhiInput) {
+                    tongThanhKhiInput.classList.remove("input-error");
+                    tongThanhKhiInput.style.borderColor = "";
+                    tongThanhKhiInput.style.backgroundColor = "";
+                }
+                if (totalTableVolume > 0) {
+                    totalValidationMsg = `<div style="margin-top:6px; padding-top:6px; border-top:1px dashed #cbd5e1; font-size:12px; color:#64748b;">ℹ️ Tổng khối lượng các dòng cấu kiện: <strong>${totalTableVolume} m³</strong>.</div>`;
+                }
+            }
+
+            // 3. Highlight ô lỗi trong bảng
+            const tbody = document.getElementById("itemsTable");
+            if (tbody) {
+                const rows = tbody.querySelectorAll("tr");
+                rows.forEach(tr => {
+                    const dongCell = tr.querySelector("td:first-child");
+                    if (dongCell) {
+                        const dongNum = parseInt(dongCell.textContent);
+                        const klInput = tr.querySelector('input[data-field="khoi_luong"]');
+                        if (klInput) {
+                            if (warnings.some(w => w.dong === dongNum)) {
+                                klInput.classList.add("input-error");
+                                klInput.title = "Khối lượng không khớp với kích thước & số lượng!";
+                            } else {
+                                klInput.classList.remove("input-error");
+                            }
+                        }
+                    }
                 });
+            }
+
+            // 4. Hiển thị hộp trạng thái tổng thể
+            if (warnings.length > 0 || isTotalMismatch) {
+                box.className = "validation warning-box";
+                let html = "";
+                if (warnings.length > 0) {
+                    const dongLoi = warnings.map(w => w.dong).join(", ");
+                    html += `<div>⚠ Có <strong>${warnings.length}</strong> dòng cần kiểm tra khối lượng (Dòng: ${dongLoi}).</div>`;
+                } else {
+                    html += `<div>✓ Khối lượng từng dòng đang khớp.</div>`;
+                }
+                html += totalValidationMsg;
+                box.innerHTML = html;
+            } else {
+                box.className = "validation success-box";
+                let html = `<div>✓ Khối lượng các dòng đang khớp.</div>`;
+                html += totalValidationMsg;
+                box.innerHTML = html;
             }
         }
 
@@ -3100,6 +3159,8 @@
             currentData.header.kich_thuoc_xe = document.getElementById("kich_thuoc_xe").value;
             const donGiaElForm = document.getElementById("don_gia");
             if (donGiaElForm) currentData.header.don_gia = donGiaElForm.value;
+            const tongThanhKhiElForm = document.getElementById("tong_khoi_luong_thanh_khi");
+            if (tongThanhKhiElForm) currentData.header.tong_khoi_luong_thanh_khi = tongThanhKhiElForm.value;
 
             // Cập nhật JSON viewer
             document.getElementById("jsonViewer").value =
@@ -3258,7 +3319,7 @@
             setStatus(`● Đã chọn ${this.files.length} ảnh`);
         });
 
-        ["so_xe", "ngay_xe", "ngay_nhap", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe", "don_gia"].forEach(id => {
+        ["so_xe", "ngay_xe", "ngay_nhap", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe", "don_gia", "tong_khoi_luong_thanh_khi"].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener("input", updateJSONFromForm);
         });

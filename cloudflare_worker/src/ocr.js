@@ -23,6 +23,7 @@ PHẦN 1 - HEADER
 - khoi_luong_go_tron
 - kich_thuoc_xe
 - don_gia (Đọc số tiền đơn giá viết tay có chữ "đơn giá" hoặc "đg" trong cột THÔNG TIN GỖ TRÒN, ví dụ: "đơn giá: 16.100.000" hoặc "14.300.000")
+- tong_khoi_luong_thanh_khi (Đọc số tổng kết khối lượng gỗ thành khí ghi ở cột 'Tổng kết khối lượng xẻ cuối ngày' hoặc phần ghi chú cuối ngày, ví dụ: "0,546 m3" hoặc "1,252 m3")
 
 QUY TẮC:
 1. so_xe chỉ chứa số xẻ.
@@ -33,6 +34,7 @@ QUY TẮC:
 6. Nếu không đọc chắc thì để trống.
 7. Không tự sửa dữ liệu theo suy đoán.
 8. don_gia: Tìm kỹ dòng chữ viết tay có chữ "đơn giá" hoặc "đg" trong cột THÔNG TIN GỖ TRÒN (thường viết ở các ô/dòng trống bên dưới mục kích thước xẻ hoặc trong cột thông tin gỗ tròn, ví dụ: "đơn giá: 16.100.000"). Chỉ trích xuất phần số tiền (ví dụ: "16.100.000" hoặc "16100000"), nếu không có chữ đơn giá thì để trống "".
+9. tong_khoi_luong_thanh_khi: Tìm số tổng khối lượng ghi ở cột 'Tổng kết khối lượng xẻ cuối ngày' hoặc phần ghi chú (ví dụ: "0,546 m3" hoặc "1,252 m3"). Chỉ trích xuất số (ví dụ: "0,546"), nếu không có thì để trống "".
 
 ============================================================
 PHẦN 2 - BẢNG DỮ LIỆU
@@ -81,7 +83,8 @@ QUAN TRỌNG: Chỉ trả về duy nhất chuỗi JSON hợp lệ theo schema sa
     "kich_thuoc_go_tron": "",
     "khoi_luong_go_tron": "",
     "kich_thuoc_xe": "",
-    "don_gia": ""
+    "don_gia": "",
+    "tong_khoi_luong_thanh_khi": ""
   },
   "items": [
     {
@@ -252,7 +255,8 @@ QUY TẮC BẮT BUỘC:
 1. Chỉ trả về JSON thuần, bắt đầu bằng { và kết thúc bằng }, không bọc văn bản giải thích.
 2. Không tự động đổi chữ I thành số 1, không tự đổi số 1 thành chữ I.
 3. Không tự chế hoặc thêm trường dữ liệu không có trên biểu mẫu.
-4. Chú ý bóc tách trường header.don_gia khi có dòng chữ viết tay "đơn giá" hoặc "đg" trong cột thông tin gỗ tròn (ví dụ: "16.100.000").`;
+4. Chú ý bóc tách trường header.don_gia khi có dòng chữ viết tay "đơn giá" hoặc "đg" (ví dụ: "16.100.000").
+5. Bóc tách trường header.tong_khoi_luong_thanh_khi khi có số tổng kết khối lượng xẻ cuối ngày (ví dụ: "0,546 m3").`;
 
   let lastError = null;
   const errorLogs = [];
@@ -590,6 +594,11 @@ export function parseAndValidateOcrResponse(rawText, sourceFileName, modelUsed) 
     let dg = String(doc.header.don_gia).trim();
     dg = dg.replace(/^(?:đơn\s*giá|đg)[\s:]*/i, "").replace(/[\sđ/m3vnđ]+$/i, "").trim();
     doc.header.don_gia = dg;
+  }
+  if (doc.header && doc.header.tong_khoi_luong_thanh_khi) {
+    let tkl = String(doc.header.tong_khoi_luong_thanh_khi).trim();
+    tkl = tkl.replace(/[\sđ/m3vnđ]+$/i, "").trim();
+    doc.header.tong_khoi_luong_thanh_khi = tkl;
   }
   const items = Array.isArray(doc.items) ? doc.items : [];
   const lineValidation = validateItems(items);
