@@ -25,16 +25,16 @@
       "id": "dn_chua_dau",
       "category": "de_nham",
       "short": "chùa dâu",
-      "full": "Chùa Dâu [CỘT CÔNG TRÌNH]",
-      "description": "Chùa Dâu là tên CÔNG TRÌNH (không phải cấu kiện, không phải loại gỗ). Kèm các phân khu: (SL), (ch), (kh), (NK), (đỏ), (tổ).",
+      "full": "Chùa Đậu [CỘT CÔNG TRÌNH]",
+      "description": "Chùa Đậu là tên CÔNG TRÌNH (không phải cấu kiện, không phải loại gỗ). Kèm các phân khu: (SL), (ch), (kh), (NK), (đỏ), (tổ).",
       "synonyms": [
-        "chùa dâu (SL)",
-        "chùa dâu (ch)",
-        "chùa dâu (kh)",
-        "chùa dâu (khách)",
-        "chùa dâu (NK)",
-        "chùa dâu (đỏ)",
-        "chùa dâu (tổ)"
+        "chùa đậu (SL)",
+        "chùa đậu (ch)",
+        "chùa đậu (kh)",
+        "chùa đậu (khách)",
+        "chùa đậu (NK)",
+        "chùa đậu (đỏ)",
+        "chùa đậu (tổ)"
       ]
     },
     {
@@ -68,8 +68,8 @@
       "id": "dn_uc_ly",
       "category": "de_nham",
       "short": "ức lý",
-      "full": "Ức Lý [CỘT CÔNG TRÌNH]",
-      "description": "Tên CÔNG TRÌNH Ức Lý (hay nhầm thành ốc lí, ức lí). Ký hiệu (đôi) đi kèm chỉ cặp cấu kiện.",
+      "full": "Úc Lý [CỘT CÔNG TRÌNH]",
+      "description": "Tên CÔNG TRÌNH Úc Lý (hay nhầm thành ốc lí, ức lí). Ký hiệu (đôi) đi kèm chỉ cặp cấu kiện.",
       "synonyms": [
         "ức lý (đôi)",
         "uc ly",

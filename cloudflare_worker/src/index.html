@@ -151,6 +151,54 @@
             cursor: pointer;
         }
 
+        .date-chip-btn {
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 5px;
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+            color: #1d4ed8;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            line-height: 1.2;
+            white-space: nowrap;
+        }
+
+        .date-chip-btn:hover {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .date-chip-btn.fill-down-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
+        .date-chip-btn.fill-down-btn:hover {
+            background: #059669;
+            color: white;
+            border-color: #059669;
+        }
+
+        .ngay-xe-part {
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13px;
+            background: white;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .ngay-xe-part:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(11, 114, 217, 0.12);
+        }
+
         .container {
             max-width: 1500px;
             margin: 0 auto;
@@ -1859,6 +1907,100 @@
             background: var(--success-bg);
             color: var(--success);
         }
+
+        /* ===== EXCEL PREVIEW MODAL STYLES ===== */
+        .excel-sheet-tab {
+            padding: 7px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .excel-sheet-tab:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+            border-color: #94a3b8;
+        }
+        .excel-sheet-tab.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #1d4ed8;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+        }
+
+        .excel-preview-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            font-size: 13px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .excel-preview-table th {
+            background: #f8fafc;
+            color: #1e293b;
+            font-weight: 700;
+            padding: 10px 14px;
+            border-right: 1px solid #cbd5e1;
+            border-bottom: 2px solid #94a3b8;
+            text-align: center;
+            white-space: nowrap;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        .excel-preview-table td {
+            padding: 8px 12px;
+            border-right: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            color: #334155;
+            white-space: nowrap;
+            font-size: 13px;
+        }
+        .excel-preview-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+        .excel-preview-table tr:hover td {
+            background-color: #eff6ff !important;
+        }
+        .excel-preview-table tr.filtered-out {
+            display: none !important;
+        }
+
+        /* ===== BỘ CHỌN LOẠI GỖ (GỖ TRÒN VS GỖ HỘP) ===== */
+        .btn-wood-type {
+            padding: 5px 12px;
+            font-size: 12.5px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid #cbd5e1;
+            background: white;
+            color: #475569;
+            transition: all 0.15s ease;
+        }
+        .btn-wood-type:hover {
+            background: #f8fafc;
+            color: #0f172a;
+            border-color: #94a3b8;
+        }
+        .btn-wood-type.active {
+            background: #0284c7;
+            color: white;
+            border-color: #0369a1;
+            box-shadow: 0 1px 3px rgba(2, 132, 199, 0.3);
+        }
     </style>
 </head>
 
@@ -1899,8 +2041,12 @@
                 </div>
             </div>
             <div style="display: flex; gap: 10px; align-items: center;">
-                <div id="r2HeaderBadge" class="header-badge" style="cursor: pointer; background: rgba(255, 255, 255, 0.18); transition: 0.2s;" onclick="openR2Modal()" title="Bấm để xem trạng thái và cấu hình Cloudflare R2">☁️ R2: Đang kiểm tra...</div>
-                <div class="header-badge">● Hệ thống OCR</div>
+                <div id="r2HeaderBadge" class="header-badge" style="cursor: pointer; background: rgba(255, 255, 255, 0.18); transition: 0.2s;" onclick="openR2Modal()" title="Bấm để xem trạng thái và cấu hình Cloudflare R2">☁️ R2: Private (Đã bảo vệ)</div>
+                <div id="userProfileBadge" class="header-badge" style="background: rgba(255, 255, 255, 0.22); border-color: rgba(255, 255, 255, 0.4); display: flex; align-items: center; gap: 8px;">
+                    <span id="headerUsername" style="font-weight: 600;">👤 admin</span>
+                    <button type="button" class="mini-btn" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 3px 8px; font-size: 11.5px; border-radius: 6px;" onclick="openChangePasswordModal()" title="Đổi mật khẩu tài khoản">🔑 Đổi MK</button>
+                    <button type="button" class="mini-btn" style="background: rgba(239,68,68,0.35); color: #fecaca; border: none; padding: 3px 8px; font-size: 11.5px; border-radius: 6px;" onclick="handleLogout()" title="Đăng xuất khỏi hệ thống">🚪 Thoát</button>
+                </div>
             </div>
         </header>
 
@@ -1994,32 +2140,118 @@
                             <input id="so_xe" type="text" placeholder="Nhập mã gỗ">
                         </div>
                         <div class="field">
-                            <label>📅 Ngày xẻ</label>
-                            <input id="ngay_xe" type="text" placeholder="Ngày / tháng / năm">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <label style="margin: 0;">📅 Ngày xẻ (Đa ngày)</label>
+                                <button type="button" class="mini-btn" style="padding: 1px 7px; font-size: 11px; background: #e0f2fe; color: #0369a1; border-color: #bae6fd; border-radius: 5px;" onclick="addNgayXeInput()" title="Thêm ngày xẻ khác (ví dụ xẻ 3 ngày)">➕ Thêm</button>
+                            </div>
+                            <div id="ngayXeInputsContainer" style="display: flex; flex-direction: column; gap: 5px;">
+                                <input class="ngay-xe-part" type="text" placeholder="Ngày xẻ đợt 1 (VD: 11/08/2026)" oninput="onNgayXeInputChange()">
+                                <input class="ngay-xe-part" type="text" placeholder="Ngày xẻ đợt 2 (VD: 16/08/2026)" oninput="onNgayXeInputChange()">
+                            </div>
+                            <input id="ngay_xe" type="hidden">
+                            <div id="ngayXePreview" style="font-size: 11.5px; color: #0284c7; margin-top: 4px; font-weight: 600; display: none;"></div>
                         </div>
                         <div class="field">
                             <label>🗓 Ngày gỗ về</label>
                             <input id="ngay_nhap" type="text" placeholder="Ngày / tháng / năm">
                         </div>
-                        <div class="field">
-                            <label>🪵 Kích thước gỗ</label>
-                            <input id="kich_thuoc_go_tron" type="text" placeholder="VD: 2,76-V223 đoTT 2,77-V226">
+                        <!-- BỘ CHỌN LOẠI GỖ MUA VÀO & CÔNG THỨC -->
+                        <div class="field full" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px 14px; margin-top: 4px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+                                <label style="margin: 0; font-size: 13px; font-weight: 700; color: #1e293b;">
+                                    🏷️ LOẠI GỖ NGUYÊN LIỆU MUA VÀO:
+                                </label>
+                                <input type="hidden" id="loai_go_mua_vao" value="go_tron">
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="button" id="btnLoaiGoTron" class="btn-wood-type active" onclick="setLoaiGoMuaVao('go_tron')" title="Gỗ tròn lóng/cây tính theo Vanh x Vanh x Dài x 0.000008">
+                                        🪵 Gỗ tròn (Vanh × Vanh × Dài)
+                                    </button>
+                                    <button type="button" id="btnLoaiGoHop" class="btn-wood-type" onclick="setLoaiGoMuaVao('go_hop')" title="Gỗ hộp thô tính theo Dày x Rộng x Dài">
+                                        📦 Gỗ hộp (Dày × Rộng × Dài)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- CỤM Ô NHẬP GỖ TRÒN -->
+                            <div id="cumGoTronInputs" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;">
+                                <div>
+                                    <label style="font-size: 11.5px; color: #475569; font-weight: 600;">Dài L (m):</label>
+                                    <input id="go_tron_dai" type="text" placeholder="VD: 2.76" oninput="calculateInputWoodVolume()" style="padding: 6px 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11.5px; color: #475569; font-weight: 600;">Vanh V (cm):</label>
+                                    <input id="go_tron_vanh" type="text" placeholder="VD: 223" oninput="calculateInputWoodVolume()" style="padding: 6px 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div style="grid-column: span 2;">
+                                    <label style="font-size: 11.5px; color: #475569; font-weight: 600;">🪵 Quy cách ghi gốc:</label>
+                                    <input id="kich_thuoc_go_tron" type="text" placeholder="VD: 2,76-V223 đoTT 2,77-V226" style="padding: 6px 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <!-- CỤM Ô NHẬP GỖ HỘP -->
+                            <div id="cumGoHopInputs" style="display: none; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px;">
+                                <div>
+                                    <label style="font-size: 11.5px; color: #475569; font-weight: 600;">Dày D (cm):</label>
+                                    <input id="go_hop_day" type="text" placeholder="VD: 25" oninput="calculateInputWoodVolume()" style="padding: 6px 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11.5px; color: #475569; font-weight: 600;">Rộng R (cm):</label>
+                                    <input id="go_hop_rong" type="text" placeholder="VD: 40" oninput="calculateInputWoodVolume()" style="padding: 6px 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11.5px; color: #475569; font-weight: 600;">Dài L (m):</label>
+                                    <input id="go_hop_dai" type="text" placeholder="VD: 3.5" oninput="calculateInputWoodVolume()" style="padding: 6px 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 11.5px; color: #475569; font-weight: 600;">Số lượng hộp:</label>
+                                    <input id="go_hop_sl" type="number" min="1" value="1" placeholder="SL" oninput="calculateInputWoodVolume()" style="padding: 6px 8px; font-size: 13px; border: 1px solid #94a3b8; border-radius: 6px; width: 100%; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <!-- Gợi ý công thức & Kết quả tính tức thì -->
+                            <div id="woodFormulaHelper" style="margin-top: 8px; font-size: 12px; color: #0369a1; background: #e0f2fe; padding: 6px 12px; border-radius: 6px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                                <span id="woodFormulaText">Công thức: Vanh (cm) × Vanh (cm) × Dài (m) × 0.000008</span>
+                                <span id="woodFormulaCalcResult" style="font-family: monospace; color: #0c4a6e; background: #bae6fd; padding: 2px 8px; border-radius: 4px;">= 0.000 m³</span>
+                            </div>
                         </div>
+
                         <div class="field">
-                            <label>⚖️ Khối lượng gỗ</label>
-                            <input id="khoi_luong_go_tron" type="text" placeholder="Ví dụ: 2.860 m3">
+                            <label>⚖️ Khối lượng gỗ mua vào</label>
+                            <input id="khoi_luong_go_tron" type="text" placeholder="Ví dụ: 2.860 m3" oninput="updateYieldCard()">
                         </div>
                         <div class="field">
                             <label>📦 Tổng KL thành khí</label>
-                            <input id="tong_khoi_luong_thanh_khi" type="text" placeholder="Ví dụ: 0.546 m3" title="Tổng kết khối lượng xẻ cuối ngày ghi trên phiếu để đối chiếu với tổng bảng">
+                            <input id="tong_khoi_luong_thanh_khi" type="text" placeholder="Ví dụ: 0.546 m3" title="Tổng kết khối lượng xẻ cuối ngày ghi trên phiếu để đối chiếu với tổng bảng" oninput="updateYieldCard()">
                         </div>
-                        <div class="field full">
+                        <div class="field">
                             <label>📐 Kích thước xẻ</label>
                             <input id="kich_thuoc_xe" type="text" placeholder="Ví dụ: 2,85 còn 3,9">
                         </div>
-                        <div class="field full">
+                        <div class="field">
                             <label>💰 Đơn giá gỗ trên m3</label>
                             <input id="don_gia" type="text" placeholder="Ví dụ: 16.100.000">
+                        </div>
+
+                        <!-- THẺ ĐỐI SOÁT TỶ LỆ THU HỒI & HAO HỤT THÀNH PHẨM -->
+                        <div class="field full" id="woodYieldCard" style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px 14px; margin-top: 4px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span style="font-size: 20px;">📊</span>
+                                <div>
+                                    <div style="font-size: 12.5px; font-weight: 700; color: #1e293b;">ĐỐI SOÁT THU HỒI & HAO HỤT:</div>
+                                    <div id="yieldComparisonText" style="font-size: 12px; color: #475569; margin-top: 2px;">
+                                        Mua vào: <strong id="yieldInputM3" style="color: #0284c7;">0.000 m³</strong> ➔ Thành phẩm: <strong id="yieldOutputM3" style="color: #10b981;">0.000 m³</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="text-align: right;">
+                                    <div style="font-size: 11px; color: #64748b;">Hao hụt (mùn/bìa):</div>
+                                    <div id="yieldLossM3" style="font-size: 12.5px; font-weight: 700; color: #e11d48;">0.000 m³ (0%)</div>
+                                </div>
+                                <div id="yieldRateBadge" style="background: #dcfce7; color: #15803d; border: 1px solid #86efac; padding: 6px 12px; border-radius: 8px; font-size: 13px; font-weight: 800; text-align: center;">
+                                    Thu hồi: 0%
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -2339,7 +2571,209 @@
         </div>
     </div>
 
+    <!-- SheetJS (XLSX) library for client-side Excel reading -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <script>
+        // ============================================================
+        // 1. XÁC THỰC & QUẢN LÝ PHIÊN ĐĂNG NHẬP (24 GIỜ)
+        // ============================================================
+        let currentUser = null;
+
+        async function checkAuthStatus() {
+            try {
+                const res = await fetch("/api/auth/me");
+                if (res.status === 401) {
+                    showLoginModal("Phiên làm việc đã hết hạn. Vui lòng đăng nhập lại.");
+                    return false;
+                }
+                const data = await res.json();
+                if (data.authenticated && data.user) {
+                    currentUser = data.user;
+                    updateUserHeaderUI();
+                    hideLoginModal();
+                    return true;
+                } else {
+                    showLoginModal();
+                    return false;
+                }
+            } catch (err) {
+                console.warn("Lỗi kiểm tra phiên đăng nhập:", err);
+                showLoginModal();
+                return false;
+            }
+        }
+
+        function updateUserHeaderUI() {
+            const el = document.getElementById("headerUsername");
+            if (el && currentUser) {
+                el.textContent = `👤 ${currentUser.full_name || currentUser.username}`;
+            }
+        }
+
+        function showLoginModal(errorMsg = null) {
+            const modal = document.getElementById("loginModal");
+            if (modal) modal.style.display = "flex";
+            const errBox = document.getElementById("loginErrorMessage");
+            if (errBox) {
+                if (errorMsg) {
+                    errBox.textContent = errorMsg;
+                    errBox.style.display = "block";
+                } else {
+                    errBox.style.display = "none";
+                }
+            }
+        }
+
+        function hideLoginModal() {
+            const modal = document.getElementById("loginModal");
+            if (modal) modal.style.display = "none";
+            const errBox = document.getElementById("loginErrorMessage");
+            if (errBox) errBox.style.display = "none";
+        }
+
+        async function handleLoginSubmit(event) {
+            event.preventDefault();
+            const uInput = document.getElementById("loginUsername");
+            const pInput = document.getElementById("loginPassword");
+            const btn = document.getElementById("btnLoginSubmit");
+            const errBox = document.getElementById("loginErrorMessage");
+
+            const username = uInput ? uInput.value.trim() : "";
+            const password = pInput ? pInput.value.trim() : "";
+
+            if (!username || !password) {
+                if (errBox) {
+                    errBox.textContent = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.";
+                    errBox.style.display = "block";
+                }
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "⏳ Đang xác thực...";
+            }
+            if (errBox) errBox.style.display = "none";
+
+            try {
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+                if (!res.ok || data.status !== "success") {
+                    throw new Error(data.error || "Tên đăng nhập hoặc mật khẩu không đúng.");
+                }
+
+                currentUser = data.user;
+                updateUserHeaderUI();
+                hideLoginModal();
+                if (pInput) pInput.value = "";
+
+                // Tải dữ liệu ban đầu
+                if (typeof loadHistoryDocuments === "function") loadHistoryDocuments();
+                if (typeof checkR2Status === "function") checkR2Status();
+                if (typeof loadAbbreviations === "function") loadAbbreviations();
+
+                setStatus("✅ Đăng nhập thành công!", "success");
+            } catch (err) {
+                if (errBox) {
+                    errBox.textContent = err.message;
+                    errBox.style.display = "block";
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = "🚀 Đăng nhập ngay";
+                }
+            }
+        }
+
+        async function handleLogout() {
+            if (!confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) return;
+            try {
+                await fetch("/api/auth/logout", { method: "POST" });
+            } catch (e) {
+                console.warn(e);
+            }
+            currentUser = null;
+            showLoginModal("Đã đăng xuất thành công.");
+            setStatus("● Đã đăng xuất");
+        }
+
+        function openChangePasswordModal() {
+            const modal = document.getElementById("changePasswordModal");
+            if (modal) modal.style.display = "flex";
+            const msg = document.getElementById("changePasswordMsg");
+            if (msg) msg.style.display = "none";
+            document.getElementById("changePasswordForm")?.reset();
+        }
+
+        function closeChangePasswordModal() {
+            const modal = document.getElementById("changePasswordModal");
+            if (modal) modal.style.display = "none";
+        }
+
+        async function handleChangePasswordSubmit(event) {
+            event.preventDefault();
+            const curPass = document.getElementById("cpCurrentPass")?.value || "";
+            const newPass = document.getElementById("cpNewPass")?.value || "";
+            const confirmPass = document.getElementById("cpConfirmPass")?.value || "";
+            const msgBox = document.getElementById("changePasswordMsg");
+            const btn = document.getElementById("btnSubmitCP");
+
+            if (newPass !== confirmPass) {
+                if (msgBox) {
+                    msgBox.style.display = "block";
+                    msgBox.style.background = "#fee2e2";
+                    msgBox.style.color = "#991b1b";
+                    msgBox.textContent = "Mật khẩu mới và xác nhận mật khẩu không khớp nhau!";
+                }
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = "⏳ Đang lưu...";
+            }
+
+            try {
+                const res = await fetch("/api/auth/change-password", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ current_password: curPass, new_password: newPass })
+                });
+
+                const data = await res.json();
+                if (!res.ok || data.status !== "success") {
+                    throw new Error(data.error || "Không thể đổi mật khẩu.");
+                }
+
+                alert("✓ Đổi mật khẩu thành công!");
+                closeChangePasswordModal();
+            } catch (err) {
+                if (msgBox) {
+                    msgBox.style.display = "block";
+                    msgBox.style.background = "#fee2e2";
+                    msgBox.style.color = "#991b1b";
+                    msgBox.textContent = err.message;
+                }
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = "💾 Lưu mật khẩu mới";
+                }
+            }
+        }
+
+        // Kiểm tra phiên đăng nhập ngay khi mở ứng dụng
+        window.addEventListener("DOMContentLoaded", () => {
+            checkAuthStatus();
+        });
+
         let currentJsonFile = null;
         let currentData = null;
         let currentImageUrl = "";
@@ -2371,6 +2805,7 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+
         function setStatus(text, type = "") {
             const el = document.getElementById("status");
             if (!el) return;
@@ -2849,6 +3284,374 @@
             }
         }
 
+        // ============================================================
+        // 2. LOGIC NGÀY XẺ ĐA NGÀY (MULTI-DATE SAWING)
+        // ============================================================
+
+        function parseMultiDateString(str) {
+            if (!str || typeof str !== "string") return ["", ""];
+            const trimmed = str.trim();
+            if (!trimmed) return ["", ""];
+
+            // 1. Dạng ngày kép: "11&16/08/2026", "11 & 16/08/2026", "11,16/08/2026", "11-16/08/2026"
+            const matchDaySplit = trimmed.match(/^(\d{1,2})\s*([&,và\-\+])\s*(\d{1,2})\s*[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})$/i);
+            if (matchDaySplit) {
+                const d1 = matchDaySplit[1].padStart(2, "0");
+                const d2 = matchDaySplit[3].padStart(2, "0");
+                const m = matchDaySplit[4].padStart(2, "0");
+                let y = matchDaySplit[5];
+                if (y.length === 2) y = "20" + y;
+                return [`${d1}/${m}/${y}`, `${d2}/${m}/${y}`];
+            }
+
+            // 2. Dạng phân tách: "11/08/2026 & 16/08/2026" hoặc "18/09/2026 - 23/09/2026"
+            if (trimmed.includes("&") || trimmed.includes(" - ") || trimmed.includes(",") || trimmed.includes(";")) {
+                const parts = trimmed.split(/[&,;\-]+|\s+và\s+/i).map(s => s.trim()).filter(Boolean);
+                if (parts.length > 1) {
+                    return parts;
+                }
+            }
+
+            return [trimmed, ""];
+        }
+
+        function getActiveNgayXeList() {
+            const inputs = document.querySelectorAll(".ngay-xe-part");
+            const list = [];
+            inputs.forEach(inp => {
+                const v = inp.value.trim();
+                if (v && !list.includes(v)) list.push(v);
+            });
+            return list;
+        }
+
+        function renderNgayXeInputs(dateList = []) {
+            const container = document.getElementById("ngayXeInputsContainer");
+            if (!container) return;
+            container.innerHTML = "";
+
+            let list = Array.isArray(dateList) ? dateList.filter(Boolean) : [];
+            if (list.length === 0) list = ["", ""];
+            else if (list.length === 1) list.push("");
+
+            list.forEach((val, idx) => {
+                const row = document.createElement("div");
+                row.style.display = "flex";
+                row.style.alignItems = "center";
+                row.style.gap = "4px";
+
+                const input = document.createElement("input");
+                input.type = "text";
+                input.className = "ngay-xe-part";
+                input.value = val;
+                input.placeholder = `Ngày xẻ đợt ${idx + 1} (VD: ${idx === 0 ? "11/08/2026" : "16/08/2026"})`;
+                input.style.flex = "1";
+                input.oninput = () => onNgayXeInputChange(true);
+
+                row.appendChild(input);
+
+                if (list.length > 2) {
+                    const delBtn = document.createElement("button");
+                    delBtn.type = "button";
+                    delBtn.className = "mini-btn";
+                    delBtn.style.padding = "2px 6px";
+                    delBtn.style.color = "#ef4444";
+                    delBtn.style.borderColor = "#fca5a5";
+                    delBtn.innerHTML = "×";
+                    delBtn.title = "Xóa ngày này";
+                    delBtn.onclick = () => {
+                        row.remove();
+                        onNgayXeInputChange(true);
+                    };
+                    row.appendChild(delBtn);
+                }
+
+                container.appendChild(row);
+            });
+
+            onNgayXeInputChange(false);
+        }
+
+        function addNgayXeInput(defaultVal = "") {
+            const container = document.getElementById("ngayXeInputsContainer");
+            if (!container) return;
+            const currentCount = container.querySelectorAll(".ngay-xe-part").length;
+
+            const row = document.createElement("div");
+            row.style.display = "flex";
+            row.style.alignItems = "center";
+            row.style.gap = "4px";
+
+            const input = document.createElement("input");
+            input.type = "text";
+            input.className = "ngay-xe-part";
+            input.value = defaultVal;
+            input.placeholder = `Ngày xẻ đợt ${currentCount + 1}`;
+            input.style.flex = "1";
+            input.oninput = () => onNgayXeInputChange(true);
+
+            const delBtn = document.createElement("button");
+            delBtn.type = "button";
+            delBtn.className = "mini-btn";
+            delBtn.style.padding = "2px 6px";
+            delBtn.style.color = "#ef4444";
+            delBtn.style.borderColor = "#fca5a5";
+            delBtn.innerHTML = "×";
+            delBtn.title = "Xóa ngày này";
+            delBtn.onclick = () => {
+                row.remove();
+                onNgayXeInputChange(true);
+            };
+
+            row.appendChild(input);
+            row.appendChild(delBtn);
+            container.appendChild(row);
+            input.focus();
+        }
+
+        function onNgayXeInputChange(updateTable = true) {
+            const dates = getActiveNgayXeList();
+            const hiddenInput = document.getElementById("ngay_xe");
+            const previewEl = document.getElementById("ngayXePreview");
+
+            let combinedStr = "";
+            if (dates.length === 1) {
+                combinedStr = dates[0];
+            } else if (dates.length > 1) {
+                combinedStr = dates.join(" & ");
+            }
+
+            if (hiddenInput) hiddenInput.value = combinedStr;
+
+            if (previewEl) {
+                if (dates.length > 1) {
+                    previewEl.style.display = "block";
+                    previewEl.innerHTML = `📅 Chuỗi: <strong>${escapeHtml(combinedStr)}</strong>`;
+                } else {
+                    previewEl.style.display = "none";
+                }
+            }
+
+            if (currentData && currentData.header) {
+                currentData.header.ngay_xe = combinedStr;
+                currentData.header.ngay_xe_list = dates;
+            }
+
+            if (updateTable) {
+                updateTableDateQuickPills();
+                updateJSONFromForm();
+            }
+        }
+
+        function applyDateToRow(rowIndex, dateVal) {
+            if (!currentData || !currentData.items || !currentData.items[rowIndex]) return;
+            currentData.items[rowIndex].ngay = dateVal;
+
+            const tbody = document.getElementById("itemsTable");
+            if (tbody) {
+                const row = tbody.querySelectorAll("tr")[rowIndex];
+                if (row) {
+                    const input = row.querySelector('input[data-field="ngay"]');
+                    if (input) {
+                        input.value = dateVal;
+                        input.title = dateVal;
+                        showCellTooltip(input);
+                    }
+                }
+            }
+            updateJSONFromForm();
+        }
+
+        function applyDateFillDown(fromIndex) {
+            if (!currentData || !currentData.items) return;
+            const fromItem = currentData.items[fromIndex];
+            const targetDate = fromItem ? (fromItem.ngay || "") : "";
+            if (!targetDate) {
+                alert("Hãy chọn hoặc nhập ngày cho dòng này trước khi áp dụng xuống các dòng dưới.");
+                return;
+            }
+            const count = currentData.items.length;
+
+            for (let i = fromIndex + 1; i < count; i++) {
+                currentData.items[i].ngay = targetDate;
+            }
+
+            const tbody = document.getElementById("itemsTable");
+            if (tbody) {
+                const rows = tbody.querySelectorAll("tr");
+                for (let i = fromIndex + 1; i < rows.length; i++) {
+                    const input = rows[i].querySelector('input[data-field="ngay"]');
+                    if (input) {
+                        input.value = targetDate;
+                        input.title = targetDate;
+                    }
+                }
+            }
+            updateJSONFromForm();
+            setStatus(`✓ Đã áp dụng ngày "${targetDate}" cho các dòng từ ${fromIndex + 1} đến ${count}`, "success");
+        }
+
+        function updateTableDateQuickPills() {
+            const activeDates = getActiveNgayXeList();
+            const tbody = document.getElementById("itemsTable");
+            if (!tbody) return;
+            const rows = tbody.querySelectorAll("tr");
+
+            rows.forEach((tr, index) => {
+                const pillsContainer = tr.querySelector(".row-date-pills");
+                if (pillsContainer) {
+                    pillsContainer.innerHTML = `
+                        ${activeDates.map(d => {
+                            const shortD = d.split("/").slice(0, 2).join("/");
+                            return `<button type="button" class="date-chip-btn" onclick="applyDateToRow(${index}, '${escapeHtml(d)}')" title="Điền ngày ${escapeHtml(d)}">${escapeHtml(shortD || d)}</button>`;
+                        }).join("")}
+                        ${activeDates.length > 0 ? `<button type="button" class="date-chip-btn fill-down-btn" onclick="applyDateFillDown(${index})" title="Áp dụng ngày này cho tất cả dòng từ đây trở xuống">⬇️</button>` : ''}
+                    `;
+                }
+            });
+        }
+
+        // ============================================================
+        // NGHIỆP VỤ CHUYỂN ĐỔI & THEO DÕI GỖ TRÒN VS GỖ HỘP
+        // ============================================================
+        function setLoaiGoMuaVao(type, triggerCalc = true) {
+            const hiddenInput = document.getElementById("loai_go_mua_vao");
+            const btnTron = document.getElementById("btnLoaiGoTron");
+            const btnHop = document.getElementById("btnLoaiGoHop");
+            const cumTron = document.getElementById("cumGoTronInputs");
+            const cumHop = document.getElementById("cumGoHopInputs");
+            const formulaText = document.getElementById("woodFormulaText");
+
+            if (hiddenInput) hiddenInput.value = type;
+
+            if (type === "go_hop") {
+                if (btnTron) btnTron.className = "btn-wood-type";
+                if (btnHop) btnHop.className = "btn-wood-type active";
+                if (cumTron) cumTron.style.display = "none";
+                if (cumHop) cumHop.style.display = "grid";
+                if (formulaText) formulaText.textContent = "Công thức: (Dày × Rộng × Dài × SL) / 10.000";
+            } else {
+                if (btnTron) btnTron.className = "btn-wood-type active";
+                if (btnHop) btnHop.className = "btn-wood-type";
+                if (cumTron) cumTron.style.display = "grid";
+                if (cumHop) cumHop.style.display = "none";
+                if (formulaText) formulaText.textContent = "Công thức: Vanh (cm) × Vanh (cm) × Dài (m) × 0.000008";
+            }
+
+            if (triggerCalc) {
+                calculateInputWoodVolume();
+            }
+        }
+
+        function calculateInputWoodVolume() {
+            const type = (document.getElementById("loai_go_mua_vao")?.value || "go_tron").toLowerCase();
+            const formulaResultEl = document.getElementById("woodFormulaCalcResult");
+            const khoiLuongInput = document.getElementById("khoi_luong_go_tron");
+            const quyCachInput = document.getElementById("kich_thuoc_go_tron");
+
+            let calculatedM3 = null;
+
+            if (type === "go_hop") {
+                const day = parseFloat((document.getElementById("go_hop_day")?.value || "").replace(",", "."));
+                const rong = parseFloat((document.getElementById("go_hop_rong")?.value || "").replace(",", "."));
+                const dai = parseFloat((document.getElementById("go_hop_dai")?.value || "").replace(",", "."));
+                const sl = parseFloat((document.getElementById("go_hop_sl")?.value || "1").replace(",", ".")) || 1;
+
+                if (!isNaN(day) && !isNaN(rong) && !isNaN(dai) && day > 0 && rong > 0 && dai > 0) {
+                    calculatedM3 = (day * rong * dai * sl) / 10000;
+                    if (quyCachInput && !quyCachInput.value) {
+                        quyCachInput.value = `${day}x${rong}x${dai * 100}${sl > 1 ? ' (' + sl + 'c)' : ''}`;
+                    }
+                }
+            } else {
+                const dai = parseFloat((document.getElementById("go_tron_dai")?.value || "").replace(",", "."));
+                const vanh = parseFloat((document.getElementById("go_tron_vanh")?.value || "").replace(",", "."));
+
+                if (!isNaN(dai) && !isNaN(vanh) && dai > 0 && vanh > 0) {
+                    calculatedM3 = vanh * vanh * dai * 0.000008;
+                    if (quyCachInput && !quyCachInput.value) {
+                        quyCachInput.value = `${dai}-V${vanh}`;
+                    }
+                }
+            }
+
+            if (calculatedM3 != null && !isNaN(calculatedM3)) {
+                const formattedM3 = Math.round(calculatedM3 * 1000) / 1000;
+                if (formulaResultEl) formulaResultEl.textContent = `= ${formattedM3.toFixed(3)} m³`;
+                if (khoiLuongInput) khoiLuongInput.value = `${formattedM3.toFixed(3)} m3`;
+            } else {
+                if (formulaResultEl) formulaResultEl.textContent = `= 0.000 m³`;
+            }
+
+            updateYieldCard();
+            updateJSONFromForm();
+        }
+
+        function updateYieldCard() {
+            const inputKlRaw = document.getElementById("khoi_luong_go_tron")?.value || "";
+            const outputKlRaw = document.getElementById("tong_khoi_luong_thanh_khi")?.value || "";
+
+            const inputM3 = parseNumHelper(inputKlRaw);
+            const outputM3 = parseNumHelper(outputKlRaw);
+
+            const inputEl = document.getElementById("yieldInputM3");
+            const outputEl = document.getElementById("yieldOutputM3");
+            const lossEl = document.getElementById("yieldLossM3");
+            const badgeEl = document.getElementById("yieldRateBadge");
+            const type = (document.getElementById("loai_go_mua_vao")?.value || "go_tron").toLowerCase();
+
+            if (inputEl) inputEl.textContent = `${inputM3.toFixed(3)} m³`;
+            if (outputEl) outputEl.textContent = `${outputM3.toFixed(3)} m³`;
+
+            if (inputM3 > 0) {
+                const yieldRate = (outputM3 / inputM3) * 100;
+                const lossM3 = Math.max(0, inputM3 - outputM3);
+                const lossRate = (lossM3 / inputM3) * 100;
+
+                if (lossEl) {
+                    lossEl.textContent = `${lossM3.toFixed(3)} m³ (${lossRate.toFixed(1)}%)`;
+                }
+
+                if (badgeEl) {
+                    badgeEl.textContent = `Thu hồi: ${yieldRate.toFixed(1)}%`;
+
+                    if (type === "go_hop") {
+                        if (yieldRate >= 75 && yieldRate <= 98) {
+                            badgeEl.style.background = "#dcfce7";
+                            badgeEl.style.color = "#15803d";
+                            badgeEl.style.borderColor = "#86efac";
+                        } else {
+                            badgeEl.style.background = "#fef3c7";
+                            badgeEl.style.color = "#b45309";
+                            badgeEl.style.borderColor = "#fde68a";
+                        }
+                    } else {
+                        if (yieldRate >= 50 && yieldRate <= 75) {
+                            badgeEl.style.background = "#dcfce7";
+                            badgeEl.style.color = "#15803d";
+                            badgeEl.style.borderColor = "#86efac";
+                        } else if (yieldRate > 75) {
+                            badgeEl.style.background = "#eff6ff";
+                            badgeEl.style.color = "#1d4ed8";
+                            badgeEl.style.borderColor = "#bfdbfe";
+                        } else {
+                            badgeEl.style.background = "#fee2e2";
+                            badgeEl.style.color = "#b91c1c";
+                            badgeEl.style.borderColor = "#fca5a5";
+                        }
+                    }
+                }
+            } else {
+                if (lossEl) lossEl.textContent = `0.000 m³ (0%)`;
+                if (badgeEl) {
+                    badgeEl.textContent = `Thu hồi: 0%`;
+                    badgeEl.style.background = "#f1f5f9";
+                    badgeEl.style.color = "#64748b";
+                    badgeEl.style.borderColor = "#cbd5e1";
+                }
+            }
+        }
+
         async function loadJSON(filename) {
             const response = await fetch("/api/json/" + encodeURIComponent(filename));
             if (!response.ok) throw new Error("Không đọc được JSON");
@@ -2866,7 +3669,62 @@
             }
             const header = currentData.header || {};
             document.getElementById("so_xe").value = header.so_xe || "";
-            document.getElementById("ngay_xe").value = header.ngay_xe || "";
+            
+            // Xử lý nạp các ngày xẻ vào Header
+            const parsedDates = Array.isArray(header.ngay_xe_list) && header.ngay_xe_list.length > 0
+                ? header.ngay_xe_list
+                : parseMultiDateString(header.ngay_xe || "");
+            renderNgayXeInputs(parsedDates);
+
+            // Xác định loại gỗ mua vào và điền thông số
+            let loaiGo = header.loai_go_mua_vao || "go_tron";
+            const ktRaw = String(header.kich_thuoc_go_tron || "").trim();
+
+            if (!header.loai_go_mua_vao && ktRaw) {
+                if (/[xX*×]/.test(ktRaw) && !/V\s*\d+/i.test(ktRaw)) {
+                    loaiGo = "go_hop";
+                }
+            }
+
+            setLoaiGoMuaVao(loaiGo, false);
+
+            if (loaiGo === "go_hop") {
+                const dayEl = document.getElementById("go_hop_day");
+                const rongEl = document.getElementById("go_hop_rong");
+                const daiEl = document.getElementById("go_hop_dai");
+                const slEl = document.getElementById("go_hop_sl");
+
+                if (dayEl) dayEl.value = header.kt_mua_vao_day || "";
+                if (rongEl) rongEl.value = header.kt_mua_vao_rong || "";
+                if (daiEl) daiEl.value = header.kt_mua_vao_dai || "";
+                if (slEl) slEl.value = header.kt_mua_vao_sl || "1";
+
+                if (dayEl && (!dayEl.value && !rongEl.value) && ktRaw) {
+                    const dims = ktRaw.match(/\d+(?:[.,]\d+)?/g);
+                    if (dims && dims.length >= 3) {
+                        dayEl.value = dims[0];
+                        rongEl.value = dims[1];
+                        let dVal = parseFloat(dims[2].replace(",", "."));
+                        if (dVal > 50) dVal = dVal / 100;
+                        daiEl.value = String(dVal);
+                        if (dims.length >= 4) slEl.value = dims[3];
+                    }
+                }
+            } else {
+                const daiEl = document.getElementById("go_tron_dai");
+                const vanhEl = document.getElementById("go_tron_vanh");
+
+                if (daiEl) daiEl.value = header.kt_mua_vao_dai || "";
+                if (vanhEl) vanhEl.value = header.kt_mua_vao_vanh || "";
+
+                if ((!daiEl?.value || !vanhEl?.value) && ktRaw) {
+                    const vMatch = ktRaw.match(/V\s*(\d+)/i);
+                    const dMatch = ktRaw.match(/(\d+[.,]?\d*)/);
+                    if (vMatch && vanhEl && !vanhEl.value) vanhEl.value = vMatch[1];
+                    if (dMatch && daiEl && !daiEl.value) daiEl.value = dMatch[1];
+                }
+            }
+
             const ngayNhapEl = document.getElementById("ngay_nhap"); if (ngayNhapEl) ngayNhapEl.value = header.ngay_nhap || "";
             document.getElementById("kich_thuoc_go_tron").value = header.kich_thuoc_go_tron || "";
             document.getElementById("khoi_luong_go_tron").value = header.khoi_luong_go_tron || "";
@@ -2886,14 +3744,30 @@
             const tongThanhKhiEl = document.getElementById("tong_khoi_luong_thanh_khi");
             if (tongThanhKhiEl) tongThanhKhiEl.value = displayedTotal;
 
-                        const tbody = document.getElementById("itemsTable");
+            // Cập nhật thẻ đối soát tỷ lệ thu hồi
+            updateYieldCard();
+
+            const tbody = document.getElementById("itemsTable");
             tbody.innerHTML = "";
             const items = currentData.items || [];
+            const activeDates = getActiveNgayXeList();
+
             items.forEach((item, index) => {
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
             <td>${item.dong ?? index + 1}</td>
-            <td><input data-field="ngay" title="${escapeHtml(item.ngay || "")}" value="${escapeHtml(item.ngay || "")}"></td>
+            <td>
+                <div style="display: flex; flex-direction: column; gap: 4px;">
+                    <input data-field="ngay" title="${escapeHtml(item.ngay || "")}" value="${escapeHtml(item.ngay || "")}" style="min-width: 85px;">
+                    <div class="row-date-pills" style="display: flex; gap: 3px; flex-wrap: wrap;">
+                        ${activeDates.map(d => {
+                            const shortD = d.split("/").slice(0, 2).join("/");
+                            return `<button type="button" class="date-chip-btn" onclick="applyDateToRow(${index}, '${escapeHtml(d)}')" title="Điền ngày ${escapeHtml(d)}">${escapeHtml(shortD || d)}</button>`;
+                        }).join("")}
+                        ${activeDates.length > 0 ? `<button type="button" class="date-chip-btn fill-down-btn" onclick="applyDateFillDown(${index})" title="Áp dụng ngày này cho tất cả dòng từ đây trở xuống">⬇️</button>` : ''}
+                    </div>
+                </div>
+            </td>
             <td><input data-field="kich_thuoc_so_luong" title="${escapeHtml(item.kich_thuoc_so_luong || "")}" value="${escapeHtml(item.kich_thuoc_so_luong || "")}"></td>
             <td><input data-field="khoi_luong" title="${escapeHtml(item.khoi_luong || "")}" value="${escapeHtml(item.khoi_luong || "")}"></td>
             <td><input data-field="cong_trinh" title="${escapeHtml(item.cong_trinh || "")}" value="${escapeHtml(item.cong_trinh || "")}"></td>
@@ -3044,7 +3918,9 @@
             }
             if (!currentData.items) currentData.items = [];
             const newDong = currentData.items.length + 1;
-            const defaultNgay = currentData.header?.ngay_xe || currentData.header?.ngay_nhap || "";
+            const lastItem = currentData.items.length > 0 ? currentData.items[currentData.items.length - 1] : null;
+            const activeDates = getActiveNgayXeList();
+            const defaultNgay = (lastItem && lastItem.ngay) ? lastItem.ngay : (activeDates[0] || currentData.header?.ngay_xe || "");
             currentData.items.push({
                 dong: newDong,
                 ngay: defaultNgay,
@@ -3164,19 +4040,30 @@
                 document.getElementById("so_xe").value;
 
             currentData.header.ngay_xe = document.getElementById("ngay_xe").value;
+            currentData.header.ngay_xe_list = getActiveNgayXeList();
             const ngayNhapEl2 = document.getElementById("ngay_nhap"); if (ngayNhapEl2) currentData.header.ngay_nhap = ngayNhapEl2.value;
 
+            currentData.header.loai_go_mua_vao = document.getElementById("loai_go_mua_vao")?.value || "go_tron";
             currentData.header.kich_thuoc_go_tron =
                 document.getElementById("kich_thuoc_go_tron").value;
 
             currentData.header.khoi_luong_go_tron =
                 document.getElementById("khoi_luong_go_tron").value;
 
+            currentData.header.kt_mua_vao_dai = document.getElementById("go_tron_dai")?.value || document.getElementById("go_hop_dai")?.value || "";
+            currentData.header.kt_mua_vao_vanh = document.getElementById("go_tron_vanh")?.value || "";
+            currentData.header.kt_mua_vao_day = document.getElementById("go_hop_day")?.value || "";
+            currentData.header.kt_mua_vao_rong = document.getElementById("go_hop_rong")?.value || "";
+            currentData.header.kt_mua_vao_sl = document.getElementById("go_hop_sl")?.value || "";
+
             currentData.header.kich_thuoc_xe = document.getElementById("kich_thuoc_xe").value;
             const donGiaElForm = document.getElementById("don_gia");
             if (donGiaElForm) currentData.header.don_gia = donGiaElForm.value;
             const tongThanhKhiElForm = document.getElementById("tong_khoi_luong_thanh_khi");
             if (tongThanhKhiElForm) currentData.header.tong_khoi_luong_thanh_khi = tongThanhKhiElForm.value;
+
+            // Cập nhật thẻ đối soát tỷ lệ thu hồi
+            updateYieldCard();
 
             // Cập nhật JSON viewer
             document.getElementById("jsonViewer").value =
@@ -3335,7 +4222,7 @@
             setStatus(`● Đã chọn ${this.files.length} ảnh`);
         });
 
-        ["so_xe", "ngay_xe", "ngay_nhap", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe", "don_gia", "tong_khoi_luong_thanh_khi"].forEach(id => {
+        ["so_xe", "ngay_xe", "ngay_nhap", "kich_thuoc_go_tron", "khoi_luong_go_tron", "kich_thuoc_xe", "don_gia", "tong_khoi_luong_thanh_khi", "go_tron_dai", "go_tron_vanh", "go_hop_day", "go_hop_rong", "go_hop_dai", "go_hop_sl"].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.addEventListener("input", updateJSONFromForm);
         });
@@ -4826,7 +5713,7 @@
                 let actionBtns = '';
                 if (f.file_type === 'excel') {
                     actionBtns = `
-                        <button type="button" class="btn-action-sm" onclick="openExcelPreviewModal('${escapeHtml(f.public_url)}')" style="background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; margin-right: 4px;" title="Xem trước file Excel trực tiếp trên trình duyệt">
+                        <button type="button" class="btn-action-sm" onclick="openExcelPreviewModal('${escapeHtml(f.public_url)}', '${escapeHtml(f.name)}')" style="background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; margin-right: 4px;" title="Xem trước file Excel trực tiếp trên trình duyệt">
                             <span>👁️ Xem trước</span>
                         </button>
                         <a class="btn-action-sm" href="${escapeHtml(f.public_url)}" target="_blank" download style="background: #ecfdf5; color: #047857; border-color: #a7f3d0;" title="Tải trực tiếp file Excel từ Cloudflare R2">
@@ -5139,13 +6026,9 @@
                 const bName = document.getElementById("r2BucketName");
                 if (bName) bName.textContent = data.bucket || data.bucket_name || "ocr-vn01";
 
-                const pubUrl = document.getElementById("r2PublicUrlDisplay");
-                if (pubUrl) {
-                    if (data.public_url) {
-                        pubUrl.innerHTML = `<a href="${escapeHtml(data.public_url)}" target="_blank" style="color:#0284c7; text-decoration: underline;">${escapeHtml(data.public_url)}</a>`;
-                    } else {
-                        pubUrl.textContent = "Chưa cấu hình (đang dùng S3 Direct)";
-                    }
+                const secDisplay = document.getElementById("r2SecurityModeDisplay");
+                if (secDisplay) {
+                    secDisplay.innerHTML = `<span style="color: #059669; font-weight: 700;">🔒 ${escapeHtml(data.security_mode || "100% Private (Đã bật Auth)")}</span>`;
                 }
 
                 const msgBox = document.getElementById("r2StatusMessage");
@@ -5275,17 +6158,280 @@
             loadR2FilesHistoryTab();
         });
     
-        function openExcelPreviewModal(url) {
-            const previewUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}`;
-            document.getElementById("excelPreviewIframe").src = previewUrl;
-            document.getElementById("excelPreviewModal").style.display = "flex";
+        // ============================================================
+        // TRÌNH XEM TRƯỚC EXCEL CLIENT-SIDE (SHEETJS IN-BROWSER)
+        // ============================================================
+        let currentWorkbook = null;
+        let currentWorkbookRawData = {};
+        let currentActiveSheetName = null;
+        let currentExcelFileUrl = null;
+        let currentExcelFileName = null;
+
+        async function openExcelPreviewModal(fileUrlOrKey, fileName) {
+            const modal = document.getElementById("excelPreviewModal");
+            const loading = document.getElementById("excelPreviewLoading");
+            const errorBox = document.getElementById("excelPreviewError");
+            const tableContainer = document.getElementById("excelTableContainer");
+            const titleEl = document.getElementById("excelPreviewFileName");
+
+            if (!fileName) {
+                fileName = fileUrlOrKey.split("/").pop() || "Bảng tính Excel";
+            }
+
+            currentExcelFileName = fileName;
+            if (titleEl) titleEl.textContent = fileName;
+            
+            // Chuẩn hóa URL tải file an toàn từ Worker R2
+            let downloadUrl = fileUrlOrKey;
+            if (!downloadUrl.startsWith("http://") && !downloadUrl.startsWith("https://") && !downloadUrl.startsWith("/")) {
+                downloadUrl = `/excel_exports/${downloadUrl}`;
+            }
+            currentExcelFileUrl = downloadUrl;
+
+            modal.style.display = "flex";
             document.body.style.overflow = "hidden";
+            loading.style.display = "flex";
+            errorBox.style.display = "none";
+            tableContainer.style.display = "none";
+            
+            const tabsEl = document.getElementById("excelSheetTabs");
+            if (tabsEl) tabsEl.innerHTML = "";
+            const searchEl = document.getElementById("excelSheetSearchInput");
+            if (searchEl) searchEl.value = "";
+
+            try {
+                if (typeof XLSX === "undefined") {
+                    throw new Error("Thư viện SheetJS chưa được tải hoặc bị chặn. Vui lòng kiểm tra kết nối mạng.");
+                }
+
+                const response = await fetch(downloadUrl, {
+                    credentials: "include"
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Không thể tải file từ R2 (${response.status}: ${response.statusText})`);
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+                const workbook = XLSX.read(arrayBuffer, { type: "array", cellDates: true });
+                currentWorkbook = workbook;
+                currentWorkbookRawData = {};
+
+                if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+                    throw new Error("File Excel không chứa bất kỳ trang tính (Sheet) nào.");
+                }
+
+                // Render Sheet Tabs
+                if (tabsEl) {
+                    tabsEl.innerHTML = "";
+                    const sheetIcons = {
+                        "NHAT_KY_HANG_NGAY": "📋",
+                        "TONG_HOP_NGAY": "📅",
+                        "TONG_HOP_PHEU": "📑",
+                        "CHI_TIET": "🔍",
+                        "CANH_BAO": "⚠️"
+                    };
+
+                    workbook.SheetNames.forEach((sheetName, index) => {
+                        const btn = document.createElement("button");
+                        btn.type = "button";
+                        btn.className = `excel-sheet-tab ${index === 0 ? "active" : ""}`;
+                        const icon = sheetIcons[sheetName] || "📊";
+                        btn.innerHTML = `<span>${icon}</span><span>${escapeHtml(sheetName)}</span>`;
+                        btn.onclick = () => switchExcelSheet(sheetName);
+                        tabsEl.appendChild(btn);
+                    });
+                }
+
+                // Render Sheet đầu tiên
+                switchExcelSheet(workbook.SheetNames[0]);
+
+                loading.style.display = "none";
+                tableContainer.style.display = "block";
+            } catch (err) {
+                console.error("Lỗi xem trước Excel:", err);
+                loading.style.display = "none";
+                errorBox.style.display = "flex";
+                const errorMsgEl = document.getElementById("excelPreviewErrorMsg");
+                if (errorMsgEl) errorMsgEl.textContent = err.message || "Không thể nạp dữ liệu bảng tính";
+            }
+        }
+
+        function switchExcelSheet(sheetName) {
+            if (!currentWorkbook || !currentWorkbook.Sheets[sheetName]) return;
+            currentActiveSheetName = sheetName;
+
+            // Cập nhật trạng thái Active của các Tab
+            const tabs = document.querySelectorAll("#excelSheetTabs .excel-sheet-tab");
+            tabs.forEach(tab => {
+                if (tab.textContent.includes(sheetName)) {
+                    tab.classList.add("active");
+                } else {
+                    tab.classList.remove("active");
+                }
+            });
+
+            // Chuyển đổi Sheet thành mảng 2 chiều JSON
+            const worksheet = currentWorkbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
+            currentWorkbookRawData[sheetName] = jsonData;
+
+            renderExcelTableData(jsonData);
+            const searchInput = document.getElementById("excelSheetSearchInput");
+            if (searchInput) searchInput.value = "";
+        }
+
+        function renderExcelTableData(rows) {
+            const headEl = document.getElementById("excelTableHead");
+            const bodyEl = document.getElementById("excelTableBody");
+            const statsEl = document.getElementById("excelSheetStatsBadge");
+
+            if (!headEl || !bodyEl) return;
+
+            headEl.innerHTML = "";
+            bodyEl.innerHTML = "";
+
+            if (!rows || rows.length === 0) {
+                if (statsEl) statsEl.textContent = "0 dòng | 0 cột";
+                bodyEl.innerHTML = `<tr><td colspan="100%" style="text-align: center; padding: 40px; color: #94a3b8; font-size: 14px;">Trang tính này hiện chưa có dữ liệu</td></tr>`;
+                return;
+            }
+
+            // Tính số cột lớn nhất
+            let maxCols = 0;
+            rows.forEach(r => {
+                if (r && r.length > maxCols) maxCols = r.length;
+            });
+
+            if (statsEl) {
+                statsEl.textContent = `${rows.length} dòng | ${maxCols} cột`;
+            }
+
+            // Dòng đầu tiên làm Header
+            const headerRow = rows[0] || [];
+            const trHead = document.createElement("tr");
+
+            // Cột số thứ tự dòng
+            const thIdx = document.createElement("th");
+            thIdx.textContent = "#";
+            thIdx.style.width = "50px";
+            thIdx.style.background = "#e2e8f0";
+            thIdx.style.color = "#475569";
+            trHead.appendChild(thIdx);
+
+            for (let c = 0; c < maxCols; c++) {
+                const th = document.createElement("th");
+                const val = headerRow[c] !== undefined && headerRow[c] !== null && String(headerRow[c]).trim() !== "" 
+                    ? String(headerRow[c]) 
+                    : `Cột ${c + 1}`;
+                th.textContent = val;
+                trHead.appendChild(th);
+            }
+            headEl.appendChild(trHead);
+
+            // Dòng dữ liệu Body (từ dòng index 1 trở đi)
+            const fragment = document.createDocumentFragment();
+            for (let r = 1; r < rows.length; r++) {
+                const rowData = rows[r] || [];
+                const tr = document.createElement("tr");
+                tr.setAttribute("data-row-index", r);
+
+                // Ô số thứ tự dòng
+                const tdIdx = document.createElement("td");
+                tdIdx.textContent = r;
+                tdIdx.style.textAlign = "center";
+                tdIdx.style.color = "#94a3b8";
+                tdIdx.style.background = "#f8fafc";
+                tdIdx.style.fontWeight = "600";
+                tr.appendChild(tdIdx);
+
+                for (let c = 0; c < maxCols; c++) {
+                    const td = document.createElement("td");
+                    let cellVal = rowData[c];
+
+                    if (cellVal === undefined || cellVal === null) {
+                        td.textContent = "";
+                    } else if (cellVal instanceof Date) {
+                        td.textContent = cellVal.toLocaleDateString("vi-VN");
+                        td.style.textAlign = "center";
+                    } else if (typeof cellVal === "number") {
+                        if (Number.isInteger(cellVal)) {
+                            td.textContent = cellVal.toLocaleString("vi-VN");
+                        } else {
+                            td.textContent = cellVal.toLocaleString("vi-VN", { minimumFractionDigits: 1, maximumFractionDigits: 4 });
+                        }
+                        td.style.textAlign = "right";
+                        td.style.fontFamily = "monospace";
+                    } else {
+                        const strVal = String(cellVal).trim();
+                        td.textContent = strVal;
+
+                        if (/^\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4}$/.test(strVal)) {
+                            td.style.textAlign = "center";
+                        } else if (strVal.toLowerCase() === "ok" || strVal.toLowerCase() === "hợp lệ") {
+                            td.innerHTML = `<span style="background: #dcfce7; color: #15803d; padding: 2px 8px; border-radius: 4px; font-weight: 600;">✓ ${escapeHtml(strVal)}</span>`;
+                            td.style.textAlign = "center";
+                        } else if (strVal.toLowerCase().includes("lệch") || strVal.toLowerCase().includes("cảnh báo")) {
+                            td.innerHTML = `<span style="background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-weight: 600;">⚠️ ${escapeHtml(strVal)}</span>`;
+                            td.style.textAlign = "center";
+                        }
+                    }
+                    tr.appendChild(td);
+                }
+                fragment.appendChild(tr);
+            }
+            bodyEl.appendChild(fragment);
+        }
+
+        function filterExcelSheetTable(query) {
+            query = (query || "").toLowerCase().trim();
+            const bodyRows = document.querySelectorAll("#excelTableBody tr");
+            let visibleCount = 0;
+
+            bodyRows.forEach(tr => {
+                if (!query) {
+                    tr.classList.remove("filtered-out");
+                    visibleCount++;
+                } else {
+                    const text = tr.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        tr.classList.remove("filtered-out");
+                        visibleCount++;
+                    } else {
+                        tr.classList.add("filtered-out");
+                    }
+                }
+            });
+
+            const statsEl = document.getElementById("excelSheetStatsBadge");
+            if (statsEl) {
+                const total = bodyRows.length;
+                if (query) {
+                    statsEl.textContent = `Khớp ${visibleCount}/${total} dòng`;
+                } else {
+                    const colCount = document.querySelectorAll("#excelTableHead th").length - 1;
+                    statsEl.textContent = `${total + 1} dòng | ${colCount} cột`;
+                }
+            }
+        }
+
+        function downloadCurrentExcelFile() {
+            if (!currentExcelFileUrl) return;
+            const a = document.createElement("a");
+            a.href = currentExcelFileUrl;
+            a.download = currentExcelFileName || "nhat_ky_xe_go.xlsx";
+            a.target = "_blank";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         function closeExcelPreviewModal() {
-            document.getElementById("excelPreviewModal").style.display = "none";
-            document.getElementById("excelPreviewIframe").src = "";
+            const modal = document.getElementById("excelPreviewModal");
+            if (modal) modal.style.display = "none";
             document.body.style.overflow = "";
+            currentWorkbook = null;
+            currentWorkbookRawData = {};
         }
         
         // Add ESC key support for this modal too
@@ -5630,13 +6776,15 @@
                             <div id="r2BucketName" style="font-family: monospace; font-weight: 600; color: #0f172a; margin-top: 2px;">ocr-vn01</div>
                         </div>
                         <div style="background: white; padding: 10px 12px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                            <strong style="color: #64748b;">Worker CDN Public URL:</strong>
-                            <div id="r2PublicUrlDisplay" style="font-family: monospace; font-weight: 600; color: #0284c7; margin-top: 2px; word-break: break-all;">Chưa cấu hình</div>
+                            <strong style="color: #64748b;">Chế độ bảo mật:</strong>
+                            <div id="r2SecurityModeDisplay" style="margin-top: 2px;">
+                                <span style="color: #059669; font-weight: 700;">🔒 100% Private (Đã bật Auth)</span>
+                            </div>
                         </div>
                     </div>
 
-                    <div id="r2StatusMessage" style="margin-top: 10px; font-size: 13px; color: #64748b; padding: 8px 12px; background: #ffffff; border-radius: 8px; border-left: 4px solid #0284c7;">
-                        Đang lấy thông tin cấu hình...
+                    <div id="r2StatusMessage" style="margin-top: 10px; font-size: 13px; color: #166534; padding: 8px 12px; background: #ffffff; border-radius: 8px; border-left: 4px solid #10b981;">
+                        Đã kết nối trực tiếp R2 Bucket 'ocr-vn01' qua Cloudflare Worker (Zero Egress Fee, an toàn tuyệt đối).
                     </div>
                 </div>
 
@@ -5677,19 +6825,6 @@
                         </table>
                     </div>
                 </div>
-
-                <!-- HƯỚNG DẪN TRIỂN KHAI R2 & WORKER -->
-                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px;">
-                    <strong style="color: #15803d; font-size: 13px; display: block; margin-bottom: 6px;">
-                        📘 Hướng dẫn kết nối Cloudflare R2 & Deploy Worker CDN:
-                    </strong>
-                    <ol style="margin: 0; padding-left: 20px; font-size: 12px; color: #166534; line-height: 1.6;">
-                        <li>Tạo Bucket trên <a href="https://dash.cloudflare.com" target="_blank" style="color: #0284c7; font-weight: 600;">Cloudflare Dashboard</a> mục <strong>R2</strong> (mặc định đặt tên: <code>ocr-wood-storage</code>).</li>
-                        <li>Tạo <strong>R2 API Token</strong> với quyền <em>Object Read & Write</em>, sau đó điền <code>R2_ACCOUNT_ID</code>, <code>R2_ACCESS_KEY_ID</code>, <code>R2_SECRET_ACCESS_KEY</code> vào file <code>.env</code>.</li>
-                        <li>Deploy Worker CDN: Mở terminal chạy <code>cd cloudflare_worker</code> rồi <code>npx wrangler deploy</code>.</li>
-                        <li>Dán URL Worker vào <code>R2_PUBLIC_URL</code> trong file <code>.env</code> để truy cập ảnh & Excel với băng thông 0đ (Zero Egress Fee)!</li>
-                    </ol>
-                </div>
             </div>
         </div>
     </div>
@@ -5716,18 +6851,66 @@
         </div>
     </div>
 
-    <!-- MODAL XEM TRƯỚC EXCEL -->
+    <!-- MODAL XEM TRƯỚC EXCEL (SHEETJS CLIENT-SIDE IN-BROWSER) -->
     <div id="excelPreviewModal" class="modal-backdrop" onclick="if(event.target===this) closeExcelPreviewModal()" style="z-index: 10000; display: none;">
-        <div class="modal-card" style="max-width: 95vw; width: 1400px; height: 90vh;">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <span>👁️</span>
-                    <span>XEM TRƯỚC FILE EXCEL TỪ CLOUDFLARE R2</span>
+        <div class="modal-card" style="max-width: 96vw; width: 1450px; height: 92vh; display: flex; flex-direction: column; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); padding: 0;">
+            <!-- Modal Header -->
+            <div class="modal-header" style="background: linear-gradient(135deg, #1e3a8a, #1d4ed8); color: white; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e40af; flex-shrink: 0;">
+                <div class="modal-title" style="display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; color: white;">
+                    <span style="font-size: 20px;">📊</span>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <span>XEM TRƯỚC FILE EXCEL TỪ R2:</span>
+                        <span id="excelPreviewFileName" style="font-size: 13.5px; font-weight: 600; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 6px; font-family: Consolas, monospace; color: #f8fafc;"></span>
+                    </div>
                 </div>
-                <button type="button" class="modal-close" onclick="closeExcelPreviewModal()" title="Đóng">✕</button>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <button type="button" id="excelDownloadCurrentBtn" class="btn btn-secondary" onclick="downloadCurrentExcelFile()" style="background: #ffffff; color: #1e3a8a; border: none; font-size: 13px; font-weight: 600; padding: 6px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                        <span>📥 Tải file về máy</span>
+                    </button>
+                    <button type="button" class="modal-close" onclick="closeExcelPreviewModal()" title="Đóng (ESC)" style="color: #ffffff; font-size: 22px; background: transparent; border: none; cursor: pointer; padding: 0 4px; line-height: 1;">✕</button>
+                </div>
             </div>
-            <div class="modal-body" style="padding: 0; display: flex; flex-direction: column; overflow: hidden;">
-                <iframe id="excelPreviewIframe" src="" style="width: 100%; height: 100%; border: none; flex-grow: 1;"></iframe>
+
+            <!-- Modal Sub-header: Tabs & Search Toolbar -->
+            <div style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 10px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; flex-shrink: 0;">
+                <!-- Sheet Tabs Container -->
+                <div id="excelSheetTabs" style="display: flex; gap: 8px; overflow-x: auto; max-width: 70%; padding-bottom: 2px;">
+                    <!-- Render dynamically via JavaScript -->
+                </div>
+
+                <!-- Search and Stats -->
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="position: relative; display: flex; align-items: center;">
+                        <span style="position: absolute; left: 10px; color: #64748b; font-size: 13px;">🔍</span>
+                        <input type="text" id="excelSheetSearchInput" oninput="filterExcelSheetTable(this.value)" placeholder="Lọc dữ liệu sheet..." style="padding: 6px 12px 6px 30px; font-size: 13px; border: 1px solid #cbd5e1; border-radius: 6px; outline: none; width: 220px; background: white;">
+                    </div>
+                    <span id="excelSheetStatsBadge" style="font-size: 12px; color: #334155; background: #e2e8f0; padding: 5px 12px; border-radius: 6px; font-weight: 600;">0 dòng | 0 cột</span>
+                </div>
+            </div>
+
+            <!-- Modal Body / Content -->
+            <div id="excelPreviewContent" class="modal-body" style="padding: 0; display: flex; flex-direction: column; overflow: auto; flex-grow: 1; background: #f8fafc; position: relative;">
+                <!-- Loading State -->
+                <div id="excelPreviewLoading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 380px; gap: 14px; color: #334155;">
+                    <div class="spinner" style="width: 44px; height: 44px; border: 4px solid #cbd5e1; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+                    <div style="font-size: 15px; font-weight: 700; color: #1e3a8a;">⏳ Đang tải và giải mã bảng tính Excel từ Cloudflare R2...</div>
+                    <div style="font-size: 13px; color: #64748b;">Giải mã trực tiếp 100% trên trình duyệt (Bảo mật tuyệt đối, Private R2)</div>
+                </div>
+
+                <!-- Error State -->
+                <div id="excelPreviewError" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 380px; gap: 12px; color: #dc2626; padding: 20px; text-align: center;">
+                    <span style="font-size: 44px;">⚠️</span>
+                    <div id="excelPreviewErrorMsg" style="font-size: 16px; font-weight: 700;">Không thể mở file Excel</div>
+                    <p style="font-size: 13.5px; color: #64748b; max-width: 500px;">Vui lòng kiểm tra lại kết nối mạng hoặc phiên đăng nhập của bạn.</p>
+                </div>
+
+                <!-- Table Container -->
+                <div id="excelTableContainer" style="display: none; width: 100%; height: 100%; overflow: auto; padding: 14px; box-sizing: border-box;">
+                    <table id="excelDataTable" class="excel-preview-table">
+                        <thead id="excelTableHead"></thead>
+                        <tbody id="excelTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -5772,6 +6955,84 @@
         </div>
     </div>
     <div id="cellHoverTooltip"></div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL ĐĂNG NHẬP HỆ THỐNG (FULLSCREEN OVERLAY) -->
+    <!-- ============================================================ -->
+    <div id="loginModal" style="position: fixed; inset: 0; background: linear-gradient(135deg, rgba(7,89,170,0.95), rgba(15,23,42,0.97)); z-index: 999999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div style="background: white; border-radius: 20px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 100%; max-width: 440px; padding: 36px 32px; margin: 20px; border: 1px solid rgba(255,255,255,0.2); animation: loginCardFadeIn 0.35s ease;">
+            <!-- Header Modal -->
+            <div style="text-align: center; margin-bottom: 24px;">
+                <div style="width: 72px; height: 72px; margin: 0 auto 14px; border-radius: 20px; background: linear-gradient(135deg, #f59e0b, #d97706); display: grid; place-items: center; box-shadow: 0 10px 25px rgba(245,158,11,0.4);">
+                    <span style="font-size: 38px;">🪵</span>
+                </div>
+                <h2 style="margin: 0; color: #0f172a; font-size: 22px; font-weight: 800; letter-spacing: -0.5px;">ĐĂNG NHẬP HỆ THỐNG</h2>
+                <p style="margin: 6px 0 0; color: #64748b; font-size: 13.5px;">Phần mềm OCR & Quản lý Nhật ký xẻ gỗ</p>
+                <div style="margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; background: #ecfdf5; color: #059669; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; border: 1px solid #a7f3d0;">
+                    🔒 R2 Private &amp; Phiên 24 giờ
+                </div>
+            </div>
+
+            <!-- Form Đăng nhập -->
+            <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+                <div id="loginErrorMessage" style="display: none; background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 16px;"></div>
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px;">👤 Tên đăng nhập:</label>
+                    <input type="text" id="loginUsername" required autocomplete="username" placeholder="Nhập tên đăng nhập (VD: admin)" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#0b72d9'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+
+                <div style="margin-bottom: 22px;">
+                    <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 6px;">🔑 Mật khẩu:</label>
+                    <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="Nhập mật khẩu" style="width: 100%; box-sizing: border-box; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s;" onfocus="this.style.borderColor='#0b72d9'" onblur="this.style.borderColor='#cbd5e1'">
+                </div>
+
+                <button type="submit" id="btnLoginSubmit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 13px; font-size: 15px; border-radius: 12px; background: linear-gradient(135deg, #0b72d9, #0759aa); box-shadow: 0 4px 14px rgba(11,114,217,0.35);">
+                    🚀 Đăng nhập ngay
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- MODAL ĐỔI MẬT KHẨU -->
+    <!-- ============================================================ -->
+    <div id="changePasswordModal" class="modal-backdrop" onclick="if(event.target===this) closeChangePasswordModal()" style="display: none; z-index: 99999;">
+        <div class="modal-card" style="max-width: 440px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0b72d9, #0759aa);">
+                <div class="modal-title">
+                    <span>🔑</span>
+                    <span>ĐỔI MẬT KHẨU TÀI KHOẢN</span>
+                </div>
+                <button type="button" class="modal-close" onclick="closeChangePasswordModal()" title="Đóng">✕</button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm" onsubmit="handleChangePasswordSubmit(event)">
+                    <div id="changePasswordMsg" style="display: none; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 14px;"></div>
+
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 5px;">Mật khẩu hiện tại:</label>
+                        <input type="password" id="cpCurrentPass" required style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px;" placeholder="Nhập mật khẩu đang dùng">
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 5px;">Mật khẩu mới:</label>
+                        <input type="password" id="cpNewPass" required minlength="6" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px;" placeholder="Tối thiểu 6 ký tự">
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label style="display: block; font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 5px;">Xác nhận mật khẩu mới:</label>
+                        <input type="password" id="cpConfirmPass" required minlength="6" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13.5px;" placeholder="Nhập lại mật khẩu mới">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">Hủy</button>
+                        <button type="submit" id="btnSubmitCP" class="btn btn-primary">💾 Lưu mật khẩu mới</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 
 

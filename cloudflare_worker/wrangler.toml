@@ -31,4 +31,5 @@ OPENROUTER_FALLBACK_MODELS = "google/gemini-2.5-flash,google/gemini-2.5-flash-li
 GEMINI_MODEL = "gemini-3.8-flash"
 GEMINI_FALLBACK_MODELS = "gemini-3.8-flash,gemini-3.6-flash,gemini-3.5-flash,gemini-flash-latest"
 R2_BUCKET_NAME = "ocr-vn01"
-R2_PUBLIC_URL = "https://pub-db7f3da023764b6497ffdcf644d4e7e5.r2.dev"
+SESSION_DURATION_SECONDS = "86400"
+AUTH_SECRET = "ocr_wood_secure_hmac_secret_key_2026_default_salt_xyz987"

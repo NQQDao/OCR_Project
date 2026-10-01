@@ -9,6 +9,7 @@ excel_export/
 
 ~$*.xlsx
 ~$*.xls
+~$*.docx
 
 .env
 .env.*
@@ -27,6 +28,10 @@ cloudflared.exe
 cloudflare_worker/node_modules/
 cloudflare_worker/.wrangler/
 
+# Root node_modules (không dùng)
+node_modules/
+package-lock.json
+
 # Temporary and log files
 scratch*
 *.log
@@ -36,3 +41,9 @@ scratch*
 Thumbs.db
 .pytest_cache/
 
+# Generated output files
+jira_user_stories.csv
+bao_cao_tong_quan_ocr_go.docx
+
+# Sample images (đã lưu trên R2)
+images/

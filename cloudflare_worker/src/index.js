@@ -16,6 +16,7 @@ import {
   callGeminiVision,
   callOpenRouterVision,
   parseAndValidateOcrResponse,
+  applyDictionary,
   BASE_OCR_PROMPT
 } from "./ocr.js";
 import {
@@ -31,8 +32,24 @@ import {
   getSystemSetting,
   setSystemSetting,
   deleteSystemSetting,
-  getDailyStats
+  getDailyStats,
+  getUserByUsername,
+  getUserById,
+  createInitialAdmin,
+  countUsers,
+  updateUserPassword,
+  updateUserLastLogin
 } from "./db.js";
+import {
+  hashPassword,
+  verifyPassword,
+  generateSalt,
+  createSessionToken,
+  verifySessionToken,
+  extractTokenFromRequest,
+  buildAuthCookieHeader,
+  buildClearCookieHeader
+} from "./auth.js";
 
 const DEFAULT_CATEGORIES = {
   cong_trinh: "Mã / Tên công trình",
@@ -81,7 +98,7 @@ export default {
     }
 
     try {
-      // Favicon lưỡi cưa xẻ gỗ tròn
+      // Favicon lưỡi cưa xẻ gỗ tròn (Public)
       if ((pathname === "/favicon.ico" || pathname === "/favicon.svg") && (method === "GET" || method === "HEAD")) {
         return new Response(SAW_BLADE_SVG, {
           status: 200,
@@ -93,18 +110,187 @@ export default {
         });
       }
 
-      // 2. GET / : Trả về Web UI Dashboard
+      // 2. GET / : Trả về Web UI Dashboard (Public Shell, giao diện tự kiểm tra auth)
       if ((pathname === "/" || pathname === "/index.html") && method === "GET") {
         return new Response(htmlContent, {
           status: 200,
           headers: {
             "Content-Type": "text/html; charset=utf-8",
-            "Cache-Control": "public, max-age=3600"
+            "Cache-Control": "no-cache, must-revalidate"
           }
         });
       }
 
-      // 3. GET /images/*, /web_uploads/*, /api/image/* : Phục vụ ảnh từ R2
+      // ============================================================
+      // 3. AUTH ENDPOINTS (ĐĂNG NHẬP / ĐĂNG XUẤT / PHIÊN)
+      // ============================================================
+
+      // POST /api/auth/login : Đăng nhập hệ thống
+      if (pathname === "/api/auth/login" && method === "POST") {
+        let body = {};
+        try {
+          body = await request.json();
+        } catch {
+          return jsonResponse({ error: "Dữ liệu đăng nhập không hợp lệ" }, 400);
+        }
+
+        const username = String(body.username || "").trim().toLowerCase();
+        const password = String(body.password || "").trim();
+
+        if (!username || !password) {
+          return jsonResponse({ error: "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu." }, 400);
+        }
+
+        // Tự động khởi tạo tài khoản admin ban đầu nếu DB chưa có người dùng nào
+        const userCount = await countUsers(env.DB);
+        if (userCount === 0) {
+          const defaultSalt = generateSalt();
+          const defaultHash = await hashPassword("Admin@2026", defaultSalt);
+          await createInitialAdmin(env.DB, "admin", defaultHash, defaultSalt, "Quản Trị Viên Hệ Thống");
+        }
+
+        const user = await getUserByUsername(env.DB, username);
+        if (!user) {
+          return jsonResponse({ error: "Tên đăng nhập hoặc mật khẩu không chính xác." }, 401);
+        }
+
+        const isMatch = await verifyPassword(password, user.password_hash, user.salt);
+        if (!isMatch) {
+          return jsonResponse({ error: "Tên đăng nhập hoặc mật khẩu không chính xác." }, 401);
+        }
+
+        // Đăng nhập thành công -> Cập nhật last_login & Tạo token 24 giờ
+        await updateUserLastLogin(env.DB, user.id);
+        const token = await createSessionToken(user, env, 86400);
+
+        return jsonResponse(
+          {
+            status: "success",
+            message: "Đăng nhập thành công!",
+            token,
+            user: {
+              id: user.id,
+              username: user.username,
+              full_name: user.full_name || user.username,
+              role: user.role || "admin"
+            }
+          },
+          200,
+          {
+            "Set-Cookie": buildAuthCookieHeader(token, 86400)
+          }
+        );
+      }
+
+      // POST /api/auth/logout : Đăng xuất
+      if (pathname === "/api/auth/logout" && method === "POST") {
+        return jsonResponse(
+          { status: "success", message: "Đã đăng xuất khỏi hệ thống thành công!" },
+          200,
+          {
+            "Set-Cookie": buildClearCookieHeader()
+          }
+        );
+      }
+
+      // GET /api/auth/me : Kiểm tra trạng thái phiên làm việc hiện tại
+      if (pathname === "/api/auth/me" && method === "GET") {
+        const token = extractTokenFromRequest(request);
+        const session = await verifySessionToken(token, env);
+
+        if (!session) {
+          return jsonResponse({
+            authenticated: false,
+            user: null
+          });
+        }
+
+        return jsonResponse({
+          authenticated: true,
+          user: {
+            id: session.id,
+            username: session.username,
+            full_name: session.full_name,
+            role: session.role
+          }
+        });
+      }
+
+      // ============================================================
+      // 4. AUTH MIDDLEWARE: BẢO VỆ 100% CÁC ROUTE CÒN LẠI
+      // ============================================================
+      const authToken = extractTokenFromRequest(request);
+      const currentSession = await verifySessionToken(authToken, env);
+
+      if (!currentSession) {
+        // Chặn truy cập trái phép
+        return jsonResponse(
+          {
+            error: "Yêu cầu đăng nhập để truy cập dữ liệu hệ thống.",
+            authenticated: false,
+            code: "UNAUTHORIZED"
+          },
+          401,
+          {
+            "Set-Cookie": buildClearCookieHeader()
+          }
+        );
+      }
+
+      // POST /api/auth/change-password : Đổi mật khẩu (yêu cầu đăng nhập)
+      if (pathname === "/api/auth/change-password" && method === "POST") {
+        let body = {};
+        try {
+          body = await request.json();
+        } catch {
+          return jsonResponse({ error: "Dữ liệu không hợp lệ" }, 400);
+        }
+
+        const currentPassword = String(body.current_password || "").trim();
+        const newPassword = String(body.new_password || "").trim();
+
+        if (!currentPassword || !newPassword) {
+          return jsonResponse({ error: "Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới." }, 400);
+        }
+
+        if (newPassword.length < 6) {
+          return jsonResponse({ error: "Mật khẩu mới phải có ít nhất 6 ký tự." }, 400);
+        }
+
+        const user = await getUserById(env.DB, currentSession.id);
+        if (!user) {
+          return jsonResponse({ error: "Không tìm thấy người dùng." }, 404);
+        }
+
+        // Lấy lại user đầy đủ kèm password_hash
+        const fullUser = await getUserByUsername(env.DB, user.username);
+        const isMatch = await verifyPassword(currentPassword, fullUser.password_hash, fullUser.salt);
+        if (!isMatch) {
+          return jsonResponse({ error: "Mật khẩu hiện tại không chính xác." }, 400);
+        }
+
+        const newSalt = generateSalt();
+        const newHash = await hashPassword(newPassword, newSalt);
+        await updateUserPassword(env.DB, user.id, newHash, newSalt);
+
+        // Tạo lại token mới
+        const newToken = await createSessionToken(user, env, 86400);
+
+        return jsonResponse(
+          {
+            status: "success",
+            message: "Đổi mật khẩu thành công!"
+          },
+          200,
+          {
+            "Set-Cookie": buildAuthCookieHeader(newToken, 86400)
+          }
+        );
+      }
+
+      // ============================================================
+      // 5. GET /images/*, /web_uploads/*, /api/image/* : Phục vụ ảnh R2 an toàn
+      // ============================================================
       if (
         (pathname.startsWith("/images/") ||
           pathname.startsWith("/web_uploads/") ||
@@ -130,7 +316,7 @@ export default {
         obj.writeHttpMetadata(headers);
         headers.set("etag", obj.httpEtag);
         headers.set("Access-Control-Allow-Origin", "*");
-        headers.set("Cache-Control", "public, max-age=604800, immutable");
+        headers.set("Cache-Control", "private, max-age=86400, immutable");
 
         if (!headers.has("content-type")) {
           const lower = filename.toLowerCase();
@@ -141,6 +327,69 @@ export default {
         if (method === "HEAD") return new Response(null, { headers });
         return new Response(obj.body, { headers, status: 200 });
       }
+
+      // ============================================================
+      // 5.1 GET /excel_exports/* : Phục vụ tải / đọc file Excel từ R2 an toàn
+      // ============================================================
+      if (
+        (pathname.startsWith("/excel_exports/") || pathname.startsWith("/api/r2/file/")) &&
+        (method === "GET" || method === "HEAD")
+      ) {
+        let key = decodeURIComponent(pathname.replace(/^\/(excel_exports|api\/r2\/file)\//, ""));
+        key = key.replace(/^(\.\.[\/\\])+/, "");
+        if (!key.startsWith("excel_exports/") && pathname.startsWith("/excel_exports/")) {
+          key = `excel_exports/${key}`;
+        }
+
+        let obj = await env.MY_BUCKET.get(key);
+        if (!obj && !key.startsWith("excel_exports/")) {
+          obj = await env.MY_BUCKET.get(`excel_exports/${key}`);
+        }
+        if (!obj) {
+          obj = await env.MY_BUCKET.get(key.split("/").pop());
+        }
+
+        if (!obj) {
+          return jsonResponse({ error: "Không tìm thấy file Excel trên Cloudflare R2", key }, 404);
+        }
+
+        const headers = new Headers();
+        obj.writeHttpMetadata(headers);
+        headers.set("etag", obj.httpEtag);
+        headers.set("Access-Control-Allow-Origin", "*");
+        headers.set("Cache-Control", "private, max-age=3600");
+        headers.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        const fileName = key.split("/").pop();
+        headers.set("Content-Disposition", `inline; filename="${fileName}"`);
+
+        if (method === "HEAD") return new Response(null, { headers });
+        return new Response(obj.body, { headers, status: 200 });
+      }
+
+      // ============================================================
+      // 5.2 GET /output/* : Phục vụ file JSON OCR từ R2 an toàn
+      // ============================================================
+      if (pathname.startsWith("/output/") && (method === "GET" || method === "HEAD")) {
+        let key = decodeURIComponent(pathname.replace(/^\/output\//, ""));
+        key = key.replace(/^(\.\.[\/\\])+/, "");
+        let obj = await env.MY_BUCKET.get(`output/${key}`);
+        if (!obj) obj = await env.MY_BUCKET.get(key);
+
+        if (!obj) {
+          return jsonResponse({ error: "Không tìm thấy file JSON trên Cloudflare R2", key }, 404);
+        }
+
+        const headers = new Headers();
+        obj.writeHttpMetadata(headers);
+        headers.set("etag", obj.httpEtag);
+        headers.set("Access-Control-Allow-Origin", "*");
+        headers.set("Cache-Control", "private, max-age=3600");
+        headers.set("Content-Type", "application/json; charset=utf-8");
+
+        if (method === "HEAD") return new Response(null, { headers });
+        return new Response(obj.body, { headers, status: 200 });
+      }
+
 
       // ============================================================
       // 4. API TÀI LIỆU (DOCUMENTS & D1)
@@ -385,7 +634,10 @@ export default {
             }
 
             // 3. Parse và kiểm tra đối chiếu khối lượng
-            const finalDoc = parseAndValidateOcrResponse(aiResp.text, originalName, aiResp.modelUsed);
+            let finalDoc = parseAndValidateOcrResponse(aiResp.text, originalName, aiResp.modelUsed);
+
+            // 3b. Post-processing: Chuẩn hóa thuật ngữ bằng từ điển D1
+            finalDoc = await applyDictionary(finalDoc, env);
 
             // 4. Tạo tên file JSON và lưu vào R2
             const stem = originalName.replace(/\.[^/.]+$/, "");
@@ -724,8 +976,8 @@ export default {
           connected: true,
           bucket: bucketName,
           bucket_name: bucketName,
-          public_url: env.R2_PUBLIC_URL || "",
-          message: `Đã kết nối trực tiếp R2 Bucket '${bucketName}' qua Cloudflare Worker (Zero Egress Fee).`
+          security_mode: "100% Private (Đã bật xác thực Auth)",
+          message: `Đã kết nối trực tiếp R2 Bucket '${bucketName}' qua Cloudflare Worker (Zero Egress Fee, an toàn tuyệt đối).`
         });
       }
 

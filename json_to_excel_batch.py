@@ -173,7 +173,7 @@ def first_value(*values: Any) -> Any:
 
 
 def get_round_wood(data: dict) -> dict:
-    """Đọc gỗ tròn. Ưu tiên schema có cấu trúc nếu OCR sau này được nâng cấp."""
+    """Đọc gỗ tròn / gỗ hộp. Hỗ trợ đầy đủ cả 2 loại gỗ."""
     header = data.get("header") or {}
     structured = data.get("round_wood")
     if not isinstance(structured, dict):
@@ -184,7 +184,65 @@ def get_round_wood(data: dict) -> dict:
     if not isinstance(structured, dict):
         structured = {}
 
+    loai_go = header.get("loai_go_mua_vao") or data.get("loai_go_mua_vao") or "go_tron"
+    is_go_hop = loai_go == "go_hop"
+
+    mua_dai = first_value(
+        header.get("kt_mua_vao_dai"),
+        structured.get("kt_mua_vao_dai"),
+        structured.get("mua_vao_dai"),
+        data.get("kt_mua_vao_dai"),
+    )
+    mua_vanh = first_value(
+        header.get("kt_mua_vao_vanh"),
+        structured.get("kt_mua_vao_vanh"),
+        structured.get("mua_vao_vanh"),
+        data.get("kt_mua_vao_vanh"),
+    )
+    mua_day = first_value(
+        header.get("kt_mua_vao_day"),
+        structured.get("kt_mua_vao_day"),
+        structured.get("mua_vao_day"),
+        data.get("kt_mua_vao_day"),
+    )
+    mua_rong = first_value(
+        header.get("kt_mua_vao_rong"),
+        structured.get("kt_mua_vao_rong"),
+        structured.get("mua_vao_rong"),
+        data.get("kt_mua_vao_rong"),
+    )
+
+    raw_kt = txt(header.get("kich_thuoc_go_tron") or data.get("kich_thuoc_go_tron"))
+    if raw_kt:
+        if is_go_hop or (re.search(r"[xX*×]", raw_kt) and not re.search(r"V\s*\d+", raw_kt, re.I)):
+            nums = re.findall(r"\d+(?:[.,]\d+)?", raw_kt)
+            if len(nums) >= 3:
+                if not mua_day:
+                    mua_day = nums[0]
+                if not mua_rong:
+                    mua_rong = nums[1]
+                if not mua_dai:
+                    d = float(nums[2].replace(",", "."))
+                    if d > 50:
+                        d /= 100
+                    mua_dai = str(d)
+        else:
+            v_match = re.search(r"V\s*(\d+)", raw_kt, re.I)
+            d_match = re.search(r"(\d+[.,]?\d*)", raw_kt)
+            if v_match and not mua_vanh:
+                mua_vanh = v_match.group(1)
+            if d_match and not mua_dai:
+                mua_dai = d_match.group(1)
+
+    kl = first_value(
+        structured.get("khoi_luong"),
+        structured.get("khoi_luong_go_tron"),
+        header.get("khoi_luong_go_tron"),
+        data.get("khoi_luong_go_tron"),
+    )
+
     return {
+        "loai_go": loai_go,
         "so": first_value(
             structured.get("so"),
             structured.get("so_go_tron"),
@@ -197,18 +255,10 @@ def get_round_wood(data: dict) -> dict:
             header.get("ky_hieu_go_tron"),
             data.get("ky_hieu_go_tron"),
         ),
-        "mua_dai": first_value(
-            structured.get("kt_mua_vao_dai"),
-            structured.get("mua_vao_dai"),
-            header.get("kt_mua_vao_dai"),
-            data.get("kt_mua_vao_dai"),
-        ),
-        "mua_vanh": first_value(
-            structured.get("kt_mua_vao_vanh"),
-            structured.get("mua_vao_vanh"),
-            header.get("kt_mua_vao_vanh"),
-            data.get("kt_mua_vao_vanh"),
-        ),
+        "mua_dai": mua_dai,
+        "mua_vanh": "" if is_go_hop else mua_vanh,
+        "mua_day": mua_day if is_go_hop else "",
+        "mua_rong": mua_rong if is_go_hop else "",
         "thuc_dai": first_value(
             structured.get("kt_do_thuc_te_dai"),
             structured.get("do_thuc_te_dai"),
@@ -221,12 +271,7 @@ def get_round_wood(data: dict) -> dict:
             header.get("kt_do_thuc_te_vanh"),
             data.get("kt_do_thuc_te_vanh"),
         ),
-        "khoi_luong": first_value(
-            structured.get("khoi_luong"),
-            structured.get("khoi_luong_go_tron"),
-            header.get("khoi_luong_go_tron"),
-            data.get("khoi_luong_go_tron"),
-        ),
+        "khoi_luong": kl,
         "don_gia": first_value(
             structured.get("don_gia"),
             header.get("don_gia"),
@@ -237,10 +282,7 @@ def get_round_wood(data: dict) -> dict:
             header.get("thanh_tien"),
             data.get("thanh_tien"),
         ),
-        "raw": txt(
-            header.get("kich_thuoc_go_tron")
-            or data.get("kich_thuoc_go_tron")
-        ),
+        "raw": raw_kt,
     }
 
 
@@ -470,7 +512,7 @@ def create_main_sheet(wb: Workbook, records: list[dict]) -> None:
         ("A2", "A3", "Ngày nhập"),
         ("B2", "B3", "Ngày xẻ"),
         ("C2", "C3", "Tháng"),
-        ("D2", "L2", "Gỗ tròn"),
+        ("D2", "L2", "Gỗ"),
         ("M2", "Q2", "Xẻ thành khí"),
         ("R2", "R3", "Công trình"),
         ("S2", "S3", "STT"),
@@ -493,10 +535,10 @@ def create_main_sheet(wb: Workbook, records: list[dict]) -> None:
         "D3": "Số",
         "E3": "Ký hiệu",
         "F3": "Dài",
-        "G3": "Vành",
-        "H3": "Dài",
-        "I3": "Vành",
-        "J3": "Khối lượng gỗ tròn",
+        "G3": "Vanh",
+        "H3": "Dày",
+        "I3": "Rộng",
+        "J3": "Khối lượng gỗ",
         "K3": "Đơn giá",
         "L3": "Thành tiền",
         "M3": "Rộng",
@@ -556,8 +598,8 @@ def create_main_sheet(wb: Workbook, records: list[dict]) -> None:
                     "E": record["round_wood"]["ky_hieu"],
                     "F": num(record["round_wood"]["mua_dai"]),
                     "G": num(record["round_wood"]["mua_vanh"]),
-                    "H": num(record["round_wood"]["thuc_dai"]),
-                    "I": num(record["round_wood"]["thuc_vanh"]),
+                    "H": num(record["round_wood"]["mua_day"]),
+                    "I": num(record["round_wood"]["mua_rong"]),
                     "J": record["khoi_luong_go_tron_num"],
                     "K": num(record["round_wood"]["don_gia"]),
                     "L": num(record["round_wood"]["thanh_tien"]),

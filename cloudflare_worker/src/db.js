@@ -293,3 +293,65 @@ export async function getDailyStats(db, dateStr) {
   };
 }
 
+// ----------------------------------------------------
+// QUẢN LÝ NGƯỜI DÙNG & XÁC THỰC (USERS TABLE)
+// ----------------------------------------------------
+
+export async function ensureUsersTable(db) {
+  await db.prepare(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      salt TEXT NOT NULL,
+      full_name TEXT,
+      role TEXT DEFAULT 'admin',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      last_login DATETIME
+    );
+  `).run();
+}
+
+export async function getUserByUsername(db, username) {
+  if (!username) return null;
+  await ensureUsersTable(db);
+  const user = await db.prepare("SELECT * FROM users WHERE username = ?").bind(username.trim().toLowerCase()).first();
+  return user || null;
+}
+
+export async function getUserById(db, id) {
+  if (!id) return null;
+  await ensureUsersTable(db);
+  const user = await db.prepare("SELECT id, username, full_name, role, created_at, last_login FROM users WHERE id = ?").bind(id).first();
+  return user || null;
+}
+
+export async function countUsers(db) {
+  await ensureUsersTable(db);
+  const res = await db.prepare("SELECT count(*) as count FROM users").first();
+  return res?.count || 0;
+}
+
+export async function createInitialAdmin(db, username, passwordHash, salt, fullName = "Quản Trị Viên") {
+  await ensureUsersTable(db);
+  const cleanUsername = username.trim().toLowerCase();
+  await db.prepare(
+    `INSERT OR IGNORE INTO users (username, password_hash, salt, full_name, role, created_at)
+     VALUES (?, ?, ?, ?, 'admin', CURRENT_TIMESTAMP)`
+  ).bind(cleanUsername, passwordHash, salt, fullName).run();
+}
+
+export async function updateUserPassword(db, userId, newPasswordHash, newSalt) {
+  await ensureUsersTable(db);
+  const res = await db.prepare(
+    `UPDATE users SET password_hash = ?, salt = ? WHERE id = ?`
+  ).bind(newPasswordHash, newSalt, userId).run();
+  return res.success;
+}
+
+export async function updateUserLastLogin(db, userId) {
+  await ensureUsersTable(db);
+  await db.prepare(
+    `UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?`
+  ).bind(userId).run();
+}

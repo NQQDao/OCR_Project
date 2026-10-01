@@ -110,30 +110,15 @@ QUAN TRỌNG: Chỉ trả về duy nhất chuỗi JSON hợp lệ theo schema sa
 export async function buildOcrPrompt(env) {
   try {
     if (env.DB) {
-      // 1. Kiểm tra prompt tùy chỉnh trong system_settings
+      // Kiểm tra prompt tùy chỉnh trong system_settings
       const customSetting = await env.DB.prepare(
         "SELECT value FROM system_settings WHERE key = 'custom_prompt' LIMIT 1"
       ).first();
       if (customSetting && customSetting.value && customSetting.value.trim()) {
         return customSetting.value.trim();
       }
-
-      // 2. Tự động sinh ngữ cảnh từ bảng abbreviations
-      const { results: abbrevs } = await env.DB.prepare(
-        "SELECT short, full, category, description FROM abbreviations ORDER BY category, short"
-      ).all();
-
-      if (abbrevs && abbrevs.length > 0) {
-        let dictText = "\n\n============================================================\n";
-        dictText += "BỘ TỪ ĐIỂN CHỮ VIẾT TẮT & QUY TẮC BÓC TÁCH CHUYÊN NGÀNH:\n";
-        dictText += "============================================================\n";
-        for (const item of abbrevs) {
-          dictText += `- '${item.short}' -> '${item.full}'`;
-          if (item.description) dictText += ` (${item.description})`;
-          dictText += "\n";
-        }
-        return `${BASE_OCR_PROMPT}\n${dictText}`;
-      }
+      // Từ điển viết tắt không còn nhúng vào prompt AI.
+      // Thay vào đó, từ điển được áp dụng hậu kỳ qua applyDictionary().
     }
   } catch (err) {
     console.error("[Prompt Build Warning]", err);
@@ -644,3 +629,158 @@ export function parseAndValidateOcrResponse(rawText, sourceFileName, modelUsed) 
   };
 }
 export async function buildFastPrompt(env) { return `Hãy quét nhanh hình ảnh này và trả về ĐÚNG MỘT JSON với định dạng sau (không giải thích gì thêm):\n{\n  "so_xe": "...", // Trích xuất mã số xe/số phiếu (ví dụ: 107 - I7085/1A). Nếu không có trả về chuỗi rỗng.\n  "so_dong": 15 // Đếm số lượng dòng dữ liệu có trong bảng chi tiết cấu kiện. Trả về số nguyên (kiểu int).\n}`; }
+
+// ============================================================
+// Dictionary Post-Processing (thay thế cách nhúng từ điển vào prompt)
+// Port từ dictionary_postprocessor.py sang JavaScript
+// 3 tầng matching: Exact → Synonym → Fuzzy (Levenshtein)
+// ============================================================
+
+function levenshteinDistance(s1, s2) {
+  if (s1.length < s2.length) return levenshteinDistance(s2, s1);
+  if (s2.length === 0) return s1.length;
+  let prevRow = Array.from({ length: s2.length + 1 }, (_, i) => i);
+  for (let i = 0; i < s1.length; i++) {
+    const currRow = [i + 1];
+    for (let j = 0; j < s2.length; j++) {
+      currRow.push(Math.min(
+        prevRow[j + 1] + 1,
+        currRow[j] + 1,
+        prevRow[j] + (s1[i] !== s2[j] ? 1 : 0)
+      ));
+    }
+    prevRow = currRow;
+  }
+  return prevRow[s2.length];
+}
+
+function cleanFullText(full) {
+  return (full || "").replace(/\s*\[.*?\]\s*$/g, "").trim();
+}
+
+function parseSynonyms(synValue) {
+  if (!synValue) return [];
+  if (Array.isArray(synValue)) return synValue;
+  try {
+    const parsed = JSON.parse(synValue);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {}
+  return synValue.split(",").map(s => s.trim()).filter(Boolean);
+}
+
+/**
+ * Hậu xử lý kết quả OCR bằng từ điển viết tắt từ D1.
+ * Áp dụng 3 tầng matching: Exact → Synonym → Fuzzy (Levenshtein ≤ 2).
+ * Chuẩn hóa trường cong_trinh và ten_cau_kien trong mỗi item.
+ *
+ * @param {Object} doc - Kết quả OCR đã parse (có items[])
+ * @param {Object} env - Cloudflare Worker env (có DB binding)
+ * @returns {Object} doc đã chuẩn hóa, kèm validation.dictionary_corrections
+ */
+export async function applyDictionary(doc, env) {
+  if (!env.DB) return doc;
+
+  try {
+    const { results: abbrevs } = await env.DB.prepare(
+      "SELECT id, short, full, category, description, synonyms FROM abbreviations ORDER BY category"
+    ).all();
+
+    if (!abbrevs || abbrevs.length === 0) return doc;
+
+    // Xây bảng tra cứu
+    const exactMap = new Map();
+    const synonymMap = new Map();
+
+    for (const item of abbrevs) {
+      const shortLower = (item.short || "").trim().toLowerCase();
+      if (shortLower) exactMap.set(shortLower, item);
+
+      const syns = parseSynonyms(item.synonyms);
+      for (const syn of syns) {
+        const synLower = (syn || "").trim().toLowerCase();
+        if (synLower) synonymMap.set(synLower, item);
+      }
+    }
+
+    // Hàm tra cứu 3 tầng cho 1 term
+    function matchTerm(text, targetCategories) {
+      if (!text || !text.trim()) return null;
+      const clean = text.trim().toLowerCase();
+
+      // Tầng 1: Exact match
+      const exactHit = exactMap.get(clean);
+      if (exactHit && (!targetCategories || targetCategories.includes(exactHit.category))) {
+        return { value: cleanFullText(exactHit.full), type: "exact" };
+      }
+
+      // Tầng 2: Synonym match
+      const synHit = synonymMap.get(clean);
+      if (synHit && (!targetCategories || targetCategories.includes(synHit.category))) {
+        return { value: cleanFullText(synHit.full), type: "synonym" };
+      }
+
+      // Tầng 3: Fuzzy match (Levenshtein ≤ 2, chỉ khi text ≥ 3 ký tự)
+      if (clean.length >= 3) {
+        let bestMatch = null, bestDist = 3;
+        for (const item of abbrevs) {
+          if (targetCategories && !targetCategories.includes(item.category)) continue;
+          const short = (item.short || "").trim().toLowerCase();
+          if (!short) continue;
+          const dist = levenshteinDistance(clean, short);
+          if (dist <= 2 && dist < bestDist) {
+            bestDist = dist;
+            bestMatch = item;
+          }
+        }
+        if (bestMatch) return { value: cleanFullText(bestMatch.full), type: "fuzzy" };
+      }
+
+      return null;
+    }
+
+    // Áp dụng lên từng item
+    const corrections = [];
+    const items = doc.items || [];
+
+    for (const item of items) {
+      // Chuẩn hóa cong_trinh
+      if (item.cong_trinh && item.cong_trinh.trim()) {
+        const result = matchTerm(item.cong_trinh, ["de_nham", "cong_trinh"]);
+        if (result && result.value !== item.cong_trinh.trim()) {
+          corrections.push({
+            dong: item.dong, field: "cong_trinh",
+            original: item.cong_trinh, corrected: result.value,
+            match_type: result.type
+          });
+          item.cong_trinh = result.value;
+        }
+      }
+
+      // Chuẩn hóa ten_cau_kien
+      if (item.ten_cau_kien && item.ten_cau_kien.trim()) {
+        const result = matchTerm(item.ten_cau_kien, ["cau_kien", "de_nham"]);
+        if (result && result.value !== item.ten_cau_kien.trim()) {
+          corrections.push({
+            dong: item.dong, field: "ten_cau_kien",
+            original: item.ten_cau_kien, corrected: result.value,
+            match_type: result.type
+          });
+          item.ten_cau_kien = result.value;
+        }
+      }
+    }
+
+    // Ghi log corrections vào validation
+    if (corrections.length > 0) {
+      if (!doc.validation) doc.validation = {};
+      doc.validation.dictionary_corrections = corrections;
+      console.log(`[Dictionary] Da chuan hoa ${corrections.length} truong`);
+    }
+
+  } catch (err) {
+    console.error("[Dictionary Post-Process Error]", err);
+  }
+
+  return doc;
+}
+

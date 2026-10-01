@@ -81,17 +81,69 @@ function getRoundWood(data) {
   let structured = data.round_wood || header.go_tron || data.go_tron || {};
   if (typeof structured !== "object") structured = {};
 
+  const loaiGo = header.loai_go_mua_vao || data.loai_go_mua_vao || "go_tron";
+  const isGoHop = loaiGo === "go_hop";
+
+  let muaDai = header.kt_mua_vao_dai || structured.kt_mua_vao_dai || structured.mua_vao_dai || data.kt_mua_vao_dai || "";
+  let muaVanh = header.kt_mua_vao_vanh || structured.kt_mua_vao_vanh || structured.mua_vao_vanh || data.kt_mua_vao_vanh || "";
+  let muaDay = header.kt_mua_vao_day || structured.kt_mua_vao_day || structured.mua_vao_day || data.kt_mua_vao_day || "";
+  let muaRong = header.kt_mua_vao_rong || structured.kt_mua_vao_rong || structured.mua_vao_rong || data.kt_mua_vao_rong || "";
+
+  // Fallback parse từ kich_thuoc_go_tron nếu chưa có từng trường
+  const rawKt = txt(header.kich_thuoc_go_tron || data.kich_thuoc_go_tron || "");
+  if (rawKt) {
+    if (isGoHop || (/[xX*×]/.test(rawKt) && !/V\s*\d+/i.test(rawKt))) {
+      const nums = rawKt.match(/\d+(?:[.,]\d+)?/g);
+      if (nums && nums.length >= 3) {
+        if (!muaDay) muaDay = nums[0];
+        if (!muaRong) muaRong = nums[1];
+        if (!muaDai) {
+          let d = parseFloat(nums[2].replace(",", "."));
+          if (d > 50) d = d / 100; // cm -> m
+          muaDai = String(d);
+        }
+      }
+    } else {
+      const vMatch = rawKt.match(/V\s*(\d+)/i);
+      const dMatch = rawKt.match(/(\d+[.,]?\d*)/);
+      if (vMatch && !muaVanh) muaVanh = vMatch[1];
+      if (dMatch && !muaDai) muaDai = dMatch[1];
+    }
+  }
+
+  let kl = structured.khoi_luong || structured.khoi_luong_go_tron || header.khoi_luong_go_tron || data.khoi_luong_go_tron || "";
+  if (!kl) {
+    const dVal = parseFloat(String(muaDai).replace(",", "."));
+    if (isGoHop) {
+      const dayVal = parseFloat(String(muaDay).replace(",", "."));
+      const rongVal = parseFloat(String(muaRong).replace(",", "."));
+      if (!isNaN(dayVal) && !isNaN(rongVal) && !isNaN(dVal) && dayVal > 0 && rongVal > 0 && dVal > 0) {
+        kl = String(Math.round((dayVal * rongVal * dVal / 10000) * 1000) / 1000);
+      }
+    } else {
+      const vVal = parseFloat(String(muaVanh).replace(",", "."));
+      if (!isNaN(vVal) && !isNaN(dVal) && vVal > 0 && dVal > 0) {
+        kl = String(Math.round((vVal * vVal * dVal * 0.000008) * 1000) / 1000);
+      }
+    }
+  }
+
   return {
+    loai_go: loaiGo,
+    loai_go_label: isGoHop ? "Gỗ hộp" : "Gỗ tròn",
+    cong_thuc: isGoHop ? "Dày x Rộng x Dài" : "Vanh x Vanh x Dài x 0.000008",
     so: structured.so || structured.so_go_tron || header.so_go_tron || data.so_go_tron || "",
     ky_hieu: structured.ky_hieu || structured.ki_hieu || header.ky_hieu_go_tron || data.ky_hieu_go_tron || "",
-    mua_dai: structured.kt_mua_vao_dai || structured.mua_vao_dai || header.kt_mua_vao_dai || data.kt_mua_vao_dai || "",
-    mua_vanh: structured.kt_mua_vao_vanh || structured.mua_vao_vanh || header.kt_mua_vao_vanh || data.kt_mua_vao_vanh || "",
+    mua_dai: muaDai,
+    mua_vanh: isGoHop ? "" : muaVanh,
+    mua_day: isGoHop ? muaDay : "",
+    mua_rong: isGoHop ? muaRong : "",
     thuc_dai: structured.kt_do_thuc_te_dai || structured.do_thuc_te_dai || header.kt_do_thuc_te_dai || data.kt_do_thuc_te_dai || "",
     thuc_vanh: structured.kt_do_thuc_te_vanh || structured.do_thuc_te_vanh || header.kt_do_thuc_te_vanh || data.kt_do_thuc_te_vanh || "",
-    khoi_luong: structured.khoi_luong || structured.khoi_luong_go_tron || header.khoi_luong_go_tron || data.khoi_luong_go_tron || "",
+    khoi_luong: kl,
     don_gia: structured.don_gia || header.don_gia || data.don_gia || "",
     thanh_tien: structured.thanh_tien || header.thanh_tien || data.thanh_tien || "",
-    raw: txt(header.kich_thuoc_go_tron || data.kich_thuoc_go_tron || ""),
+    raw: rawKt,
   };
 }
 
@@ -238,7 +290,7 @@ export async function createBatchExcel(recordsData) {
   }
 
   const subheaders = {
-    D3: "Số", E3: "Ký hiệu", F3: "Dài", G3: "Vanh", H3: "Dài", I3: "Vanh",
+    D3: "Số", E3: "Ký hiệu", F3: "Dài", G3: "Vanh", H3: "Dày", I3: "Rộng",
     J3: "Khối lượng gỗ", K3: "Đơn giá", L3: "Thành tiền",
     M3: "Rộng", N3: "Cao", O3: "Dài", P3: "SL", Q3: "Khối lượng",
   };
@@ -292,8 +344,8 @@ export async function createBatchExcel(recordsData) {
           5: record.round_wood.ky_hieu || "",
           6: num(record.round_wood.mua_dai),
           7: num(record.round_wood.mua_vanh),
-          8: num(record.round_wood.thuc_dai),
-          9: num(record.round_wood.thuc_vanh),
+          8: num(record.round_wood.mua_day),
+          9: num(record.round_wood.mua_rong),
           10: record.khoi_luong_go_tron_num,
           11: num(record.round_wood.don_gia),
           12: num(record.round_wood.thanh_tien),
