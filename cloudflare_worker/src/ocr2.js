@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Module OCR AI Vision cho Cloudflare Worker:
  * - Gá»i trá»±c tiáº¿p Google Gemini API (v1beta REST) vá»›i cháº¿ Ä‘á»™ Structured JSON Output
  * - Há»— trá»£ Multi-model Fallback (gemini-3.8-flash -> gemini-3.6-flash -> gemini-3.5-flash -> gemini-flash-latest)
@@ -142,10 +142,10 @@ export async function callGeminiVision({ imageBase64, mimeType = "image/jpeg", p
   }
 
   const defaultPool = [
-    env.GEMINI_MODEL || "gemini-3.8-flash",
-    "gemini-3.6-flash",
-    "gemini-3.5-flash",
-    "gemini-flash-latest"
+    env.GEMINI_MODEL || "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash"
   ];
   const configuredModels = (env.GEMINI_FALLBACK_MODELS || "")
     .split(",")

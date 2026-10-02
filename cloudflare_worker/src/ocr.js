@@ -1,7 +1,7 @@
 /**
  * Module OCR AI Vision cho Cloudflare Worker:
- * - Gọi trực tiếp Google Gemini API (v1beta REST) với chế độ Structured JSON Output
- * - Hỗ trợ Multi-model Fallback (gemini-3.8-flash -> gemini-3.6-flash -> gemini-3.5-flash -> gemini-flash-latest)
+ * - Gọi trực tiếp Google Gemini API (v1beta REST) với chế độ Structured JSON Output (Ưu tiên Gemini 2.5 Flash)
+ * - Hỗ trợ Multi-model Fallback (gemini-2.5-flash -> gemini-2.5-flash-lite -> gemini-2.5-pro -> gemini-2.0-flash)
  * - Tự động tải từ điển viết tắt từ Cloudflare D1 để huấn luyện Prompt
  * - Xử lý tính toán khối lượng, kiểm tra đối chiếu sai số tự động
  */
@@ -133,10 +133,10 @@ export async function callGeminiVision({ imageBase64, mimeType = "image/jpeg", p
   }
 
   const defaultPool = [
-    env.GEMINI_MODEL || "gemini-3.8-flash",
-    "gemini-3.6-flash",
-    "gemini-3.5-flash",
-    "gemini-flash-latest"
+    env.GEMINI_MODEL || "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash"
   ];
   const configuredModels = (env.GEMINI_FALLBACK_MODELS || "")
     .split(",")
@@ -224,8 +224,8 @@ export async function callOpenRouterVision({ imageBase64, mimeType = "image/jpeg
   const defaultPool = [
     env.OPENROUTER_MODEL || "google/gemini-2.5-flash",
     "google/gemini-2.5-flash-lite",
+    "google/gemini-2.5-pro",
     "qwen/qwen2.5-vl-72b-instruct",
-    "google/gemini-3.5-flash",
     "openai/gpt-4o-mini"
   ];
   const configuredModels = (env.OPENROUTER_FALLBACK_MODELS || "")

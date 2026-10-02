@@ -41,14 +41,14 @@ if ENV_FILE.exists():
 else:
     load_dotenv(override=True)
 
-MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
+MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
 # Danh sách các model Gemini dự phòng tự động chuyển khi model chính bận (503 High Demand)
 _default_models = [
     MODEL,
-    "gemini-3.6-flash",
-    "gemini-3.5-flash",
-    "gemini-3.1-pro"
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-pro",
+    "gemini-2.0-flash"
 ]
 _env_models = os.getenv("GEMINI_MODELS", "").strip()
 if _env_models:
